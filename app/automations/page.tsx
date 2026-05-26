@@ -2,8 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { TopBar } from "@/components/layout/TopBar";
-import { Mail, MessageSquare, Phone, Clock, GitBranch, RefreshCw, Zap, Search, X } from "lucide-react";
+import { Mail, MessageSquare, Phone, Clock, GitBranch, RefreshCw, Zap, Search, X, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSearchStore } from "@/lib/search-store";
 import type { AutomationFlow, FlowStep } from "@/lib/types";
@@ -23,12 +24,99 @@ function StepTypeIcon({ type }: { type: string }) {
   return <Icon className="h-3 w-3" />;
 }
 
+function NewFlowModal({ onClose, onCreate }: {
+  onClose: () => void;
+  onCreate: (name: string) => Promise<void>;
+}) {
+  const [name, setName] = useState("");
+  const [creating, setCreating] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+    function onKey(e: KeyboardEvent) { if (e.key === "Escape") onClose(); }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  async function handleCreate() {
+    setCreating(true);
+    await onCreate(name);
+    setCreating(false);
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+      onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="w-full max-w-md rounded-xl border border-gray-200 bg-white shadow-xl p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-semibold text-gray-900">New Automation Flow</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <p className="text-xs text-gray-500 mb-4 leading-relaxed">
+          Give your flow a name. It will be created as a <span className="font-medium text-gray-700">Draft</span> and
+          open in the builder so you can add Email, SMS, Delay, and Call steps.
+        </p>
+
+        <div className="mb-4">
+          <label className="block text-xs font-medium text-gray-600 mb-1">Flow name</label>
+          <input
+            ref={inputRef}
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter" && !creating) handleCreate(); }}
+            placeholder="e.g. Standard Collection Flow"
+            className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:border-blue-400 focus:outline-none"
+          />
+        </div>
+
+        <div className="flex items-center justify-end gap-2">
+          <button
+            onClick={onClose}
+            className="rounded-md border border-gray-200 px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleCreate}
+            disabled={creating}
+            className="flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            {creating ? "Creating…" : "Create Flow"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AutomationsPage() {
+  const router = useRouter();
   const [flows, setFlows] = useState<AutomationFlow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const { query, setQuery, clear } = useSearchStore();
   const searchRef = useRef<HTMLInputElement>(null);
+
+  async function handleCreate(name: string) {
+    const res = await fetch("/api/automations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name }),
+    });
+    if (res.ok) {
+      const newFlow: AutomationFlow = await res.json();
+      router.push(`/automations/${newFlow.id}/builder`);
+    }
+  }
 
   useEffect(() => {
     fetch("/api/automations", { cache: "no-store" })
@@ -59,6 +147,12 @@ export default function AutomationsPage() {
 
   return (
     <div>
+      {modalOpen && (
+        <NewFlowModal
+          onClose={() => setModalOpen(false)}
+          onCreate={handleCreate}
+        />
+      )}
       <TopBar
         title="Automations"
         subtitle={`${flows.length} flows configured`}
@@ -99,6 +193,13 @@ export default function AutomationsPage() {
             <span className="text-xs text-gray-400 shrink-0 ml-auto">
               {loading ? "Loading…" : `Showing ${filtered.length} of ${flows.length} flows`}
             </span>
+            <button
+              onClick={() => setModalOpen(true)}
+              className="flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors shrink-0"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              New Automation Flow
+            </button>
           </div>
 
           {loading ? (
