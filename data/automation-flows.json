@@ -1,0 +1,303 @@
+[
+  {
+    "id": "FLOW001",
+    "name": "Standard Collection Flow",
+    "description": "The default end-to-end collection sequence. Starts with a gentle reminder and escalates through email, SMS, and a payment check-in call — with a fresh Xero check before every action.",
+    "status": "active",
+    "trigger": { "type": "days_overdue", "value": 7 },
+    "steps": [
+      {
+        "id": "SF-T",
+        "type": "trigger",
+        "order": 1,
+        "config": { "label": "Invoice 7 days overdue", "days": 7 },
+        "position": { "x": 300, "y": 50 }
+      },
+      {
+        "id": "SF-L1",
+        "type": "lookup_check",
+        "order": 2,
+        "config": { "label": "Fresh Xero Check" },
+        "position": { "x": 300, "y": 195 }
+      },
+      {
+        "id": "SF-E1",
+        "type": "email",
+        "order": 3,
+        "config": {
+          "label": "Friendly reminder email",
+          "subject": "Friendly reminder — Invoice {{invoiceNumber}} is overdue",
+          "template": "gentle_reminder",
+          "senderName": "Accounts Team",
+          "body": "Hi {{contactName}},\n\nI hope this message finds you well.\n\nJust a friendly reminder that Invoice {{invoiceNumber}} for {{amount}} was due on {{dueDate}} and remains outstanding.\n\nIf you've already arranged payment, please disregard this message. Otherwise, we'd appreciate you settling this at your earliest convenience, or reach out if you have any questions.\n\nKind regards,\n{{senderName}}\n{{companyName}}"
+        },
+        "position": { "x": 300, "y": 340 }
+      },
+      {
+        "id": "SF-W1",
+        "type": "wait",
+        "order": 4,
+        "config": { "label": "Wait 7 days", "days": 7 },
+        "position": { "x": 300, "y": 485 }
+      },
+      {
+        "id": "SF-L2",
+        "type": "lookup_check",
+        "order": 5,
+        "config": { "label": "Fresh Xero Check" },
+        "position": { "x": 300, "y": 630 }
+      },
+      {
+        "id": "SF-E2",
+        "type": "email",
+        "order": 6,
+        "config": {
+          "label": "Professional follow-up email",
+          "subject": "Follow-up: Invoice {{invoiceNumber}} remains outstanding",
+          "template": "overdue_notice",
+          "senderName": "Accounts Team",
+          "body": "Dear {{contactName}},\n\nWe're following up on Invoice {{invoiceNumber}} for {{amount}}, which was due on {{dueDate}} and remains unpaid.\n\nPlease arrange payment at your earliest convenience. If you have any questions about this invoice, please don't hesitate to contact us.\n\nRegards,\n{{senderName}}\n{{companyName}}"
+        },
+        "position": { "x": 300, "y": 775 }
+      },
+      {
+        "id": "SF-W2",
+        "type": "wait",
+        "order": 7,
+        "config": { "label": "Wait 7 days", "days": 7 },
+        "position": { "x": 300, "y": 920 }
+      },
+      {
+        "id": "SF-L3",
+        "type": "lookup_check",
+        "order": 8,
+        "config": { "label": "Fresh Xero Check" },
+        "position": { "x": 300, "y": 1065 }
+      },
+      {
+        "id": "SF-S",
+        "type": "sms",
+        "order": 9,
+        "config": {
+          "label": "SMS reminder",
+          "template": "Hi {{contactName}}, a quick reminder about Invoice {{invoiceNumber}} ({{amount}}) which is now overdue. Please call us on 1300 XXX XXX or reply to arrange payment. — {{companyName}}"
+        },
+        "position": { "x": 300, "y": 1210 }
+      },
+      {
+        "id": "SF-W3",
+        "type": "wait",
+        "order": 10,
+        "config": { "label": "Wait 7 days", "days": 7 },
+        "position": { "x": 300, "y": 1355 }
+      },
+      {
+        "id": "SF-L4",
+        "type": "lookup_check",
+        "order": 11,
+        "config": { "label": "Fresh Xero Check" },
+        "position": { "x": 300, "y": 1500 }
+      },
+      {
+        "id": "SF-C",
+        "type": "call",
+        "order": 12,
+        "config": {
+          "label": "Payment check-in call",
+          "notes": "Call to discuss payment. Note any promise-to-pay date. Assess if dispute review is needed. If no response within 3 days, escalate to senior accounts."
+        },
+        "position": { "x": 300, "y": 1645 }
+      },
+      {
+        "id": "SF-COND",
+        "type": "condition",
+        "order": 13,
+        "config": { "label": "Customer replied?", "condition": "Reply received from customer" },
+        "position": { "x": 300, "y": 1790 }
+      },
+      {
+        "id": "SF-END-A",
+        "type": "end",
+        "order": 14,
+        "config": { "label": "Pause — Promise to Pay received" },
+        "position": { "x": 80, "y": 1960 }
+      },
+      {
+        "id": "SF-END-B",
+        "type": "end",
+        "order": 15,
+        "config": { "label": "Needs review — Dispute or no response" },
+        "position": { "x": 520, "y": 1960 }
+      }
+    ],
+    "edges": [
+      { "id": "SFE-1", "source": "SF-T", "target": "SF-L1" },
+      { "id": "SFE-2", "source": "SF-L1", "target": "SF-E1" },
+      { "id": "SFE-3", "source": "SF-E1", "target": "SF-W1" },
+      { "id": "SFE-4", "source": "SF-W1", "target": "SF-L2" },
+      { "id": "SFE-5", "source": "SF-L2", "target": "SF-E2" },
+      { "id": "SFE-6", "source": "SF-E2", "target": "SF-W2" },
+      { "id": "SFE-7", "source": "SF-W2", "target": "SF-L3" },
+      { "id": "SFE-8", "source": "SF-L3", "target": "SF-S" },
+      { "id": "SFE-9", "source": "SF-S", "target": "SF-W3" },
+      { "id": "SFE-10", "source": "SF-W3", "target": "SF-L4" },
+      { "id": "SFE-11", "source": "SF-L4", "target": "SF-C" },
+      { "id": "SFE-12", "source": "SF-C", "target": "SF-COND" },
+      { "id": "SFE-13", "source": "SF-COND", "target": "SF-END-A", "sourceHandle": "yes" },
+      { "id": "SFE-14", "source": "SF-COND", "target": "SF-END-B", "sourceHandle": "no" }
+    ]
+  },
+  {
+    "id": "FLOW002",
+    "name": "Quick Email Sequence",
+    "description": "A lightweight 2-touch email sequence for low-priority overdue invoices. Two emails with a 7-day gap. No SMS or call.",
+    "status": "draft",
+    "trigger": { "type": "days_overdue", "value": 14 },
+    "steps": [
+      {
+        "id": "S002-1",
+        "type": "lookup_check",
+        "order": 1,
+        "config": { "label": "Fresh Xero Check" },
+        "position": { "x": 250, "y": 50 }
+      },
+      {
+        "id": "S002-2",
+        "type": "email",
+        "order": 2,
+        "config": {
+          "label": "Send overdue notice",
+          "subject": "Your account is overdue — Invoice {{invoiceNumber}}",
+          "template": "overdue_notice",
+          "senderName": "Accounts Team",
+          "body": "Dear {{contactName}},\n\nThis is a follow-up regarding Invoice {{invoiceNumber}} for {{amount}}, which was due on {{dueDate}} and has not yet been received.\n\nWe would appreciate payment at your earliest convenience. If there is an issue we can help resolve, please don't hesitate to get in touch.\n\nRegards,\n{{senderName}}\n{{companyName}}"
+        },
+        "position": { "x": 250, "y": 180 }
+      },
+      {
+        "id": "S002-3",
+        "type": "wait",
+        "order": 3,
+        "config": { "label": "Wait 7 days", "days": 7 },
+        "position": { "x": 250, "y": 310 }
+      },
+      {
+        "id": "S002-4",
+        "type": "lookup_check",
+        "order": 4,
+        "config": { "label": "Fresh Xero Check" },
+        "position": { "x": 250, "y": 440 }
+      },
+      {
+        "id": "S002-5",
+        "type": "sms",
+        "order": 5,
+        "config": {
+          "label": "Send SMS reminder",
+          "template": "Hi {{contactName}}, this is a reminder about invoice {{invoiceNumber}} for {{amount}}. Please call us on 1300 XXX XXX. — {{companyName}}"
+        },
+        "position": { "x": 250, "y": 570 }
+      },
+      {
+        "id": "S002-6",
+        "type": "end",
+        "order": 6,
+        "config": { "label": "End automation" },
+        "position": { "x": 250, "y": 700 }
+      }
+    ],
+    "edges": [
+      { "id": "E002-1", "source": "S002-1", "target": "S002-2" },
+      { "id": "E002-2", "source": "S002-2", "target": "S002-3" },
+      { "id": "E002-3", "source": "S002-3", "target": "S002-4" },
+      { "id": "E002-4", "source": "S002-4", "target": "S002-5" },
+      { "id": "E002-5", "source": "S002-5", "target": "S002-6" }
+    ]
+  },
+  {
+    "id": "FLOW003",
+    "name": "Escalation",
+    "description": "Full escalation for invoices 30+ days overdue. Urgent email, SMS, then scheduled call. Use as a supplement when standard flow hasn't resolved the debt.",
+    "status": "draft",
+    "trigger": { "type": "days_overdue", "value": 30 },
+    "steps": [
+      {
+        "id": "S003-1",
+        "type": "lookup_check",
+        "order": 1,
+        "config": { "label": "Fresh Xero Check" },
+        "position": { "x": 250, "y": 50 }
+      },
+      {
+        "id": "S003-2",
+        "type": "email",
+        "order": 2,
+        "config": {
+          "label": "Send urgent notice",
+          "subject": "URGENT: Invoice {{invoiceNumber}} requires immediate payment",
+          "template": "urgent_notice",
+          "senderName": "Senior Accounts Manager",
+          "body": "Dear {{contactName}},\n\nInvoice {{invoiceNumber}} for {{amount}} is now significantly overdue (due {{dueDate}}).\n\nDespite our previous reminders, payment has not been received. We require this matter to be resolved immediately.\n\nPlease arrange payment within 3 business days, or contact us urgently to discuss. Failure to respond may result in referral to our debt recovery team.\n\nRegards,\n{{senderName}}\n{{companyName}}"
+        },
+        "position": { "x": 250, "y": 180 }
+      },
+      {
+        "id": "S003-3",
+        "type": "wait",
+        "order": 3,
+        "config": { "label": "Wait 3 days", "days": 3 },
+        "position": { "x": 250, "y": 310 }
+      },
+      {
+        "id": "S003-4",
+        "type": "lookup_check",
+        "order": 4,
+        "config": { "label": "Fresh Xero Check" },
+        "position": { "x": 250, "y": 440 }
+      },
+      {
+        "id": "S003-5",
+        "type": "sms",
+        "order": 5,
+        "config": {
+          "label": "Send urgent SMS",
+          "template": "URGENT: Invoice {{invoiceNumber}} ({{amount}}) is significantly overdue. Contact us immediately: 1300 XXX XXX. — {{companyName}}"
+        },
+        "position": { "x": 250, "y": 570 }
+      },
+      {
+        "id": "S003-6",
+        "type": "wait",
+        "order": 6,
+        "config": { "label": "Wait 7 days", "days": 7 },
+        "position": { "x": 250, "y": 700 }
+      },
+      {
+        "id": "S003-7",
+        "type": "call",
+        "order": 7,
+        "config": {
+          "label": "Schedule collection call",
+          "notes": "Final call before referral to debt collection agency"
+        },
+        "position": { "x": 250, "y": 830 }
+      },
+      {
+        "id": "S003-8",
+        "type": "end",
+        "order": 8,
+        "config": { "label": "End automation" },
+        "position": { "x": 250, "y": 960 }
+      }
+    ],
+    "edges": [
+      { "id": "E003-1", "source": "S003-1", "target": "S003-2" },
+      { "id": "E003-2", "source": "S003-2", "target": "S003-3" },
+      { "id": "E003-3", "source": "S003-3", "target": "S003-4" },
+      { "id": "E003-4", "source": "S003-4", "target": "S003-5" },
+      { "id": "E003-5", "source": "S003-5", "target": "S003-6" },
+      { "id": "E003-6", "source": "S003-6", "target": "S003-7" },
+      { "id": "E003-7", "source": "S003-7", "target": "S003-8" }
+    ]
+  }
+]

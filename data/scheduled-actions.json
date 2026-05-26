@@ -1,0 +1,218 @@
+[
+  {
+    "id": "SA001",
+    "invoiceId": "INV003",
+    "contactId": "C002",
+    "flowId": "FLOW001",
+    "stepId": "SF-E1",
+    "stepType": "email",
+    "scheduledAt": "2026-05-26T09:00:00Z",
+    "status": "pending",
+    "skipReason": null,
+    "lookupResult": null
+  },
+  {
+    "id": "SA002",
+    "invoiceId": "INV004",
+    "contactId": "C002",
+    "flowId": "FLOW001",
+    "stepId": "SF-E1",
+    "stepType": "email",
+    "scheduledAt": "2026-05-26T09:15:00Z",
+    "status": "pending",
+    "skipReason": null,
+    "lookupResult": null
+  },
+  {
+    "id": "SA003",
+    "invoiceId": "INV007",
+    "contactId": "C004",
+    "flowId": "FLOW001",
+    "stepId": "SF-E1",
+    "stepType": "email",
+    "scheduledAt": "2026-05-26T09:30:00Z",
+    "status": "pending",
+    "skipReason": null,
+    "lookupResult": null
+  },
+  {
+    "id": "SA004",
+    "invoiceId": "INV008",
+    "contactId": "C005",
+    "flowId": "FLOW001",
+    "stepId": "SF-E1",
+    "stepType": "email",
+    "scheduledAt": "2026-05-27T09:00:00Z",
+    "status": "pending",
+    "skipReason": null,
+    "lookupResult": null
+  },
+  {
+    "id": "SA005",
+    "invoiceId": "INV022",
+    "contactId": "C005",
+    "flowId": "FLOW002",
+    "stepId": "S002-5",
+    "stepType": "sms",
+    "scheduledAt": "2026-05-26T10:00:00Z",
+    "status": "awaiting_approval",
+    "skipReason": null,
+    "lookupResult": {
+      "invoiceStatus": "overdue",
+      "contactStatus": "active",
+      "hasOpenDispute": false,
+      "hasPromiseToPay": false,
+      "manualApprovalMode": true,
+      "outcome": "awaiting_approval",
+      "reason": "Manual approval mode is enabled",
+      "performedAt": "2026-05-25T08:00:00Z"
+    }
+  },
+  {
+    "id": "SA006",
+    "invoiceId": "INV006",
+    "contactId": "C003",
+    "flowId": "FLOW002",
+    "stepId": "S002-5",
+    "stepType": "sms",
+    "scheduledAt": "2026-05-27T10:00:00Z",
+    "status": "awaiting_approval",
+    "skipReason": null,
+    "lookupResult": {
+      "invoiceStatus": "overdue",
+      "contactStatus": "active",
+      "hasOpenDispute": false,
+      "hasPromiseToPay": false,
+      "manualApprovalMode": true,
+      "outcome": "awaiting_approval",
+      "reason": "Manual approval mode is enabled",
+      "performedAt": "2026-05-25T08:05:00Z"
+    }
+  },
+  {
+    "id": "SA007",
+    "invoiceId": "INV015",
+    "contactId": "C002",
+    "flowId": "FLOW001",
+    "stepId": "SF-E1",
+    "stepType": "email",
+    "scheduledAt": "2026-05-09T09:00:00Z",
+    "status": "skipped",
+    "skipReason": "Action skipped: invoice is now paid.",
+    "lookupResult": {
+      "invoiceStatus": "paid",
+      "contactStatus": "active",
+      "hasOpenDispute": false,
+      "hasPromiseToPay": false,
+      "manualApprovalMode": false,
+      "outcome": "skip",
+      "reason": "Action skipped: invoice is now paid.",
+      "performedAt": "2026-05-09T08:59:00Z"
+    }
+  },
+  {
+    "id": "SA008",
+    "invoiceId": "INV016",
+    "contactId": "C005",
+    "flowId": "FLOW001",
+    "stepId": "SF-E1",
+    "stepType": "email",
+    "scheduledAt": "2026-05-06T09:00:00Z",
+    "status": "skipped",
+    "skipReason": "Action skipped: invoice is now paid.",
+    "lookupResult": {
+      "invoiceStatus": "paid",
+      "contactStatus": "active",
+      "hasOpenDispute": false,
+      "hasPromiseToPay": false,
+      "manualApprovalMode": false,
+      "outcome": "skip",
+      "reason": "Action skipped: invoice is now paid.",
+      "performedAt": "2026-05-06T08:59:00Z"
+    }
+  },
+  {
+    "id": "SA009",
+    "invoiceId": "INV021",
+    "contactId": "C008",
+    "flowId": "FLOW003",
+    "stepId": "S003-2",
+    "stepType": "email",
+    "scheduledAt": "2026-05-12T09:00:00Z",
+    "status": "blocked",
+    "skipReason": "Contact excluded from all automations.",
+    "lookupResult": {
+      "invoiceStatus": "overdue",
+      "contactStatus": "excluded",
+      "hasOpenDispute": false,
+      "hasPromiseToPay": false,
+      "manualApprovalMode": false,
+      "outcome": "block",
+      "reason": "Contact excluded from all automations.",
+      "performedAt": "2026-05-12T08:59:00Z"
+    }
+  },
+  {
+    "id": "SA010",
+    "invoiceId": "INV018",
+    "contactId": "C009",
+    "flowId": "FLOW002",
+    "stepId": "S002-2",
+    "stepType": "email",
+    "scheduledAt": "2026-05-05T09:00:00Z",
+    "status": "blocked",
+    "skipReason": "Contact excluded from all automations.",
+    "lookupResult": {
+      "invoiceStatus": "voided",
+      "contactStatus": "excluded",
+      "hasOpenDispute": false,
+      "hasPromiseToPay": false,
+      "manualApprovalMode": false,
+      "outcome": "block",
+      "reason": "Contact excluded from all automations.",
+      "performedAt": "2026-05-05T08:59:00Z"
+    }
+  },
+  {
+    "id": "SA011",
+    "invoiceId": "INV001",
+    "contactId": "C001",
+    "flowId": "FLOW001",
+    "stepId": "SF-E1",
+    "stepType": "email",
+    "scheduledAt": "2026-05-19T09:02:00Z",
+    "status": "sent",
+    "skipReason": null,
+    "lookupResult": {
+      "invoiceStatus": "overdue",
+      "contactStatus": "active",
+      "hasOpenDispute": false,
+      "hasPromiseToPay": false,
+      "manualApprovalMode": false,
+      "outcome": "proceed",
+      "reason": "Fresh lookup passed — action cleared to send.",
+      "performedAt": "2026-05-19T09:01:00Z"
+    }
+  },
+  {
+    "id": "SA012",
+    "invoiceId": "INV002",
+    "contactId": "C001",
+    "flowId": "FLOW002",
+    "stepId": "S002-2",
+    "stepType": "email",
+    "scheduledAt": "2026-05-12T08:32:00Z",
+    "status": "sent",
+    "skipReason": null,
+    "lookupResult": {
+      "invoiceStatus": "overdue",
+      "contactStatus": "active",
+      "hasOpenDispute": false,
+      "hasPromiseToPay": false,
+      "manualApprovalMode": false,
+      "outcome": "proceed",
+      "reason": "Fresh lookup passed — action cleared to send.",
+      "performedAt": "2026-05-12T08:31:00Z"
+    }
+  }
+]

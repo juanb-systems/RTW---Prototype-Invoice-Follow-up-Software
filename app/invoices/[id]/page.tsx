@@ -1,0 +1,323 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { TopBar } from "@/components/layout/TopBar";
+import { InvoiceStatusBadge } from "@/components/invoices/InvoiceStatusBadge";
+import { TimelineEventItem } from "@/components/invoices/TimelineEventItem";
+import { InvoiceDetailActions } from "@/components/invoices/InvoiceDetailActions";
+import { formatCurrency, formatDate, agingColor } from "@/lib/utils";
+import {
+  getInvoiceWithContact,
+  getTimelineForInvoice,
+  getScheduledActionsWithDetails,
+  getAutomationFlows,
+  getLatestInboxMessageForInvoice,
+} from "@/lib/server-data";
+import { AlertTriangle, Calendar, Building2, Mail, Phone, GitBranch, ShieldX, MessageSquare, PauseCircle } from "lucide-react";
+import type { AutomationFlow, MessageClassification } from "@/lib/types";
+
+export const dynamic = "force-dynamic";
+
+const CLASSIFICATION_LABELS: Record<MessageClassification, string> = {
+  promise_to_pay: "Promise to Pay",
+  dispute: "Dispute",
+  out_of_office: "Out of Office",
+  payment_query: "Payment Query",
+  unclassified: "Unclassified",
+};
+
+const CLASSIFICATION_COLORS: Record<MessageClassification, string> = {
+  promise_to_pay: "bg-green-100 text-green-800 border-green-200",
+  dispute: "bg-red-100 text-red-800 border-red-200",
+  out_of_office: "bg-amber-100 text-amber-800 border-amber-200",
+  payment_query: "bg-blue-100 text-blue-800 border-blue-200",
+  unclassified: "bg-gray-100 text-gray-600 border-gray-200",
+};
+
+const RECOMMENDATIONS: Record<MessageClassification, string> = {
+  promise_to_pay: "Pause automation until the customer's promised payment date. Mark promise-to-pay and monitor.",
+  dispute: "Mark invoice as disputed and pause all automation. Assign to your accounts team for review.",
+  out_of_office: "Delay follow-up until the customer returns. Check their return date in the message.",
+  payment_query: "Reply with the full invoice breakdown and resend the original invoice.",
+  unclassified: "Review this reply manually and classify it before taking any further action.",
+};
+
+function CustomerReplyPanel({ message }: { message: { classification: MessageClassification; from: string; subject: string; body: string; automationPaused: boolean; receivedAt: string } }) {
+  const borderColor =
+    message.classification === "dispute" ? "border-red-200 bg-red-50/50" :
+    message.classification === "promise_to_pay" ? "border-green-200 bg-green-50/50" :
+    "border-blue-200 bg-blue-50/50";
+
+  return (
+    <div className={`rounded-xl border p-4 shadow-sm ${borderColor}`}>
+      <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+        <MessageSquare className="h-3.5 w-3.5" />
+        Customer Reply
+      </h3>
+
+      {message.automationPaused && (
+        <div className="mb-3 flex items-center gap-1.5 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1.5">
+          <PauseCircle className="h-3.5 w-3.5 text-amber-600 flex-shrink-0" />
+          <p className="text-xs font-medium text-amber-700">Automation paused due to customer reply</p>
+        </div>
+      )}
+
+      <div className="space-y-2">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-xs text-gray-500 truncate">{message.from}</p>
+          <span className={`inline-flex items-center rounded border px-1.5 py-0.5 text-xs font-medium shrink-0 ${CLASSIFICATION_COLORS[message.classification]}`}>
+            AI: {CLASSIFICATION_LABELS[message.classification]}
+          </span>
+        </div>
+        <p className="text-xs font-medium text-gray-700 line-clamp-1">{message.subject}</p>
+        <p className="text-xs text-gray-500 line-clamp-3 leading-relaxed">{message.body}</p>
+      </div>
+
+      <div className="mt-3 rounded-md border border-gray-200 bg-white p-2.5">
+        <p className="text-xs font-medium text-gray-600 mb-1">Recommended Action</p>
+        <p className="text-xs text-gray-500 leading-relaxed">{RECOMMENDATIONS[message.classification]}</p>
+      </div>
+
+      <Link
+        href="/inbox"
+        className="block text-center text-xs font-medium text-blue-600 hover:underline mt-3"
+      >
+        View full message in Inbox →
+      </Link>
+    </div>
+  );
+}
+
+export default async function InvoiceDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const invoice = getInvoiceWithContact(id);
+  if (!invoice) notFound();
+
+  const timeline = getTimelineForInvoice(id);
+  const allActions = getScheduledActionsWithDetails();
+  const flows = getAutomationFlows();
+  const latestMessage = getLatestInboxMessageForInvoice(id);
+
+  const pendingActions = allActions.filter(
+    (a) => a.invoiceId === id && (a.status === "pending" || a.status === "awaiting_approval")
+  );
+
+  const needsReview =
+    invoice.status === "disputed" || invoice.contact?.status === "excluded";
+  const disputeDetected = invoice.status === "disputed";
+  const contactExcluded = invoice.contact?.status === "excluded";
+
+  return (
+    <div>
+      <TopBar
+        title={invoice.invoiceNumber}
+        subtitle={`${invoice.contact?.company ?? ""} · ${formatCurrency(invoice.amount)}`}
+      />
+      <div className="p-6 space-y-6">
+        {needsReview && (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 flex items-start gap-3">
+            <AlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-semibold text-amber-800">This invoice needs human review</p>
+              <p className="text-xs text-amber-600 mt-0.5">
+                {disputeDetected && "Dispute detected, follow-up paused. "}
+                {contactExcluded && "Contact excluded from all automations. "}
+                No automated actions will be sent until this is resolved.
+              </p>
+            </div>
+          </div>
+        )}
+
+        <div className="grid grid-cols-3 gap-6">
+          <div className="col-span-2 space-y-5">
+            {/* Invoice header */}
+            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <p className="text-2xl font-bold text-gray-900">{formatCurrency(invoice.amount)}</p>
+                  <p className="text-sm text-gray-500 mt-0.5">Due {formatDate(invoice.dueDate)}</p>
+                </div>
+                <div className="text-right space-y-1">
+                  <InvoiceStatusBadge status={invoice.status} />
+                  {invoice.daysPastDue > 0 && (
+                    <p className={`text-xs font-semibold ${agingColor(invoice.daysPastDue)}`}>
+                      {invoice.daysPastDue} days overdue
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 text-sm border-t border-gray-100 pt-4">
+                <div>
+                  <p className="text-xs text-gray-400">Invoice Number</p>
+                  <p className="font-mono font-medium text-gray-700">{invoice.invoiceNumber}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400">Issue Date</p>
+                  <p className="text-gray-700">{formatDate(invoice.issueDate)}</p>
+                </div>
+              </div>
+              {invoice.notes && (
+                <div className="mt-3 rounded-md bg-gray-50 px-3 py-2">
+                  <p className="text-xs text-gray-500">{invoice.notes}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Line items */}
+            {invoice.lineItems.length > 0 && (
+              <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                <h3 className="text-sm font-semibold text-gray-900 mb-3">Line Items</h3>
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-100">
+                      <th className="pb-2 text-left text-xs text-gray-400 font-medium">Description</th>
+                      <th className="pb-2 text-right text-xs text-gray-400 font-medium">Qty</th>
+                      <th className="pb-2 text-right text-xs text-gray-400 font-medium">Unit Price</th>
+                      <th className="pb-2 text-right text-xs text-gray-400 font-medium">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {invoice.lineItems.map((item, i) => (
+                      <tr key={i} className="border-b border-gray-50">
+                        <td className="py-2 text-gray-700">{item.description}</td>
+                        <td className="py-2 text-right text-gray-500">{item.quantity}</td>
+                        <td className="py-2 text-right text-gray-500">{formatCurrency(item.unitPrice)}</td>
+                        <td className="py-2 text-right font-medium text-gray-900">{formatCurrency(item.total)}</td>
+                      </tr>
+                    ))}
+                    <tr>
+                      <td colSpan={3} className="pt-2 text-right text-sm font-semibold text-gray-900">Total</td>
+                      <td className="pt-2 text-right text-sm font-bold text-gray-900">{formatCurrency(invoice.amount)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Timeline */}
+            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+              <h3 className="text-sm font-semibold text-gray-900 mb-4">Activity Timeline</h3>
+              {timeline.length === 0 ? (
+                <p className="text-sm text-gray-400 text-center py-6">No activity yet for this invoice.</p>
+              ) : (
+                <div>
+                  {timeline.map((event, idx) => (
+                    <TimelineEventItem
+                      key={event.id}
+                      eventType={event.eventType}
+                      timestamp={event.timestamp}
+                      message={event.message}
+                      isLast={idx === timeline.length - 1}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right sidebar */}
+          <div className="space-y-4">
+            {/* Customer Reply / AI Recommendation — shown first so it's immediately visible */}
+            {latestMessage && (
+              <CustomerReplyPanel message={latestMessage} />
+            )}
+
+            {/* Contact */}
+            {invoice.contact && (
+              <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Contact</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Building2 className="h-3.5 w-3.5 text-gray-400" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{invoice.contact.name}</p>
+                      <p className="text-xs text-gray-500">{invoice.contact.company}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <Mail className="h-3.5 w-3.5 text-gray-400" />
+                    {invoice.contact.email}
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <Phone className="h-3.5 w-3.5 text-gray-400" />
+                    {invoice.contact.phone}
+                  </div>
+                  {invoice.contact.status !== "active" && (
+                    <div className="mt-2 flex items-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-2.5 py-1.5">
+                      <ShieldX className="h-3.5 w-3.5 text-red-500" />
+                      <p className="text-xs font-medium text-red-700">
+                        {invoice.contact.status === "excluded"
+                          ? "Contact excluded from all automations"
+                          : "Contact on hold"}
+                      </p>
+                    </div>
+                  )}
+                  <Link href={`/contacts/${invoice.contact.id}`} className="block text-center text-xs font-medium text-blue-600 hover:underline mt-2">
+                    View contact →
+                  </Link>
+                </div>
+              </div>
+            )}
+
+            {/* Assigned flow */}
+            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Automation</h3>
+              {invoice.assignedFlowId ? (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <GitBranch className="h-4 w-4 text-blue-500" />
+                    <p className="text-sm font-medium text-gray-900">
+                      {flows.find((f: AutomationFlow) => f.id === invoice.assignedFlowId)?.name ?? invoice.assignedFlowId}
+                    </p>
+                  </div>
+                  <p className="text-xs text-gray-400">
+                    {flows.find((f: AutomationFlow) => f.id === invoice.assignedFlowId)?.description}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-xs text-gray-400">No automation assigned.</p>
+              )}
+            </div>
+
+            {/* Pending actions */}
+            {pendingActions.length > 0 && (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 shadow-sm">
+                <h3 className="text-xs font-semibold text-amber-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <Calendar className="h-3.5 w-3.5" />
+                  Upcoming Actions ({pendingActions.length})
+                </h3>
+                <div className="space-y-2">
+                  {pendingActions.map((action) => (
+                    <div key={action.id} className="rounded-md border border-amber-200 bg-white px-3 py-2">
+                      <p className="text-xs font-medium text-gray-700 capitalize">{action.stepType} scheduled</p>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        {action.status === "awaiting_approval"
+                          ? "⏸ Manual approval mode is enabled"
+                          : `Scheduled: ${formatDate(action.scheduledAt)}`}
+                      </p>
+                      <Link href="/scheduled" className="text-xs text-blue-600 hover:underline mt-1 block">
+                        Manage in Scheduled Actions →
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Actions panel */}
+            <InvoiceDetailActions
+              invoiceId={id}
+              currentStatus={invoice.status}
+              excludedFromAutomation={invoice.excludedFromAutomation}
+              flows={flows}
+              assignedFlowId={invoice.assignedFlowId}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

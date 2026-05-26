@@ -1,0 +1,802 @@
+[
+  {
+    "id": "TL001",
+    "invoiceId": "INV001",
+    "eventType": "flow_assigned",
+    "timestamp": "2026-05-19T09:00:00Z",
+    "message": "Automation flow \"Standard Collection Flow\" assigned to this invoice.",
+    "metadata": { "flowId": "FLOW001", "flowName": "Standard Collection Flow" }
+  },
+  {
+    "id": "TL002",
+    "invoiceId": "INV001",
+    "eventType": "lookup_performed",
+    "timestamp": "2026-05-19T09:01:00Z",
+    "message": "Fresh lookup passed — action cleared to send.",
+    "metadata": { "outcome": "proceed", "invoiceStatus": "overdue", "contactStatus": "active" }
+  },
+  {
+    "id": "TL003",
+    "invoiceId": "INV001",
+    "eventType": "email_sent",
+    "timestamp": "2026-05-19T09:02:00Z",
+    "message": "Friendly reminder email sent to michael@thorntonbuild.com.au.",
+    "metadata": { "subject": "Friendly reminder — Invoice INV-2026-001 is overdue", "template": "gentle_reminder" }
+  },
+  {
+    "id": "TL004",
+    "invoiceId": "INV002",
+    "eventType": "flow_assigned",
+    "timestamp": "2026-05-12T08:30:00Z",
+    "message": "Automation flow \"Standard Follow-up\" assigned to this invoice.",
+    "metadata": { "flowId": "FLOW002", "flowName": "Standard Follow-up" }
+  },
+  {
+    "id": "TL005",
+    "invoiceId": "INV002",
+    "eventType": "lookup_performed",
+    "timestamp": "2026-05-12T08:31:00Z",
+    "message": "Fresh lookup passed — action cleared to send.",
+    "metadata": { "outcome": "proceed", "invoiceStatus": "overdue", "contactStatus": "active" }
+  },
+  {
+    "id": "TL006",
+    "invoiceId": "INV002",
+    "eventType": "email_sent",
+    "timestamp": "2026-05-12T08:32:00Z",
+    "message": "Overdue notice email sent to michael@thorntonbuild.com.au.",
+    "metadata": { "subject": "Your account is overdue — Invoice INV-2026-002", "template": "overdue_notice" }
+  },
+  {
+    "id": "TL007",
+    "invoiceId": "INV005",
+    "eventType": "lookup_performed",
+    "timestamp": "2026-05-20T10:00:00Z",
+    "message": "Automation paused: customer promised payment.",
+    "metadata": { "outcome": "hold", "reason": "promise_to_pay", "messageId": "MSG003" }
+  },
+  {
+    "id": "TL008",
+    "invoiceId": "INV005",
+    "eventType": "automation_paused",
+    "timestamp": "2026-05-20T10:01:00Z",
+    "message": "Automation paused due to customer reply. AI classified this reply as a promise to pay.",
+    "metadata": { "messageId": "MSG003", "classification": "promise_to_pay" }
+  },
+  {
+    "id": "TL009",
+    "invoiceId": "INV005",
+    "eventType": "reply_received",
+    "timestamp": "2026-05-20T09:45:00Z",
+    "message": "Reply received from david@harbourkitchen.com.au. Classified as: promise to pay.",
+    "metadata": { "from": "david@harbourkitchen.com.au", "classification": "promise_to_pay", "messageId": "MSG003" }
+  },
+  {
+    "id": "TL010",
+    "invoiceId": "INV014",
+    "eventType": "lookup_performed",
+    "timestamp": "2026-05-10T14:00:00Z",
+    "message": "Action skipped: invoice is now paid.",
+    "metadata": { "outcome": "skip", "invoiceStatus": "paid" }
+  },
+  {
+    "id": "TL011",
+    "invoiceId": "INV014",
+    "eventType": "action_skipped",
+    "timestamp": "2026-05-10T14:01:00Z",
+    "message": "Action skipped: invoice is now paid. No further action required.",
+    "metadata": { "skippedActionType": "email", "reason": "Invoice marked as paid in Xero" }
+  },
+  {
+    "id": "TL012",
+    "invoiceId": "INV014",
+    "eventType": "status_changed",
+    "timestamp": "2026-05-09T16:30:00Z",
+    "message": "Invoice status changed from overdue to paid.",
+    "metadata": { "previousStatus": "overdue", "newStatus": "paid" }
+  },
+  {
+    "id": "TL013",
+    "invoiceId": "INV017",
+    "eventType": "lookup_performed",
+    "timestamp": "2026-05-15T11:00:00Z",
+    "message": "Dispute detected, follow-up paused.",
+    "metadata": { "outcome": "hold", "invoiceStatus": "disputed" }
+  },
+  {
+    "id": "TL014",
+    "invoiceId": "INV017",
+    "eventType": "automation_paused",
+    "timestamp": "2026-05-15T11:01:00Z",
+    "message": "Automation paused. Dispute detected, follow-up paused. This invoice needs human review.",
+    "metadata": { "reason": "disputed_invoice" }
+  },
+  {
+    "id": "TL015",
+    "invoiceId": "INV017",
+    "eventType": "status_changed",
+    "timestamp": "2026-04-22T09:00:00Z",
+    "message": "Invoice status changed from overdue to disputed.",
+    "metadata": { "previousStatus": "overdue", "newStatus": "disputed", "raisedBy": "James Fletcher" }
+  },
+  {
+    "id": "TL016",
+    "invoiceId": "INV021",
+    "eventType": "action_blocked",
+    "timestamp": "2026-05-12T09:00:00Z",
+    "message": "Contact excluded from all automations. Action blocked.",
+    "metadata": { "contactId": "C008", "contactStatus": "excluded" }
+  },
+  {
+    "id": "TL017",
+    "invoiceId": "INV021",
+    "eventType": "lookup_performed",
+    "timestamp": "2026-05-12T08:59:00Z",
+    "message": "Contact excluded from all automations.",
+    "metadata": { "outcome": "block", "contactStatus": "excluded" }
+  },
+  {
+    "id": "TL018",
+    "invoiceId": "INV009",
+    "eventType": "email_sent",
+    "timestamp": "2026-05-10T09:00:00Z",
+    "message": "Urgent notice email sent to amanda@walshcivil.com.au.",
+    "metadata": { "subject": "URGENT: Invoice INV-2026-009 requires immediate payment", "template": "urgent_notice" }
+  },
+  {
+    "id": "TL019",
+    "invoiceId": "INV009",
+    "eventType": "sms_sent",
+    "timestamp": "2026-05-13T09:00:00Z",
+    "message": "Urgent SMS sent to Amanda Walsh (0467 890 123).",
+    "metadata": { "phone": "0467 890 123" }
+  },
+  {
+    "id": "TL020",
+    "invoiceId": "INV011",
+    "eventType": "call_scheduled",
+    "timestamp": "2026-05-22T10:00:00Z",
+    "message": "Collection call scheduled with James Fletcher for 2026-05-26 at 10:00 AM.",
+    "metadata": { "scheduledFor": "2026-05-26T00:00:00Z", "contact": "James Fletcher" }
+  },
+  {
+    "id": "TL021",
+    "invoiceId": "INV009",
+    "eventType": "manual_note",
+    "timestamp": "2026-05-14T15:30:00Z",
+    "message": "Manual note: Client called in — says payment delayed due to internal approval process. Expected by 2026-05-30.",
+    "metadata": { "addedBy": "Accounts Team" }
+  },
+  {
+    "id": "TL022",
+    "invoiceId": "INV012",
+    "eventType": "lookup_performed",
+    "timestamp": "2026-05-23T08:00:00Z",
+    "message": "Fresh lookup passed — action cleared to send.",
+    "metadata": { "outcome": "proceed", "invoiceStatus": "overdue", "contactStatus": "active" }
+  },
+  {
+    "id": "TL023",
+    "invoiceId": "INV012",
+    "eventType": "call_scheduled",
+    "timestamp": "2026-05-23T08:05:00Z",
+    "message": "Collection call scheduled for James Fletcher.",
+    "metadata": { "scheduledFor": "2026-05-27T10:00:00Z" }
+  },
+  {
+    "id": "TL024",
+    "invoiceId": "INV003",
+    "eventType": "flow_assigned",
+    "timestamp": "2026-05-22T09:00:00Z",
+    "message": "Automation flow \"Standard Collection Flow\" assigned to this invoice.",
+    "metadata": { "flowId": "FLOW001", "flowName": "Standard Collection Flow" }
+  },
+  {
+    "id": "TL025",
+    "invoiceId": "INV003",
+    "eventType": "lookup_performed",
+    "timestamp": "2026-05-22T09:01:00Z",
+    "message": "Fresh lookup passed — action cleared to send.",
+    "metadata": { "outcome": "proceed", "invoiceStatus": "overdue", "contactStatus": "active" }
+  },
+  {
+    "id": "TL026",
+    "invoiceId": "INV003",
+    "eventType": "email_sent",
+    "timestamp": "2026-05-22T09:02:00Z",
+    "message": "Friendly reminder email sent to sarah.nguyen@nguyenretail.com.au.",
+    "metadata": { "subject": "Friendly reminder — Invoice INV-2026-003 is overdue", "template": "gentle_reminder" }
+  },
+  {
+    "id": "TL027",
+    "invoiceId": "INV004",
+    "eventType": "flow_assigned",
+    "timestamp": "2026-05-15T09:00:00Z",
+    "message": "Automation flow \"Standard Collection Flow\" assigned to this invoice.",
+    "metadata": { "flowId": "FLOW001", "flowName": "Standard Collection Flow" }
+  },
+  {
+    "id": "TL028",
+    "invoiceId": "INV004",
+    "eventType": "lookup_performed",
+    "timestamp": "2026-05-15T09:01:00Z",
+    "message": "Fresh lookup passed — action cleared to send.",
+    "metadata": { "outcome": "proceed", "invoiceStatus": "overdue", "contactStatus": "active" }
+  },
+  {
+    "id": "TL029",
+    "invoiceId": "INV004",
+    "eventType": "email_sent",
+    "timestamp": "2026-05-15T09:02:00Z",
+    "message": "Overdue notice email sent to sarah.nguyen@nguyenretail.com.au.",
+    "metadata": { "subject": "Your account is overdue — Invoice INV-2026-004", "template": "overdue_notice" }
+  },
+  {
+    "id": "TL030",
+    "invoiceId": "INV006",
+    "eventType": "flow_assigned",
+    "timestamp": "2026-04-30T09:00:00Z",
+    "message": "Automation flow \"Standard Follow-up\" assigned to this invoice.",
+    "metadata": { "flowId": "FLOW002", "flowName": "Standard Follow-up" }
+  },
+  {
+    "id": "TL031",
+    "invoiceId": "INV006",
+    "eventType": "lookup_performed",
+    "timestamp": "2026-04-30T09:01:00Z",
+    "message": "Fresh lookup passed — action cleared to send.",
+    "metadata": { "outcome": "proceed", "invoiceStatus": "overdue", "contactStatus": "active" }
+  },
+  {
+    "id": "TL032",
+    "invoiceId": "INV006",
+    "eventType": "email_sent",
+    "timestamp": "2026-04-30T09:02:00Z",
+    "message": "Overdue notice email sent to david@harbourkitchen.com.au.",
+    "metadata": { "subject": "Your account is overdue — Invoice INV-2026-006", "template": "overdue_notice" }
+  },
+  {
+    "id": "TL033",
+    "invoiceId": "INV006",
+    "eventType": "lookup_performed",
+    "timestamp": "2026-05-07T09:00:00Z",
+    "message": "Manual approval mode is enabled. SMS action queued for approval.",
+    "metadata": { "outcome": "awaiting_approval", "invoiceStatus": "overdue", "contactStatus": "active" }
+  },
+  {
+    "id": "TL034",
+    "invoiceId": "INV007",
+    "eventType": "flow_assigned",
+    "timestamp": "2026-05-21T09:00:00Z",
+    "message": "Automation flow \"Standard Collection Flow\" assigned to this invoice.",
+    "metadata": { "flowId": "FLOW001", "flowName": "Standard Collection Flow" }
+  },
+  {
+    "id": "TL035",
+    "invoiceId": "INV007",
+    "eventType": "lookup_performed",
+    "timestamp": "2026-05-21T09:01:00Z",
+    "message": "Fresh lookup passed — action cleared to send.",
+    "metadata": { "outcome": "proceed", "invoiceStatus": "overdue", "contactStatus": "active" }
+  },
+  {
+    "id": "TL036",
+    "invoiceId": "INV007",
+    "eventType": "email_sent",
+    "timestamp": "2026-05-21T09:02:00Z",
+    "message": "Friendly reminder email sent to jpark@parkassociates.com.au.",
+    "metadata": { "subject": "Friendly reminder — Invoice INV-2026-007 is overdue", "template": "gentle_reminder" }
+  },
+  {
+    "id": "TL037",
+    "invoiceId": "INV008",
+    "eventType": "flow_assigned",
+    "timestamp": "2026-05-14T09:00:00Z",
+    "message": "Automation flow \"Standard Collection Flow\" assigned to this invoice.",
+    "metadata": { "flowId": "FLOW001", "flowName": "Standard Collection Flow" }
+  },
+  {
+    "id": "TL038",
+    "invoiceId": "INV008",
+    "eventType": "lookup_performed",
+    "timestamp": "2026-05-14T09:01:00Z",
+    "message": "Fresh lookup passed — action cleared to send.",
+    "metadata": { "outcome": "proceed", "invoiceStatus": "overdue", "contactStatus": "active" }
+  },
+  {
+    "id": "TL039",
+    "invoiceId": "INV008",
+    "eventType": "email_sent",
+    "timestamp": "2026-05-14T09:02:00Z",
+    "message": "Friendly reminder email sent to tom.reeves@reevesmed.com.au.",
+    "metadata": { "subject": "Friendly reminder — Invoice INV-2026-008 is overdue", "template": "gentle_reminder" }
+  },
+  {
+    "id": "TL040",
+    "invoiceId": "INV009",
+    "eventType": "flow_assigned",
+    "timestamp": "2026-04-15T09:00:00Z",
+    "message": "Automation flow \"Escalation\" assigned to this invoice.",
+    "metadata": { "flowId": "FLOW003", "flowName": "Escalation" }
+  },
+  {
+    "id": "TL041",
+    "invoiceId": "INV009",
+    "eventType": "lookup_performed",
+    "timestamp": "2026-05-10T08:59:00Z",
+    "message": "Fresh lookup passed — action cleared to send.",
+    "metadata": { "outcome": "proceed", "invoiceStatus": "overdue", "contactStatus": "active" }
+  },
+  {
+    "id": "TL042",
+    "invoiceId": "INV009",
+    "eventType": "reply_received",
+    "timestamp": "2026-05-14T14:00:00Z",
+    "message": "Reply received from amanda@walshcivil.com.au. AI classified as: promise to pay.",
+    "metadata": { "from": "amanda@walshcivil.com.au", "classification": "promise_to_pay", "messageId": "MSG002" }
+  },
+  {
+    "id": "TL043",
+    "invoiceId": "INV010",
+    "eventType": "flow_assigned",
+    "timestamp": "2026-04-08T09:00:00Z",
+    "message": "Automation flow \"Escalation\" assigned to this invoice.",
+    "metadata": { "flowId": "FLOW003", "flowName": "Escalation" }
+  },
+  {
+    "id": "TL044",
+    "invoiceId": "INV010",
+    "eventType": "lookup_performed",
+    "timestamp": "2026-04-08T09:01:00Z",
+    "message": "Fresh lookup passed — action cleared to send.",
+    "metadata": { "outcome": "proceed", "invoiceStatus": "overdue", "contactStatus": "active" }
+  },
+  {
+    "id": "TL045",
+    "invoiceId": "INV010",
+    "eventType": "email_sent",
+    "timestamp": "2026-04-08T09:02:00Z",
+    "message": "Urgent notice email sent to amanda@walshcivil.com.au.",
+    "metadata": { "subject": "URGENT: Invoice INV-2026-010 requires immediate payment", "template": "urgent_notice" }
+  },
+  {
+    "id": "TL046",
+    "invoiceId": "INV010",
+    "eventType": "lookup_performed",
+    "timestamp": "2026-04-12T09:00:00Z",
+    "message": "Fresh lookup passed — action cleared to send.",
+    "metadata": { "outcome": "proceed", "invoiceStatus": "overdue", "contactStatus": "active" }
+  },
+  {
+    "id": "TL047",
+    "invoiceId": "INV010",
+    "eventType": "sms_sent",
+    "timestamp": "2026-04-12T09:01:00Z",
+    "message": "Urgent SMS sent to Amanda Walsh (0467 890 123).",
+    "metadata": { "phone": "0467 890 123" }
+  },
+  {
+    "id": "TL048",
+    "invoiceId": "INV010",
+    "eventType": "manual_note",
+    "timestamp": "2026-04-15T10:00:00Z",
+    "message": "Manual note: No response to email or SMS. Awaiting further escalation.",
+    "metadata": { "addedBy": "Accounts Team" }
+  },
+  {
+    "id": "TL049",
+    "invoiceId": "INV011",
+    "eventType": "flow_assigned",
+    "timestamp": "2026-03-26T09:00:00Z",
+    "message": "Automation flow \"Escalation\" assigned to this invoice.",
+    "metadata": { "flowId": "FLOW003", "flowName": "Escalation" }
+  },
+  {
+    "id": "TL050",
+    "invoiceId": "INV011",
+    "eventType": "lookup_performed",
+    "timestamp": "2026-03-26T09:01:00Z",
+    "message": "Fresh lookup passed — action cleared to send.",
+    "metadata": { "outcome": "proceed", "invoiceStatus": "overdue", "contactStatus": "active" }
+  },
+  {
+    "id": "TL051",
+    "invoiceId": "INV011",
+    "eventType": "email_sent",
+    "timestamp": "2026-03-26T09:02:00Z",
+    "message": "Urgent notice email sent to james@fletcherit.com.au.",
+    "metadata": { "subject": "URGENT: Invoice INV-2026-011 requires immediate payment", "template": "urgent_notice" }
+  },
+  {
+    "id": "TL052",
+    "invoiceId": "INV011",
+    "eventType": "lookup_performed",
+    "timestamp": "2026-03-29T09:00:00Z",
+    "message": "Fresh lookup passed — action cleared to send.",
+    "metadata": { "outcome": "proceed", "invoiceStatus": "overdue", "contactStatus": "active" }
+  },
+  {
+    "id": "TL053",
+    "invoiceId": "INV011",
+    "eventType": "sms_sent",
+    "timestamp": "2026-03-29T09:01:00Z",
+    "message": "Urgent SMS sent to James Fletcher (0478 901 234).",
+    "metadata": { "phone": "0478 901 234" }
+  },
+  {
+    "id": "TL054",
+    "invoiceId": "INV011",
+    "eventType": "reply_received",
+    "timestamp": "2026-05-18T11:00:00Z",
+    "message": "Reply received from james@fletcherit.com.au. AI classified as: payment query.",
+    "metadata": { "from": "james@fletcherit.com.au", "classification": "payment_query", "messageId": "MSG004" }
+  },
+  {
+    "id": "TL055",
+    "invoiceId": "INV012",
+    "eventType": "flow_assigned",
+    "timestamp": "2026-03-05T09:00:00Z",
+    "message": "Automation flow \"Escalation\" assigned to this invoice.",
+    "metadata": { "flowId": "FLOW003", "flowName": "Escalation" }
+  },
+  {
+    "id": "TL056",
+    "invoiceId": "INV012",
+    "eventType": "lookup_performed",
+    "timestamp": "2026-03-05T09:01:00Z",
+    "message": "Fresh lookup passed — action cleared to send.",
+    "metadata": { "outcome": "proceed", "invoiceStatus": "overdue", "contactStatus": "active" }
+  },
+  {
+    "id": "TL057",
+    "invoiceId": "INV012",
+    "eventType": "email_sent",
+    "timestamp": "2026-03-05T09:02:00Z",
+    "message": "Urgent notice email sent to james@fletcherit.com.au.",
+    "metadata": { "subject": "URGENT: Invoice INV-2026-012 requires immediate payment", "template": "urgent_notice" }
+  },
+  {
+    "id": "TL058",
+    "invoiceId": "INV012",
+    "eventType": "lookup_performed",
+    "timestamp": "2026-03-10T09:00:00Z",
+    "message": "Fresh lookup passed — action cleared to send.",
+    "metadata": { "outcome": "proceed", "invoiceStatus": "overdue", "contactStatus": "active" }
+  },
+  {
+    "id": "TL059",
+    "invoiceId": "INV012",
+    "eventType": "sms_sent",
+    "timestamp": "2026-03-10T09:01:00Z",
+    "message": "Urgent SMS sent to James Fletcher (0478 901 234).",
+    "metadata": { "phone": "0478 901 234" }
+  },
+  {
+    "id": "TL060",
+    "invoiceId": "INV012",
+    "eventType": "reply_received",
+    "timestamp": "2026-05-22T08:10:00Z",
+    "message": "Automated out-of-office reply from autoresponder@fletcherit.com.au. AI classified as: out of office (returning 2 June 2026).",
+    "metadata": { "from": "autoresponder@fletcherit.com.au", "classification": "out_of_office", "messageId": "MSG005" }
+  },
+  {
+    "id": "TL061",
+    "invoiceId": "INV013",
+    "eventType": "flow_assigned",
+    "timestamp": "2026-02-13T09:00:00Z",
+    "message": "Automation flow \"Escalation\" assigned to this invoice.",
+    "metadata": { "flowId": "FLOW003", "flowName": "Escalation" }
+  },
+  {
+    "id": "TL062",
+    "invoiceId": "INV013",
+    "eventType": "lookup_performed",
+    "timestamp": "2026-02-13T09:01:00Z",
+    "message": "Fresh lookup passed — action cleared to send.",
+    "metadata": { "outcome": "proceed", "invoiceStatus": "overdue", "contactStatus": "active" }
+  },
+  {
+    "id": "TL063",
+    "invoiceId": "INV013",
+    "eventType": "email_sent",
+    "timestamp": "2026-02-13T09:02:00Z",
+    "message": "Urgent notice email sent to david@harbourkitchen.com.au.",
+    "metadata": { "subject": "URGENT: Invoice INV-2026-013 requires immediate payment", "template": "urgent_notice" }
+  },
+  {
+    "id": "TL064",
+    "invoiceId": "INV013",
+    "eventType": "lookup_performed",
+    "timestamp": "2026-02-20T09:00:00Z",
+    "message": "Fresh lookup passed — action cleared to send.",
+    "metadata": { "outcome": "proceed", "invoiceStatus": "overdue", "contactStatus": "active" }
+  },
+  {
+    "id": "TL065",
+    "invoiceId": "INV013",
+    "eventType": "sms_sent",
+    "timestamp": "2026-02-20T09:01:00Z",
+    "message": "Urgent SMS sent to David Kim (0434 567 890).",
+    "metadata": { "phone": "0434 567 890" }
+  },
+  {
+    "id": "TL066",
+    "invoiceId": "INV013",
+    "eventType": "lookup_performed",
+    "timestamp": "2026-02-27T09:00:00Z",
+    "message": "Fresh lookup passed — action cleared to send.",
+    "metadata": { "outcome": "proceed", "invoiceStatus": "overdue", "contactStatus": "active" }
+  },
+  {
+    "id": "TL067",
+    "invoiceId": "INV013",
+    "eventType": "call_scheduled",
+    "timestamp": "2026-02-27T09:01:00Z",
+    "message": "Collection call scheduled with David Kim.",
+    "metadata": { "scheduledFor": "2026-03-03T10:00:00Z", "contact": "David Kim" }
+  },
+  {
+    "id": "TL068",
+    "invoiceId": "INV013",
+    "eventType": "reply_received",
+    "timestamp": "2026-05-01T15:00:00Z",
+    "message": "Reply received from david@harbourkitchen.com.au — payment plan request.",
+    "metadata": { "from": "david@harbourkitchen.com.au", "classification": "unclassified", "messageId": "MSG007" }
+  },
+  {
+    "id": "TL069",
+    "invoiceId": "INV013",
+    "eventType": "manual_note",
+    "timestamp": "2026-05-01T15:30:00Z",
+    "message": "Manual note: Client has requested a payment plan of $2,000/month. Reviewing options.",
+    "metadata": { "addedBy": "Accounts Team" }
+  },
+  {
+    "id": "TL070",
+    "invoiceId": "INV015",
+    "eventType": "status_changed",
+    "timestamp": "2026-05-07T14:00:00Z",
+    "message": "Invoice status changed from overdue to paid.",
+    "metadata": { "previousStatus": "overdue", "newStatus": "paid" }
+  },
+  {
+    "id": "TL071",
+    "invoiceId": "INV015",
+    "eventType": "action_skipped",
+    "timestamp": "2026-05-09T09:00:00Z",
+    "message": "Action skipped: invoice is now paid. No further action required.",
+    "metadata": { "skippedActionType": "email", "reason": "Invoice marked as paid in Xero" }
+  },
+  {
+    "id": "TL072",
+    "invoiceId": "INV016",
+    "eventType": "status_changed",
+    "timestamp": "2026-05-05T10:00:00Z",
+    "message": "Invoice status changed from overdue to paid.",
+    "metadata": { "previousStatus": "overdue", "newStatus": "paid" }
+  },
+  {
+    "id": "TL073",
+    "invoiceId": "INV018",
+    "eventType": "status_changed",
+    "timestamp": "2026-02-20T09:00:00Z",
+    "message": "Invoice voided. Contact Hatfield Transport Pty Ltd entered voluntary administration. Write-off pending.",
+    "metadata": { "previousStatus": "overdue", "newStatus": "voided", "reason": "Company administration" }
+  },
+  {
+    "id": "TL074",
+    "invoiceId": "INV018",
+    "eventType": "action_blocked",
+    "timestamp": "2026-05-05T09:00:00Z",
+    "message": "Contact excluded from all automations. Action blocked.",
+    "metadata": { "contactId": "C009", "contactStatus": "excluded" }
+  },
+  {
+    "id": "TL075",
+    "invoiceId": "INV019",
+    "eventType": "status_changed",
+    "timestamp": "2026-04-26T10:00:00Z",
+    "message": "Invoice status set to partial. $1,500 received via payment plan.",
+    "metadata": { "previousStatus": "overdue", "newStatus": "partial", "amountReceived": 1500 }
+  },
+  {
+    "id": "TL076",
+    "invoiceId": "INV019",
+    "eventType": "manual_note",
+    "timestamp": "2026-04-26T10:30:00Z",
+    "message": "Payment arrangement confirmed: $1,500/month via direct debit. $4,500 outstanding. Contact on hold — no automated reminders.",
+    "metadata": { "addedBy": "Accounts Team", "arrangement": "payment_plan" }
+  },
+  {
+    "id": "TL077",
+    "invoiceId": "INV020",
+    "eventType": "flow_assigned",
+    "timestamp": "2026-05-20T09:00:00Z",
+    "message": "Automation flow \"Standard Collection Flow\" assigned to this invoice.",
+    "metadata": { "flowId": "FLOW001", "flowName": "Standard Collection Flow" }
+  },
+  {
+    "id": "TL078",
+    "invoiceId": "INV020",
+    "eventType": "lookup_performed",
+    "timestamp": "2026-05-20T09:01:00Z",
+    "message": "Fresh lookup passed — action cleared to send.",
+    "metadata": { "outcome": "proceed", "invoiceStatus": "overdue", "contactStatus": "active" }
+  },
+  {
+    "id": "TL079",
+    "invoiceId": "INV020",
+    "eventType": "email_sent",
+    "timestamp": "2026-05-20T09:02:00Z",
+    "message": "Friendly reminder email sent to jpark@parkassociates.com.au.",
+    "metadata": { "subject": "Friendly reminder — Invoice INV-2026-020 is overdue", "template": "gentle_reminder" }
+  },
+  {
+    "id": "TL080",
+    "invoiceId": "INV022",
+    "eventType": "flow_assigned",
+    "timestamp": "2026-05-01T09:00:00Z",
+    "message": "Automation flow \"Standard Follow-up\" assigned to this invoice.",
+    "metadata": { "flowId": "FLOW002", "flowName": "Standard Follow-up" }
+  },
+  {
+    "id": "TL081",
+    "invoiceId": "INV022",
+    "eventType": "lookup_performed",
+    "timestamp": "2026-05-01T09:01:00Z",
+    "message": "Fresh lookup passed — action cleared to send.",
+    "metadata": { "outcome": "proceed", "invoiceStatus": "overdue", "contactStatus": "active" }
+  },
+  {
+    "id": "TL082",
+    "invoiceId": "INV022",
+    "eventType": "email_sent",
+    "timestamp": "2026-05-01T09:02:00Z",
+    "message": "Overdue notice email sent to tom.reeves@reevesmed.com.au.",
+    "metadata": { "subject": "Your account is overdue — Invoice INV-2026-022", "template": "overdue_notice" }
+  },
+  {
+    "id": "TL083",
+    "invoiceId": "INV022",
+    "eventType": "lookup_performed",
+    "timestamp": "2026-05-08T09:00:00Z",
+    "message": "Manual approval mode is enabled. SMS action queued for approval.",
+    "metadata": { "outcome": "awaiting_approval", "invoiceStatus": "overdue", "contactStatus": "active" }
+  },
+  {
+    "id": "TL084",
+    "invoiceId": "INV023",
+    "eventType": "flow_assigned",
+    "timestamp": "2026-03-16T09:00:00Z",
+    "message": "Automation flow \"Escalation\" assigned to this invoice.",
+    "metadata": { "flowId": "FLOW003", "flowName": "Escalation" }
+  },
+  {
+    "id": "TL085",
+    "invoiceId": "INV023",
+    "eventType": "lookup_performed",
+    "timestamp": "2026-03-16T09:01:00Z",
+    "message": "Fresh lookup passed — action cleared to send.",
+    "metadata": { "outcome": "proceed", "invoiceStatus": "overdue", "contactStatus": "active" }
+  },
+  {
+    "id": "TL086",
+    "invoiceId": "INV023",
+    "eventType": "email_sent",
+    "timestamp": "2026-03-16T09:02:00Z",
+    "message": "Urgent notice email sent to amanda@walshcivil.com.au.",
+    "metadata": { "subject": "URGENT: Invoice INV-2026-023 requires immediate payment", "template": "urgent_notice" }
+  },
+  {
+    "id": "TL087",
+    "invoiceId": "INV023",
+    "eventType": "reply_received",
+    "timestamp": "2026-04-02T10:30:00Z",
+    "message": "Reply received from accounts@walshcivil.com.au. AI classified as: dispute — PO amount mismatch.",
+    "metadata": { "from": "accounts@walshcivil.com.au", "classification": "dispute", "messageId": "MSG006" }
+  },
+  {
+    "id": "TL088",
+    "invoiceId": "INV023",
+    "eventType": "automation_paused",
+    "timestamp": "2026-04-02T10:31:00Z",
+    "message": "Automation paused due to customer dispute. Invoice flagged for review.",
+    "metadata": { "reason": "dispute", "messageId": "MSG006" }
+  },
+  {
+    "id": "TL089",
+    "invoiceId": "INV024",
+    "eventType": "flow_assigned",
+    "timestamp": "2026-05-17T09:00:00Z",
+    "message": "Automation flow \"Standard Collection Flow\" assigned to this invoice.",
+    "metadata": { "flowId": "FLOW001", "flowName": "Standard Collection Flow" }
+  },
+  {
+    "id": "TL090",
+    "invoiceId": "INV024",
+    "eventType": "lookup_performed",
+    "timestamp": "2026-05-17T09:01:00Z",
+    "message": "Fresh lookup passed — action cleared to send.",
+    "metadata": { "outcome": "proceed", "invoiceStatus": "overdue", "contactStatus": "active" }
+  },
+  {
+    "id": "TL091",
+    "invoiceId": "INV024",
+    "eventType": "email_sent",
+    "timestamp": "2026-05-17T09:02:00Z",
+    "message": "Friendly reminder email sent to sarah.nguyen@nguyenretail.com.au.",
+    "metadata": { "subject": "Friendly reminder — Invoice INV-2026-024 is overdue", "template": "gentle_reminder" }
+  },
+  {
+    "id": "TL092",
+    "invoiceId": "INV024",
+    "eventType": "reply_received",
+    "timestamp": "2026-05-23T09:00:00Z",
+    "message": "Reply received from sarah.nguyen@nguyenretail.com.au. AI classified as: will pay today.",
+    "metadata": { "from": "sarah.nguyen@nguyenretail.com.au", "classification": "unclassified", "messageId": "MSG008" }
+  },
+  {
+    "id": "TL093",
+    "invoiceId": "INV025",
+    "eventType": "flow_assigned",
+    "timestamp": "2026-05-23T09:00:00Z",
+    "message": "Automation flow \"Standard Collection Flow\" assigned to this invoice.",
+    "metadata": { "flowId": "FLOW001", "flowName": "Standard Collection Flow" }
+  },
+  {
+    "id": "TL094",
+    "invoiceId": "INV025",
+    "eventType": "manual_note",
+    "timestamp": "2026-05-23T09:05:00Z",
+    "message": "New invoice. Added to standard collection flow. First reminder scheduled for 2026-05-26.",
+    "metadata": { "addedBy": "Accounts Team" }
+  },
+  {
+    "id": "TL095",
+    "invoiceId": "INV005",
+    "eventType": "flow_assigned",
+    "timestamp": "2026-05-07T08:00:00Z",
+    "message": "Automation flow \"Standard Follow-up\" assigned to this invoice.",
+    "metadata": { "flowId": "FLOW002", "flowName": "Standard Follow-up" }
+  },
+  {
+    "id": "TL096",
+    "invoiceId": "INV005",
+    "eventType": "lookup_performed",
+    "timestamp": "2026-05-07T08:01:00Z",
+    "message": "Fresh lookup passed — action cleared to send.",
+    "metadata": { "outcome": "proceed", "invoiceStatus": "overdue", "contactStatus": "active" }
+  },
+  {
+    "id": "TL097",
+    "invoiceId": "INV005",
+    "eventType": "email_sent",
+    "timestamp": "2026-05-07T08:02:00Z",
+    "message": "Overdue notice email sent to david@harbourkitchen.com.au.",
+    "metadata": { "subject": "Your account is overdue — Invoice INV-2026-005", "template": "overdue_notice" }
+  },
+  {
+    "id": "TL098",
+    "invoiceId": "INV017",
+    "eventType": "flow_assigned",
+    "timestamp": "2026-04-21T09:00:00Z",
+    "message": "Automation flow \"Escalation\" assigned to this invoice.",
+    "metadata": { "flowId": "FLOW003", "flowName": "Escalation" }
+  },
+  {
+    "id": "TL099",
+    "invoiceId": "INV017",
+    "eventType": "email_sent",
+    "timestamp": "2026-04-21T09:01:00Z",
+    "message": "Urgent notice email sent to james@fletcherit.com.au.",
+    "metadata": { "subject": "URGENT: Invoice INV-2026-017 requires immediate payment", "template": "urgent_notice" }
+  },
+  {
+    "id": "TL100",
+    "invoiceId": "INV017",
+    "eventType": "reply_received",
+    "timestamp": "2026-04-22T08:30:00Z",
+    "message": "Reply received from james@fletcherit.com.au. AI classified as: dispute.",
+    "metadata": { "from": "james@fletcherit.com.au", "classification": "dispute", "messageId": "MSG001" }
+  }
+]

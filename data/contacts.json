@@ -1,0 +1,112 @@
+[
+  {
+    "id": "C001",
+    "name": "Michael Thornton",
+    "company": "Thornton Building Group",
+    "email": "michael@thorntonbuild.com.au",
+    "phone": "0412 345 678",
+    "status": "active",
+    "notes": "Long-term client, typically pays within 45 days.",
+    "tags": ["construction", "high-value"],
+    "createdAt": "2024-03-15T00:00:00Z"
+  },
+  {
+    "id": "C002",
+    "name": "Sarah Nguyen",
+    "company": "Nguyen Retail Holdings",
+    "email": "sarah.nguyen@nguyenretail.com.au",
+    "phone": "0423 456 789",
+    "status": "active",
+    "notes": "Reliable payer. Prefers email communication.",
+    "tags": ["retail"],
+    "createdAt": "2024-05-01T00:00:00Z"
+  },
+  {
+    "id": "C003",
+    "name": "David Kim",
+    "company": "Harbour Kitchen Co.",
+    "email": "david@harbourkitchen.com.au",
+    "phone": "0434 567 890",
+    "status": "active",
+    "notes": "Hospitality client. Cash flow issues in slow season.",
+    "tags": ["hospitality", "slow-payer"],
+    "createdAt": "2024-06-10T00:00:00Z"
+  },
+  {
+    "id": "C004",
+    "name": "Jessica Park",
+    "company": "Park & Associates Legal",
+    "email": "jpark@parkassociates.com.au",
+    "phone": "0445 678 901",
+    "status": "active",
+    "notes": "Legal firm. Very prompt with payments usually.",
+    "tags": ["legal"],
+    "createdAt": "2024-07-22T00:00:00Z"
+  },
+  {
+    "id": "C005",
+    "name": "Tom Reeves",
+    "company": "Reeves Medical Supplies",
+    "email": "tom.reeves@reevesmed.com.au",
+    "phone": "0456 789 012",
+    "status": "active",
+    "notes": "Healthcare distributor. Invoices often tied to purchase orders.",
+    "tags": ["healthcare"],
+    "createdAt": "2024-08-14T00:00:00Z"
+  },
+  {
+    "id": "C006",
+    "name": "Amanda Walsh",
+    "company": "Walsh Civil Engineering",
+    "email": "amanda@walshcivil.com.au",
+    "phone": "0467 890 123",
+    "status": "active",
+    "notes": "Engineering firm. Pays on 60-day terms.",
+    "tags": ["engineering", "60-day-terms"],
+    "createdAt": "2024-09-03T00:00:00Z"
+  },
+  {
+    "id": "C007",
+    "name": "James Fletcher",
+    "company": "Fletcher IT Solutions",
+    "email": "james@fletcherit.com.au",
+    "phone": "0478 901 234",
+    "status": "active",
+    "notes": "Tech company. Always queries invoices before paying.",
+    "tags": ["technology"],
+    "createdAt": "2024-10-18T00:00:00Z"
+  },
+  {
+    "id": "C008",
+    "name": "Rachel Summers",
+    "company": "Summers Property Group",
+    "email": "rachel@summersproperty.com.au",
+    "phone": "0489 012 345",
+    "status": "excluded",
+    "notes": "Do not contact — legal dispute in progress. Referred to our solicitors 2025-11-01.",
+    "tags": ["property", "legal-dispute"],
+    "createdAt": "2024-04-12T00:00:00Z"
+  },
+  {
+    "id": "C009",
+    "name": "Bruce Hatfield",
+    "company": "Hatfield Transport Pty Ltd",
+    "email": "bruce@hatfieldtransport.com.au",
+    "phone": "0490 123 456",
+    "status": "excluded",
+    "notes": "Excluded by request — company has entered voluntary administration.",
+    "tags": ["transport", "administration"],
+    "createdAt": "2024-02-28T00:00:00Z"
+  },
+  {
+    "id": "C010",
+    "name": "Linda Chen",
+    "company": "Chen Catering Services",
+    "email": "linda@chencatering.com.au",
+    "phone": "0401 234 567",
+    "status": "on_hold",
+    "notes": "Payment arrangement in place — $1,500/month via direct debit. Do not send automated reminders.",
+    "tags": ["catering", "payment-plan"],
+    "createdAt": "2024-11-05T00:00:00Z"
+  }
+]

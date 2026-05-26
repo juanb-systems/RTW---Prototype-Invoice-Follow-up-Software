@@ -1,0 +1,8 @@
+{
+  "manualApprovalMode": false,
+  "lookupOnEveryAction": true,
+  "blockedKeywords": ["legal", "solicitor", "court", "cease", "administration"],
+  "defaultSenderName": "Accounts Team",
+  "defaultSenderEmail": "accounts@collectpilot.demo",
+  "companyName": "CollectPilot Demo"
+}

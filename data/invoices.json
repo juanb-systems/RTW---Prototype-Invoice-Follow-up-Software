@@ -1,0 +1,403 @@
+[
+  {
+    "id": "INV001",
+    "contactId": "C001",
+    "invoiceNumber": "INV-2026-001",
+    "amount": 12500.00,
+    "dueDate": "2026-05-18T00:00:00Z",
+    "issueDate": "2026-04-18T00:00:00Z",
+    "status": "overdue",
+    "daysPastDue": 7,
+    "lineItems": [
+      { "description": "Site preparation works", "quantity": 1, "unitPrice": 8500.00, "total": 8500.00 },
+      { "description": "Materials supply", "quantity": 1, "unitPrice": 4000.00, "total": 4000.00 }
+    ],
+    "notes": "Stage 2 of Riverside development project.",
+    "excludedFromAutomation": false,
+    "assignedFlowId": "FLOW001"
+  },
+  {
+    "id": "INV002",
+    "contactId": "C001",
+    "invoiceNumber": "INV-2026-002",
+    "amount": 7800.00,
+    "dueDate": "2026-05-11T00:00:00Z",
+    "issueDate": "2026-04-11T00:00:00Z",
+    "status": "overdue",
+    "daysPastDue": 14,
+    "lineItems": [
+      { "description": "Concrete footings", "quantity": 1, "unitPrice": 7800.00, "total": 7800.00 }
+    ],
+    "notes": "",
+    "excludedFromAutomation": false,
+    "assignedFlowId": "FLOW002"
+  },
+  {
+    "id": "INV003",
+    "contactId": "C002",
+    "invoiceNumber": "INV-2026-003",
+    "amount": 3200.00,
+    "dueDate": "2026-05-21T00:00:00Z",
+    "issueDate": "2026-04-21T00:00:00Z",
+    "status": "overdue",
+    "daysPastDue": 4,
+    "lineItems": [
+      { "description": "Retail fit-out consulting", "quantity": 8, "unitPrice": 400.00, "total": 3200.00 }
+    ],
+    "notes": "",
+    "excludedFromAutomation": false,
+    "assignedFlowId": "FLOW001"
+  },
+  {
+    "id": "INV004",
+    "contactId": "C002",
+    "invoiceNumber": "INV-2026-004",
+    "amount": 5600.00,
+    "dueDate": "2026-05-14T00:00:00Z",
+    "issueDate": "2026-04-14T00:00:00Z",
+    "status": "overdue",
+    "daysPastDue": 11,
+    "lineItems": [
+      { "description": "Store layout redesign", "quantity": 1, "unitPrice": 5600.00, "total": 5600.00 }
+    ],
+    "notes": "",
+    "excludedFromAutomation": false,
+    "assignedFlowId": null
+  },
+  {
+    "id": "INV005",
+    "contactId": "C003",
+    "invoiceNumber": "INV-2026-005",
+    "amount": 2100.00,
+    "dueDate": "2026-05-06T00:00:00Z",
+    "issueDate": "2026-04-06T00:00:00Z",
+    "status": "overdue",
+    "daysPastDue": 19,
+    "lineItems": [
+      { "description": "POS system installation", "quantity": 1, "unitPrice": 2100.00, "total": 2100.00 }
+    ],
+    "notes": "Client mentioned cash flow issues.",
+    "excludedFromAutomation": false,
+    "assignedFlowId": "FLOW002"
+  },
+  {
+    "id": "INV006",
+    "contactId": "C003",
+    "invoiceNumber": "INV-2026-006",
+    "amount": 8900.00,
+    "dueDate": "2026-04-28T00:00:00Z",
+    "issueDate": "2026-03-28T00:00:00Z",
+    "status": "overdue",
+    "daysPastDue": 27,
+    "lineItems": [
+      { "description": "Kitchen equipment supply", "quantity": 1, "unitPrice": 8900.00, "total": 8900.00 }
+    ],
+    "notes": "",
+    "excludedFromAutomation": false,
+    "assignedFlowId": "FLOW002"
+  },
+  {
+    "id": "INV007",
+    "contactId": "C004",
+    "invoiceNumber": "INV-2026-007",
+    "amount": 15000.00,
+    "dueDate": "2026-05-20T00:00:00Z",
+    "issueDate": "2026-04-20T00:00:00Z",
+    "status": "overdue",
+    "daysPastDue": 5,
+    "lineItems": [
+      { "description": "Legal documentation review", "quantity": 25, "unitPrice": 600.00, "total": 15000.00 }
+    ],
+    "notes": "",
+    "excludedFromAutomation": false,
+    "assignedFlowId": "FLOW001"
+  },
+  {
+    "id": "INV008",
+    "contactId": "C005",
+    "invoiceNumber": "INV-2026-008",
+    "amount": 4400.00,
+    "dueDate": "2026-05-13T00:00:00Z",
+    "issueDate": "2026-04-13T00:00:00Z",
+    "status": "overdue",
+    "daysPastDue": 12,
+    "lineItems": [
+      { "description": "Medical supply delivery — April", "quantity": 1, "unitPrice": 4400.00, "total": 4400.00 }
+    ],
+    "notes": "PO# RMS-2026-0044 attached.",
+    "excludedFromAutomation": false,
+    "assignedFlowId": "FLOW001"
+  },
+  {
+    "id": "INV009",
+    "contactId": "C006",
+    "invoiceNumber": "INV-2026-009",
+    "amount": 22000.00,
+    "dueDate": "2026-04-14T00:00:00Z",
+    "issueDate": "2026-03-14T00:00:00Z",
+    "status": "overdue",
+    "daysPastDue": 41,
+    "lineItems": [
+      { "description": "Civil engineering design — Stage 1", "quantity": 1, "unitPrice": 22000.00, "total": 22000.00 }
+    ],
+    "notes": "60-day terms client but approaching serious territory.",
+    "excludedFromAutomation": false,
+    "assignedFlowId": "FLOW003"
+  },
+  {
+    "id": "INV010",
+    "contactId": "C006",
+    "invoiceNumber": "INV-2026-010",
+    "amount": 18500.00,
+    "dueDate": "2026-04-07T00:00:00Z",
+    "issueDate": "2026-03-07T00:00:00Z",
+    "status": "overdue",
+    "daysPastDue": 48,
+    "lineItems": [
+      { "description": "Site survey and mapping", "quantity": 1, "unitPrice": 18500.00, "total": 18500.00 }
+    ],
+    "notes": "",
+    "excludedFromAutomation": false,
+    "assignedFlowId": "FLOW003"
+  },
+  {
+    "id": "INV011",
+    "contactId": "C007",
+    "invoiceNumber": "INV-2026-011",
+    "amount": 9750.00,
+    "dueDate": "2026-03-25T00:00:00Z",
+    "issueDate": "2026-02-25T00:00:00Z",
+    "status": "overdue",
+    "daysPastDue": 61,
+    "lineItems": [
+      { "description": "IT infrastructure audit", "quantity": 1, "unitPrice": 9750.00, "total": 9750.00 }
+    ],
+    "notes": "Client keeps querying line items.",
+    "excludedFromAutomation": false,
+    "assignedFlowId": "FLOW003"
+  },
+  {
+    "id": "INV012",
+    "contactId": "C007",
+    "invoiceNumber": "INV-2026-012",
+    "amount": 14200.00,
+    "dueDate": "2026-03-04T00:00:00Z",
+    "issueDate": "2026-02-04T00:00:00Z",
+    "status": "overdue",
+    "daysPastDue": 82,
+    "lineItems": [
+      { "description": "Cloud migration project", "quantity": 1, "unitPrice": 14200.00, "total": 14200.00 }
+    ],
+    "notes": "Escalated to senior accounts team.",
+    "excludedFromAutomation": false,
+    "assignedFlowId": "FLOW003"
+  },
+  {
+    "id": "INV013",
+    "contactId": "C003",
+    "invoiceNumber": "INV-2026-013",
+    "amount": 31000.00,
+    "dueDate": "2026-02-12T00:00:00Z",
+    "issueDate": "2026-01-12T00:00:00Z",
+    "status": "overdue",
+    "daysPastDue": 102,
+    "lineItems": [
+      { "description": "Full kitchen renovation", "quantity": 1, "unitPrice": 31000.00, "total": 31000.00 }
+    ],
+    "notes": "Very overdue. Consider sending to collections.",
+    "excludedFromAutomation": false,
+    "assignedFlowId": "FLOW003"
+  },
+  {
+    "id": "INV014",
+    "contactId": "C001",
+    "invoiceNumber": "INV-2025-089",
+    "amount": 6200.00,
+    "dueDate": "2026-05-10T00:00:00Z",
+    "issueDate": "2026-04-10T00:00:00Z",
+    "status": "paid",
+    "daysPastDue": 0,
+    "lineItems": [
+      { "description": "Carpentry works", "quantity": 1, "unitPrice": 6200.00, "total": 6200.00 }
+    ],
+    "notes": "Paid in full 2026-05-09.",
+    "excludedFromAutomation": false,
+    "assignedFlowId": null
+  },
+  {
+    "id": "INV015",
+    "contactId": "C002",
+    "invoiceNumber": "INV-2025-091",
+    "amount": 4100.00,
+    "dueDate": "2026-05-08T00:00:00Z",
+    "issueDate": "2026-04-08T00:00:00Z",
+    "status": "paid",
+    "daysPastDue": 0,
+    "lineItems": [
+      { "description": "Window display design", "quantity": 1, "unitPrice": 4100.00, "total": 4100.00 }
+    ],
+    "notes": "Paid 2026-05-07.",
+    "excludedFromAutomation": false,
+    "assignedFlowId": null
+  },
+  {
+    "id": "INV016",
+    "contactId": "C005",
+    "invoiceNumber": "INV-2025-094",
+    "amount": 2800.00,
+    "dueDate": "2026-05-05T00:00:00Z",
+    "issueDate": "2026-04-05T00:00:00Z",
+    "status": "paid",
+    "daysPastDue": 0,
+    "lineItems": [
+      { "description": "Medical supply — March", "quantity": 1, "unitPrice": 2800.00, "total": 2800.00 }
+    ],
+    "notes": "Paid on time.",
+    "excludedFromAutomation": false,
+    "assignedFlowId": null
+  },
+  {
+    "id": "INV017",
+    "contactId": "C007",
+    "invoiceNumber": "INV-2026-017",
+    "amount": 11600.00,
+    "dueDate": "2026-04-20T00:00:00Z",
+    "issueDate": "2026-03-20T00:00:00Z",
+    "status": "disputed",
+    "daysPastDue": 35,
+    "lineItems": [
+      { "description": "Software licensing — Q1", "quantity": 1, "unitPrice": 11600.00, "total": 11600.00 }
+    ],
+    "notes": "Client disputes the licensing fee calculation. Under review.",
+    "excludedFromAutomation": false,
+    "assignedFlowId": null
+  },
+  {
+    "id": "INV018",
+    "contactId": "C009",
+    "invoiceNumber": "INV-2026-018",
+    "amount": 9300.00,
+    "dueDate": "2026-04-01T00:00:00Z",
+    "issueDate": "2026-03-01T00:00:00Z",
+    "status": "voided",
+    "daysPastDue": 0,
+    "lineItems": [
+      { "description": "Freight consulting services", "quantity": 1, "unitPrice": 9300.00, "total": 9300.00 }
+    ],
+    "notes": "Voided — contact entered administration. Write-off pending.",
+    "excludedFromAutomation": true,
+    "assignedFlowId": null
+  },
+  {
+    "id": "INV019",
+    "contactId": "C010",
+    "invoiceNumber": "INV-2026-019",
+    "amount": 6000.00,
+    "dueDate": "2026-04-25T00:00:00Z",
+    "issueDate": "2026-03-25T00:00:00Z",
+    "status": "partial",
+    "daysPastDue": 30,
+    "lineItems": [
+      { "description": "Catering services — April events", "quantity": 1, "unitPrice": 6000.00, "total": 6000.00 }
+    ],
+    "notes": "$1,500 received via payment plan. $4,500 outstanding.",
+    "excludedFromAutomation": true,
+    "assignedFlowId": null
+  },
+  {
+    "id": "INV020",
+    "contactId": "C004",
+    "invoiceNumber": "INV-2026-020",
+    "amount": 8800.00,
+    "dueDate": "2026-05-19T00:00:00Z",
+    "issueDate": "2026-04-19T00:00:00Z",
+    "status": "overdue",
+    "daysPastDue": 6,
+    "lineItems": [
+      { "description": "Contract drafting — commercial lease", "quantity": 1, "unitPrice": 8800.00, "total": 8800.00 }
+    ],
+    "notes": "",
+    "excludedFromAutomation": false,
+    "assignedFlowId": "FLOW001"
+  },
+  {
+    "id": "INV021",
+    "contactId": "C008",
+    "invoiceNumber": "INV-2026-021",
+    "amount": 17400.00,
+    "dueDate": "2026-04-10T00:00:00Z",
+    "issueDate": "2026-03-10T00:00:00Z",
+    "status": "overdue",
+    "daysPastDue": 45,
+    "lineItems": [
+      { "description": "Property management consulting", "quantity": 1, "unitPrice": 17400.00, "total": 17400.00 }
+    ],
+    "notes": "Contact excluded — legal dispute. Do not action.",
+    "excludedFromAutomation": true,
+    "assignedFlowId": null
+  },
+  {
+    "id": "INV022",
+    "contactId": "C005",
+    "invoiceNumber": "INV-2026-022",
+    "amount": 5550.00,
+    "dueDate": "2026-04-30T00:00:00Z",
+    "issueDate": "2026-03-30T00:00:00Z",
+    "status": "overdue",
+    "daysPastDue": 25,
+    "lineItems": [
+      { "description": "Surgical supply delivery — March", "quantity": 1, "unitPrice": 5550.00, "total": 5550.00 }
+    ],
+    "notes": "",
+    "excludedFromAutomation": false,
+    "assignedFlowId": "FLOW002"
+  },
+  {
+    "id": "INV023",
+    "contactId": "C006",
+    "invoiceNumber": "INV-2026-023",
+    "amount": 29500.00,
+    "dueDate": "2026-03-15T00:00:00Z",
+    "issueDate": "2026-02-15T00:00:00Z",
+    "status": "overdue",
+    "daysPastDue": 71,
+    "lineItems": [
+      { "description": "Bridge design — preliminary drawings", "quantity": 1, "unitPrice": 29500.00, "total": 29500.00 }
+    ],
+    "notes": "",
+    "excludedFromAutomation": false,
+    "assignedFlowId": "FLOW003"
+  },
+  {
+    "id": "INV024",
+    "contactId": "C002",
+    "invoiceNumber": "INV-2026-024",
+    "amount": 1900.00,
+    "dueDate": "2026-05-16T00:00:00Z",
+    "issueDate": "2026-04-16T00:00:00Z",
+    "status": "overdue",
+    "daysPastDue": 9,
+    "lineItems": [
+      { "description": "Visual merchandising workshop", "quantity": 2, "unitPrice": 950.00, "total": 1900.00 }
+    ],
+    "notes": "",
+    "excludedFromAutomation": false,
+    "assignedFlowId": "FLOW001"
+  },
+  {
+    "id": "INV025",
+    "contactId": "C007",
+    "invoiceNumber": "INV-2026-025",
+    "amount": 3300.00,
+    "dueDate": "2026-05-22T00:00:00Z",
+    "issueDate": "2026-04-22T00:00:00Z",
+    "status": "overdue",
+    "daysPastDue": 3,
+    "lineItems": [
+      { "description": "IT helpdesk support — April", "quantity": 22, "unitPrice": 150.00, "total": 3300.00 }
+    ],
+    "notes": "",
+    "excludedFromAutomation": false,
+    "assignedFlowId": null
+  }
+]

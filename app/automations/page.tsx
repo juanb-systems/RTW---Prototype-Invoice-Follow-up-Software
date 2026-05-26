@@ -1,0 +1,206 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { TopBar } from "@/components/layout/TopBar";
+import { Mail, MessageSquare, Phone, Clock, GitBranch, RefreshCw, Zap, Search, X } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useSearchStore } from "@/lib/search-store";
+import type { AutomationFlow, FlowStep } from "@/lib/types";
+
+const statusConfig = {
+  active: { label: "Active", className: "bg-green-100 text-green-700 border-green-200" },
+  paused: { label: "Paused", className: "bg-amber-100 text-amber-700 border-amber-200" },
+  draft: { label: "Draft", className: "bg-gray-100 text-gray-600 border-gray-200" },
+};
+
+function StepTypeIcon({ type }: { type: string }) {
+  const icons: Record<string, React.ElementType> = {
+    email: Mail, sms: MessageSquare, call: Phone, wait: Clock,
+    lookup_check: RefreshCw, condition: GitBranch, end: Zap,
+  };
+  const Icon = icons[type] ?? Zap;
+  return <Icon className="h-3 w-3" />;
+}
+
+export default function AutomationsPage() {
+  const [flows, setFlows] = useState<AutomationFlow[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const { query, setQuery, clear } = useSearchStore();
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fetch("/api/automations", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((data) => {
+        setFlows(data);
+        setLoading(false);
+      });
+  }, []);
+
+  const filtered = flows.filter((flow) => {
+    if (!query.trim()) return true;
+    const q = query.toLowerCase().trim();
+
+    const stepTypes = flow.steps.map((s: FlowStep) => s.type).join(" ");
+    const triggerValue = String(flow.trigger?.value ?? "");
+    const statusLabel = statusConfig[flow.status as keyof typeof statusConfig]?.label ?? flow.status;
+
+    return (
+      flow.name.toLowerCase().includes(q) ||
+      (flow.description ?? "").toLowerCase().includes(q) ||
+      flow.status.toLowerCase().includes(q) ||
+      statusLabel.toLowerCase().includes(q) ||
+      triggerValue.includes(q) ||
+      stepTypes.toLowerCase().includes(q)
+    );
+  });
+
+  return (
+    <div>
+      <TopBar
+        title="Automations"
+        subtitle={`${flows.length} flows configured`}
+      />
+      <div className="p-6 space-y-4">
+        <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
+          <p className="text-sm text-blue-700">
+            <strong>Fresh lookup required before sending.</strong> All automation flows include a lookup
+            checkpoint before any email, SMS, or call is sent. Actions are skipped or blocked if the
+            invoice is paid, disputed, or the contact is excluded.
+          </p>
+        </div>
+
+        {/* Search + count bar */}
+        <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-4">
+            <h2 className="text-sm font-semibold text-gray-900 shrink-0">All Flows</h2>
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
+              <input
+                ref={searchRef}
+                type="text"
+                placeholder="Search flow name, status, trigger, step type…"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="w-full rounded-md border border-gray-200 pl-8 pr-8 py-1.5 text-xs focus:border-blue-400 focus:outline-none"
+              />
+              {query && (
+                <button
+                  onClick={() => { clear(); searchRef.current?.focus(); }}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  title="Clear search"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+            <span className="text-xs text-gray-400 shrink-0 ml-auto">
+              {loading ? "Loading…" : `Showing ${filtered.length} of ${flows.length} flows`}
+            </span>
+          </div>
+
+          {loading ? (
+            <div className="py-16 text-center text-xs text-gray-400">Loading automations…</div>
+          ) : filtered.length === 0 ? (
+            <div className="py-12 text-center">
+              <p className="text-sm text-gray-400">
+                {query ? `No flows match "${query}".` : "No automation flows found."}
+              </p>
+              {query && (
+                <button onClick={clear} className="mt-2 text-xs text-blue-500 hover:underline">
+                  Clear search
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="p-4 space-y-4">
+              {filtered.map((flow) => {
+                const cfg = statusConfig[flow.status as keyof typeof statusConfig] ?? statusConfig.draft;
+                const actionSteps = flow.steps.filter((s: FlowStep) => ["email", "sms", "call"].includes(s.type));
+                const lookupSteps = flow.steps.filter((s: FlowStep) => s.type === "lookup_check");
+
+                return (
+                  <div key={flow.id} className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2.5 mb-1">
+                          <Zap className="h-4 w-4 text-blue-500" />
+                          <h3 className="text-sm font-semibold text-gray-900">{flow.name}</h3>
+                          <span className={cn("inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium", cfg.className)}>
+                            {cfg.label}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-500 ml-6">{flow.description}</p>
+                      </div>
+                      <Link
+                        href={`/automations/${flow.id}/builder`}
+                        className="flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors"
+                      >
+                        <GitBranch className="h-3.5 w-3.5" />
+                        Edit Flow
+                      </Link>
+                    </div>
+
+                    <div className="flex items-center gap-6 mb-3 ml-6">
+                      <div className="text-xs text-gray-500">
+                        <span className="text-gray-400">Triggers at: </span>
+                        <span className="font-medium text-gray-700">{flow.trigger?.value} days overdue</span>
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        <span className="text-gray-400">Steps: </span>
+                        <span className="font-medium text-gray-700">{flow.steps.length}</span>
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        <span className="text-gray-400">Lookup checkpoints: </span>
+                        <span className="font-medium text-green-700">{lookupSteps.length}</span>
+                      </div>
+                    </div>
+
+                    <div className="ml-6 flex items-center gap-1 flex-wrap">
+                      {flow.steps.map((step: FlowStep, idx: number) => (
+                        <div key={step.id} className="flex items-center gap-1">
+                          <div
+                            className={cn(
+                              "flex items-center gap-1 rounded-md border px-2 py-1 text-xs",
+                              step.type === "lookup_check" ? "border-amber-200 bg-amber-50 text-amber-700" :
+                              step.type === "email" ? "border-blue-200 bg-blue-50 text-blue-700" :
+                              step.type === "sms" ? "border-purple-200 bg-purple-50 text-purple-700" :
+                              step.type === "call" ? "border-green-200 bg-green-50 text-green-700" :
+                              step.type === "wait" ? "border-gray-200 bg-gray-100 text-gray-500" :
+                              "border-gray-200 bg-gray-50 text-gray-500"
+                            )}
+                          >
+                            <StepTypeIcon type={step.type} />
+                            <span className="capitalize">
+                              {step.type === "lookup_check" ? "Lookup" :
+                               step.type === "wait" ? `Wait ${(step.config as { days?: number }).days ?? "?"}d` :
+                               step.type}
+                            </span>
+                          </div>
+                          {idx < flow.steps.length - 1 && (
+                            <span className="text-gray-300 text-xs">→</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mt-3 ml-6 flex items-center gap-4 text-xs text-gray-400">
+                      <span>{actionSteps.length} send action{actionSteps.length !== 1 ? "s" : ""}</span>
+                      {lookupSteps.length > 0 && (
+                        <span className="text-amber-600 font-medium">
+                          ✓ Fresh lookup before each send action
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
