@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { Suspense, useEffect, useRef, useState, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { TopBar } from "@/components/layout/TopBar";
 import { useSearchStore } from "@/lib/search-store";
@@ -74,11 +75,15 @@ const classificationConfig: Record<
 function MessageCard({
   message,
   onUpdate,
+  highlighted = false,
+  defaultExpanded = false,
 }: {
   message: Message;
   onUpdate: () => void;
+  highlighted?: boolean;
+  defaultExpanded?: boolean;
 }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(defaultExpanded);
   const [replyText, setReplyText] = useState("");
   const [showReply, setShowReply] = useState(false);
   const [pausing, setPausing] = useState(false);
@@ -123,8 +128,13 @@ function MessageCard({
 
   return (
     <div
+      id={`msg-${message.id}`}
       className={`rounded-xl border bg-white shadow-sm transition-shadow hover:shadow-md ${
-        !message.isRead ? "border-blue-200" : "border-gray-200"
+        highlighted
+          ? "border-blue-400 ring-2 ring-blue-200"
+          : !message.isRead
+          ? "border-blue-200"
+          : "border-gray-200"
       }`}
     >
       <div
@@ -282,7 +292,10 @@ function MessageCard({
   );
 }
 
-export default function InboxPage() {
+function InboxPageContent() {
+  const searchParams = useSearchParams();
+  const focusedMessageId = searchParams.get("message");
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
@@ -301,6 +314,15 @@ export default function InboxPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Scroll to focused message after data loads
+  useEffect(() => {
+    if (!focusedMessageId || loading) return;
+    const el = document.getElementById(`msg-${focusedMessageId}`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [focusedMessageId, loading]);
 
   const unread = messages.filter((m) => !m.isRead).length;
   const filtered = messages
@@ -431,11 +453,25 @@ export default function InboxPage() {
         ) : (
           <div className="space-y-3">
             {filtered.map((message) => (
-              <MessageCard key={message.id} message={message} onUpdate={load} />
+              <MessageCard
+                key={message.id}
+                message={message}
+                onUpdate={load}
+                highlighted={message.id === focusedMessageId}
+                defaultExpanded={message.id === focusedMessageId}
+              />
             ))}
           </div>
         )}
       </div>
     </div>
+  );
+}
+
+export default function InboxPage() {
+  return (
+    <Suspense>
+      <InboxPageContent />
+    </Suspense>
   );
 }

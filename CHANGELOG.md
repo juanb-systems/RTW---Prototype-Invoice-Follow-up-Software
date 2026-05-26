@@ -2,6 +2,26 @@
 
 ---
 
+## v2.4.0 — Deep Inbox Links · Batched Timeline · Invoice Filters · Xero Button (26 May 2026)
+
+**Date:** 26 May 2026  
+**package.json version:** 2.4.0
+
+### Changes
+
+| # | Change | Files |
+|---|--------|-------|
+| 1 | **"View full message in Inbox" deep-links to exact message** — link now navigates to `/inbox?message=<MSG_ID>`; matching message is auto-scrolled into view, auto-expanded, and highlighted with a blue ring; `useSearchParams` wrapped in `<Suspense>` per Next.js 15 requirements | `app/invoices/[id]/page.tsx`, `app/inbox/page.tsx` |
+| 2 | **Batched timeline** — adjacent events within a 60-minute window are grouped into a collapsible batch; batch header shows type ("Collection workflow activity", "Reply handling activity", "Lookup checks", "Workflow activity"), action count, and time; click to expand/collapse; single events outside a batch display as before | `components/invoices/BatchedTimeline.tsx` _(new)_, `app/invoices/[id]/page.tsx` |
+| 3 | **Invoice dropdown filters** — three dropdowns added above the invoice table: Status (All / Overdue / Partial / Disputed / Paid / Voided), Flow (All / No flow / per-flow name), Reply status (All / Has reply / No reply / per classification); filters are applied on top of text search (AND logic); "Reset filters" button appears when any filter is active; empty state shows both "Clear search" and "Reset filters" links | `app/invoices/page.tsx` |
+| 4 | **"Open in Xero" button on invoice detail** — placed in the invoice header alongside the status badge; links to `invoice.xeroUrl` when set (opens in new tab); shows as greyed-out with tooltip "Xero URL not configured" when no URL is present; `xeroUrl?: string \| null` field added to the `Invoice` type with a TODO comment for future Xero integration | `app/invoices/[id]/page.tsx`, `lib/types.ts` |
+| 5 | **package.json version** bumped 2.3.0 → 2.4.0 | `package.json` |
+
+### Placeholder behavior — Xero button
+The "Open in Xero" button is always visible on the invoice detail page. In the current prototype, no invoices have a `xeroUrl` value set, so the button renders in a greyed-out disabled state with the tooltip _"Xero URL not configured — add xeroUrl to invoice data"_. When a real Xero integration is added, populate `xeroUrl` on each invoice record (e.g. `"https://go.xero.com/AccountsReceivable/View.aspx?invoiceID=<uuid>"`) and the button will activate automatically.
+
+---
+
 ## v2.3.0 — True Global Search + Notification Bell (26 May 2026)
 
 **Date:** 26 May 2026  

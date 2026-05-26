@@ -62,6 +62,9 @@ export interface Invoice {
   notes: string;
   excludedFromAutomation: boolean;
   assignedFlowId: string | null;
+  // TODO: populate with real Xero invoice URL when Xero integration is configured
+  // e.g. "https://go.xero.com/AccountsReceivable/View.aspx?invoiceID=<xero-uuid>"
+  xeroUrl?: string | null;
 }
 
 export interface TimelineEvent {

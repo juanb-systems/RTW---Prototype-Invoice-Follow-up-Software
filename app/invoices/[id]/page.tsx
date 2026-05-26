@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { TopBar } from "@/components/layout/TopBar";
 import { InvoiceStatusBadge } from "@/components/invoices/InvoiceStatusBadge";
-import { TimelineEventItem } from "@/components/invoices/TimelineEventItem";
+import { BatchedTimeline } from "@/components/invoices/BatchedTimeline";
 import { InvoiceDetailActions } from "@/components/invoices/InvoiceDetailActions";
 import { formatCurrency, formatDate, agingColor } from "@/lib/utils";
 import {
@@ -12,8 +12,8 @@ import {
   getAutomationFlows,
   getLatestInboxMessageForInvoice,
 } from "@/lib/server-data";
-import { AlertTriangle, Calendar, Building2, Mail, Phone, GitBranch, ShieldX, MessageSquare, PauseCircle } from "lucide-react";
-import type { AutomationFlow, MessageClassification } from "@/lib/types";
+import { AlertTriangle, Calendar, Building2, Mail, Phone, GitBranch, ShieldX, MessageSquare, PauseCircle, ExternalLink } from "lucide-react";
+import type { AutomationFlow, MessageClassification, InboxMessage } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +41,7 @@ const RECOMMENDATIONS: Record<MessageClassification, string> = {
   unclassified: "Review this reply manually and classify it before taking any further action.",
 };
 
-function CustomerReplyPanel({ message }: { message: { classification: MessageClassification; from: string; subject: string; body: string; automationPaused: boolean; receivedAt: string } }) {
+function CustomerReplyPanel({ message }: { message: Pick<InboxMessage, "id" | "classification" | "from" | "subject" | "body" | "automationPaused" | "receivedAt"> }) {
   const borderColor =
     message.classification === "dispute" ? "border-red-200 bg-red-50/50" :
     message.classification === "promise_to_pay" ? "border-green-200 bg-green-50/50" :
@@ -78,7 +78,7 @@ function CustomerReplyPanel({ message }: { message: { classification: MessageCla
       </div>
 
       <Link
-        href="/inbox"
+        href={`/inbox?message=${message.id}`}
         className="block text-center text-xs font-medium text-blue-600 hover:underline mt-3"
       >
         View full message in Inbox →
@@ -140,8 +140,26 @@ export default async function InvoiceDetailPage({
                   <p className="text-2xl font-bold text-gray-900">{formatCurrency(invoice.amount)}</p>
                   <p className="text-sm text-gray-500 mt-0.5">Due {formatDate(invoice.dueDate)}</p>
                 </div>
-                <div className="text-right space-y-1">
-                  <InvoiceStatusBadge status={invoice.status} />
+                <div className="text-right space-y-2">
+                  <div className="flex items-center justify-end gap-2">
+                    <InvoiceStatusBadge status={invoice.status} />
+                    {/* Open in Xero — placeholder until xeroUrl is set on invoice records */}
+                    <a
+                      href={invoice.xeroUrl ?? "#"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={invoice.xeroUrl ? "Open this invoice in Xero" : "Xero URL not configured — add xeroUrl to invoice data"}
+                      className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium transition-colors ${
+                        invoice.xeroUrl
+                          ? "border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"
+                          : "border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed"
+                      }`}
+                      onClick={invoice.xeroUrl ? undefined : (e) => e.preventDefault()}
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      Open in Xero
+                    </a>
+                  </div>
                   {invoice.daysPastDue > 0 && (
                     <p className={`text-xs font-semibold ${agingColor(invoice.daysPastDue)}`}>
                       {invoice.daysPastDue} days overdue
@@ -197,24 +215,10 @@ export default async function InvoiceDetailPage({
               </div>
             )}
 
-            {/* Timeline */}
+            {/* Timeline — grouped into batches when events happen within the same hour */}
             <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
               <h3 className="text-sm font-semibold text-gray-900 mb-4">Activity Timeline</h3>
-              {timeline.length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-6">No activity yet for this invoice.</p>
-              ) : (
-                <div>
-                  {timeline.map((event, idx) => (
-                    <TimelineEventItem
-                      key={event.id}
-                      eventType={event.eventType}
-                      timestamp={event.timestamp}
-                      message={event.message}
-                      isLast={idx === timeline.length - 1}
-                    />
-                  ))}
-                </div>
-              )}
+              <BatchedTimeline events={timeline} />
             </div>
           </div>
 

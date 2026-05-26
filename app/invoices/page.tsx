@@ -6,7 +6,7 @@ import { TopBar } from "@/components/layout/TopBar";
 import { InvoiceStatusBadge } from "@/components/invoices/InvoiceStatusBadge";
 import { formatCurrency, formatDate, agingColor } from "@/lib/utils";
 import { useSearchStore } from "@/lib/search-store";
-import { Search, X, ChevronUp, ChevronDown, ChevronsUpDown, PauseCircle } from "lucide-react";
+import { Search, X, ChevronUp, ChevronDown, ChevronsUpDown, PauseCircle, SlidersHorizontal } from "lucide-react";
 
 type SortCol = "invoiceNumber" | "contact" | "amount" | "dueDate" | "daysPastDue" | "status" | "flow";
 type SortDir = "asc" | "desc";
@@ -61,6 +61,9 @@ export default function InvoicesPage() {
   const [sortCol, setSortCol] = useState<SortCol>("daysPastDue");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [flowFilter, setFlowFilter]   = useState<string>("all");
+  const [replyFilter, setReplyFilter] = useState<string>("all");
 
   // Shared search state — also written by the TopBar search input
   const { query, setQuery, clear } = useSearchStore();
@@ -114,33 +117,45 @@ export default function InvoicesPage() {
     }
   }
 
-  const filtered = invoices.filter((inv) => {
-    if (!query.trim()) return true;
-    const q = query.toLowerCase().trim();
-    const normQ = normaliseAmount(q);
-
-    const flowName = inv.assignedFlowId ? (flowMap[inv.assignedFlowId] ?? "") : "no flow";
-    const formattedAmount = formatCurrency(inv.amount).toLowerCase();
-    const rawAmount = String(inv.amount);
-    const dueDateText = formatDate(inv.dueDate).toLowerCase();
-    const daysText = inv.daysPastDue > 0 ? `${inv.daysPastDue}d` : "";
-    const reply = replyMap[inv.id];
-    const replyLabel = reply ? REPLY_LABELS[reply.classification].toLowerCase() : "no reply";
-
-    return (
-      inv.invoiceNumber.toLowerCase().includes(q) ||
-      (inv.contact?.name ?? "").toLowerCase().includes(q) ||
-      (inv.contact?.company ?? "").toLowerCase().includes(q) ||
-      formattedAmount.includes(q) ||
-      normaliseAmount(formattedAmount).includes(normQ) ||
-      rawAmount.includes(normQ) ||
-      dueDateText.includes(q) ||
-      daysText.includes(q) ||
-      inv.status.toLowerCase().includes(q) ||
-      flowName.toLowerCase().includes(q) ||
-      replyLabel.includes(q)
-    );
-  });
+  const filtered = invoices
+    .filter((inv) => {
+      if (!query.trim()) return true;
+      const q = query.toLowerCase().trim();
+      const normQ = normaliseAmount(q);
+      const flowName = inv.assignedFlowId ? (flowMap[inv.assignedFlowId] ?? "") : "no flow";
+      const formattedAmount = formatCurrency(inv.amount).toLowerCase();
+      const rawAmount = String(inv.amount);
+      const dueDateText = formatDate(inv.dueDate).toLowerCase();
+      const daysText = inv.daysPastDue > 0 ? `${inv.daysPastDue}d` : "";
+      const reply = replyMap[inv.id];
+      const replyLabel = reply ? REPLY_LABELS[reply.classification].toLowerCase() : "no reply";
+      return (
+        inv.invoiceNumber.toLowerCase().includes(q) ||
+        (inv.contact?.name ?? "").toLowerCase().includes(q) ||
+        (inv.contact?.company ?? "").toLowerCase().includes(q) ||
+        formattedAmount.includes(q) ||
+        normaliseAmount(formattedAmount).includes(normQ) ||
+        rawAmount.includes(normQ) ||
+        dueDateText.includes(q) ||
+        daysText.includes(q) ||
+        inv.status.toLowerCase().includes(q) ||
+        flowName.toLowerCase().includes(q) ||
+        replyLabel.includes(q)
+      );
+    })
+    .filter((inv) => statusFilter === "all" || inv.status === statusFilter)
+    .filter((inv) => {
+      if (flowFilter === "all") return true;
+      if (flowFilter === "no-flow") return !inv.assignedFlowId;
+      return inv.assignedFlowId === flowFilter;
+    })
+    .filter((inv) => {
+      if (replyFilter === "all") return true;
+      const reply = replyMap[inv.id];
+      if (replyFilter === "no-reply") return !reply;
+      if (replyFilter === "has-reply") return !!reply;
+      return reply?.classification === replyFilter;
+    });
 
   const sorted = [...filtered].sort((a, b) => {
     const dir = sortDir === "asc" ? 1 : -1;
@@ -159,6 +174,16 @@ export default function InvoicesPage() {
   const overdueCount = invoices.filter(
     (i) => i.status === "overdue" || i.status === "disputed" || i.status === "partial"
   ).length;
+
+  // Unique flows that appear in the current invoice list (for the Flow dropdown)
+  const assignedFlowIds = [...new Set(invoices.filter((i) => i.assignedFlowId).map((i) => i.assignedFlowId!))];
+  const hasActiveFilters = statusFilter !== "all" || flowFilter !== "all" || replyFilter !== "all";
+
+  function resetFilters() {
+    setStatusFilter("all");
+    setFlowFilter("all");
+    setReplyFilter("all");
+  }
 
   const columns: { col: SortCol; label: string; align: "left" | "right" | "center" }[] = [
     { col: "invoiceNumber", label: "Invoice",      align: "left" },
@@ -204,6 +229,63 @@ export default function InvoicesPage() {
             </span>
           </div>
 
+          {/* Filter row */}
+          <div className="px-5 py-3 border-b border-gray-100 bg-gray-50/40 flex items-center gap-3 flex-wrap">
+            <SlidersHorizontal className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
+
+            {/* Status filter */}
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className={`rounded-md border py-1 pl-2.5 pr-6 text-xs focus:border-blue-400 focus:outline-none appearance-none bg-white ${statusFilter !== "all" ? "border-blue-400 text-blue-700 font-medium" : "border-gray-200 text-gray-600"}`}
+            >
+              <option value="all">Status: All</option>
+              <option value="overdue">Overdue</option>
+              <option value="partial">Partial</option>
+              <option value="disputed">Disputed</option>
+              <option value="paid">Paid</option>
+              <option value="voided">Voided</option>
+            </select>
+
+            {/* Flow filter */}
+            <select
+              value={flowFilter}
+              onChange={(e) => setFlowFilter(e.target.value)}
+              className={`rounded-md border py-1 pl-2.5 pr-6 text-xs focus:border-blue-400 focus:outline-none appearance-none bg-white ${flowFilter !== "all" ? "border-blue-400 text-blue-700 font-medium" : "border-gray-200 text-gray-600"}`}
+            >
+              <option value="all">Flow: All</option>
+              <option value="no-flow">No flow assigned</option>
+              {assignedFlowIds.map((fId) => (
+                <option key={fId} value={fId}>{flowMap[fId] ?? fId}</option>
+              ))}
+            </select>
+
+            {/* Reply filter */}
+            <select
+              value={replyFilter}
+              onChange={(e) => setReplyFilter(e.target.value)}
+              className={`rounded-md border py-1 pl-2.5 pr-6 text-xs focus:border-blue-400 focus:outline-none appearance-none bg-white ${replyFilter !== "all" ? "border-blue-400 text-blue-700 font-medium" : "border-gray-200 text-gray-600"}`}
+            >
+              <option value="all">Reply: All</option>
+              <option value="has-reply">Has reply</option>
+              <option value="no-reply">No reply</option>
+              <option value="promise_to_pay">Promise to Pay</option>
+              <option value="dispute">Dispute</option>
+              <option value="out_of_office">Out of Office</option>
+              <option value="payment_query">Payment Query</option>
+              <option value="unclassified">Unclassified</option>
+            </select>
+
+            {hasActiveFilters && (
+              <button
+                onClick={resetFilters}
+                className="text-xs text-blue-600 hover:underline font-medium"
+              >
+                Reset filters
+              </button>
+            )}
+          </div>
+
           {loading ? (
             <div className="py-16 text-center text-xs text-gray-400">Loading invoices…</div>
           ) : (
@@ -234,12 +316,23 @@ export default function InvoicesPage() {
                     <tr>
                       <td colSpan={9} className="py-12 text-center">
                         <p className="text-sm text-gray-400">
-                          {query ? `No invoices match "${query}".` : "No invoices found."}
+                          {query || hasActiveFilters
+                            ? "No invoices match the current search and filters."
+                            : "No invoices found."}
                         </p>
-                        {query && (
-                          <button onClick={clear} className="mt-2 text-xs text-blue-500 hover:underline">
-                            Clear search
-                          </button>
+                        {(query || hasActiveFilters) && (
+                          <div className="flex items-center justify-center gap-3 mt-2">
+                            {query && (
+                              <button onClick={clear} className="text-xs text-blue-500 hover:underline">
+                                Clear search
+                              </button>
+                            )}
+                            {hasActiveFilters && (
+                              <button onClick={resetFilters} className="text-xs text-blue-500 hover:underline">
+                                Reset filters
+                              </button>
+                            )}
+                          </div>
                         )}
                       </td>
                     </tr>
