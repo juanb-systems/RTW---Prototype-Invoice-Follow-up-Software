@@ -18,27 +18,57 @@ import "@xyflow/react/dist/style.css";
 import { nodeTypes } from "./nodeTypes";
 import { NodeConfigPanel } from "./NodeConfigPanel";
 import type { AutomationFlow, FlowStep, FlowEdge } from "@/lib/types";
-import { Save, ZapOff, AlertCircle } from "lucide-react";
+import { Save, CheckSquare } from "lucide-react";
 
-function stepsToNodes(steps: FlowStep[]): Node[] {
-  return steps.map((step) => ({
-    id: step.id,
-    type: step.type,
-    position: step.position ?? { x: 250, y: step.order * 130 },
-    data: step.config,
-  }));
+function stepsToDisplayNodes(steps: FlowStep[]): Node[] {
+  return steps
+    .filter((step) => step.type !== "lookup_check")
+    .map((step) => ({
+      id: step.id,
+      type: step.type,
+      position: step.position ?? { x: 250, y: step.order * 130 },
+      data: step.config,
+    }));
 }
 
-function edgesToRfEdges(edges: FlowEdge[]): Edge[] {
-  return edges.map((e) => ({
-    id: e.id,
-    source: e.source,
-    target: e.target,
-    sourceHandle: e.sourceHandle,
-    targetHandle: e.targetHandle,
-    style: { stroke: "#9ca3af" },
-    animated: false,
-  }));
+function buildDisplayEdges(steps: FlowStep[], edges: FlowEdge[]): Edge[] {
+  const lookupIds = new Set(steps.filter((s) => s.type === "lookup_check").map((s) => s.id));
+  const displayEdges: Edge[] = [];
+  const processedIds = new Set<string>();
+
+  // For each hidden lookup node, create a bypass edge: (predecessor → successor)
+  for (const lookupId of lookupIds) {
+    const inEdge  = edges.find((e) => e.target === lookupId);
+    const outEdge = edges.find((e) => e.source === lookupId);
+    if (inEdge && outEdge) {
+      displayEdges.push({
+        id: `bypass-${lookupId}`,
+        source: inEdge.source,
+        target: outEdge.target,
+        style: { stroke: "#9ca3af" },
+        animated: false,
+      });
+      processedIds.add(inEdge.id);
+      processedIds.add(outEdge.id);
+    }
+  }
+
+  // Include all edges that don't touch a lookup node
+  for (const edge of edges) {
+    if (!processedIds.has(edge.id) && !lookupIds.has(edge.source) && !lookupIds.has(edge.target)) {
+      displayEdges.push({
+        id: edge.id,
+        source: edge.source,
+        target: edge.target,
+        sourceHandle: edge.sourceHandle,
+        targetHandle: edge.targetHandle,
+        style: { stroke: "#9ca3af" },
+        animated: false,
+      });
+    }
+  }
+
+  return displayEdges;
 }
 
 interface FlowBuilderProps {
@@ -46,31 +76,17 @@ interface FlowBuilderProps {
 }
 
 function FlowCanvas({ flow }: FlowBuilderProps) {
-  const [nodes, setNodes, onNodesChange] = useNodesState(stepsToNodes(flow.steps));
-  const [edges, setEdges, onEdgesChange] = useEdgesState(edgesToRfEdges(flow.edges));
+  const [nodes, setNodes, onNodesChange] = useNodesState(stepsToDisplayNodes(flow.steps));
+  const [edges, setEdges, onEdgesChange] = useEdgesState(buildDisplayEdges(flow.steps, flow.edges));
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [lookupWarning, setLookupWarning] = useState<string | null>(null);
 
   const onConnect = useCallback(
     (connection: Connection) => {
-      // Enforce: email/sms/call nodes must have a lookup_check as source
-      const targetNode = nodes.find((n) => n.id === connection.target);
-      const sourceNode = nodes.find((n) => n.id === connection.source);
-      const requiresLookup = ["email", "sms", "call"].includes(targetNode?.type ?? "");
-      if (requiresLookup && sourceNode?.type !== "lookup_check") {
-        setLookupWarning(
-          "A fresh lookup node is required before send actions (email, SMS, call). Connect a Lookup Check node first."
-        );
-        setTimeout(() => setLookupWarning(null), 4000);
-        return;
-      }
-      setEdges((eds) =>
-        addEdge({ ...connection, style: { stroke: "#9ca3af" } }, eds)
-      );
+      setEdges((eds) => addEdge({ ...connection, style: { stroke: "#9ca3af" } }, eds));
     },
-    [nodes, setEdges]
+    [setEdges]
   );
 
   async function handleSave() {
@@ -112,12 +128,6 @@ function FlowCanvas({ flow }: FlowBuilderProps) {
       <div className="flex-1 relative">
         {/* Toolbar */}
         <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
-          {lookupWarning && (
-            <div className="flex items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700 shadow-md">
-              <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
-              {lookupWarning}
-            </div>
-          )}
           {saveError && (
             <span className="text-xs text-red-600">{saveError}</span>
           )}
@@ -131,10 +141,10 @@ function FlowCanvas({ flow }: FlowBuilderProps) {
           </button>
         </div>
 
-        {/* Lookup enforcement notice */}
-        <div className="absolute bottom-3 left-3 z-10 flex items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700 shadow-md">
-          <ZapOff className="h-3.5 w-3.5 flex-shrink-0" />
-          Connecting email/SMS/call without a Lookup Check node is blocked.
+        {/* Enforcement notice */}
+        <div className="absolute bottom-3 left-3 z-10 flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-600 shadow-md">
+          <CheckSquare className="h-3.5 w-3.5 flex-shrink-0 text-amber-500" />
+          Each Email, SMS, and Call block includes a locked <strong className="font-semibold">&ldquo;Check still unpaid in Xero&rdquo;</strong> safety check.
         </div>
 
         <ReactFlow

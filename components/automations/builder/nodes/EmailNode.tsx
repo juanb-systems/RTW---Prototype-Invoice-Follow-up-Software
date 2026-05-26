@@ -25,6 +25,19 @@ export function EmailNode({ data, selected }: NodeProps) {
           <p className="text-xs text-gray-400 mt-0.5">From: {cfg.senderName}</p>
         )}
       </div>
+      <div className="border-t border-gray-100 bg-gray-50 px-3 py-2 rounded-b-xl">
+        <label className="flex items-center gap-1.5 cursor-not-allowed select-none">
+          <input
+            type="checkbox"
+            checked
+            disabled
+            readOnly
+            className="h-3 w-3 accent-amber-500 cursor-not-allowed"
+          />
+          <span className="text-[10px] font-medium text-gray-600 leading-tight">Check still unpaid in Xero</span>
+        </label>
+        <p className="text-[9px] text-gray-400 mt-0.5 pl-[18px] leading-tight">Required safety check before this action runs.</p>
+      </div>
       <Handle type="source" position={Position.Bottom} className="!w-3 !h-3 !bg-blue-400" />
     </div>
   );

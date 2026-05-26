@@ -143,6 +143,15 @@ export function NodeConfigPanel({ node, onSave, onClose }: NodeConfigPanelProps)
         {/* EMAIL — template dropdown, body, preview */}
         {isEmail && (
           <>
+            <div className="rounded-md border border-gray-200 bg-gray-50 px-3 py-2.5">
+              <label className="flex items-center gap-2 cursor-not-allowed select-none">
+                <input type="checkbox" checked disabled readOnly className="h-3.5 w-3.5 accent-amber-500 cursor-not-allowed" />
+                <span className="text-xs font-medium text-gray-700">Check still unpaid in Xero</span>
+              </label>
+              <p className="text-xs text-gray-400 mt-1 pl-5 leading-relaxed">
+                Required safety check. Automatically verified before this action runs — cannot be disabled.
+              </p>
+            </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Label</label>
               <input
@@ -211,6 +220,15 @@ export function NodeConfigPanel({ node, onSave, onClose }: NodeConfigPanelProps)
         {/* SMS */}
         {node.type === "sms" && (
           <>
+            <div className="rounded-md border border-gray-200 bg-gray-50 px-3 py-2.5">
+              <label className="flex items-center gap-2 cursor-not-allowed select-none">
+                <input type="checkbox" checked disabled readOnly className="h-3.5 w-3.5 accent-amber-500 cursor-not-allowed" />
+                <span className="text-xs font-medium text-gray-700">Check still unpaid in Xero</span>
+              </label>
+              <p className="text-xs text-gray-400 mt-1 pl-5 leading-relaxed">
+                Required safety check. Automatically verified before this action runs — cannot be disabled.
+              </p>
+            </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Label</label>
               <input type="text" value={(values.label as string) ?? ""} onChange={(e) => handleChange("label", e.target.value)} className="w-full rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-700 focus:border-blue-400 focus:outline-none" />
@@ -226,6 +244,15 @@ export function NodeConfigPanel({ node, onSave, onClose }: NodeConfigPanelProps)
         {/* CALL */}
         {node.type === "call" && (
           <>
+            <div className="rounded-md border border-gray-200 bg-gray-50 px-3 py-2.5">
+              <label className="flex items-center gap-2 cursor-not-allowed select-none">
+                <input type="checkbox" checked disabled readOnly className="h-3.5 w-3.5 accent-amber-500 cursor-not-allowed" />
+                <span className="text-xs font-medium text-gray-700">Check still unpaid in Xero</span>
+              </label>
+              <p className="text-xs text-gray-400 mt-1 pl-5 leading-relaxed">
+                Required safety check. Automatically verified before this action runs — cannot be disabled.
+              </p>
+            </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Label</label>
               <input type="text" value={(values.label as string) ?? ""} onChange={(e) => handleChange("label", e.target.value)} className="w-full rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-700 focus:border-blue-400 focus:outline-none" />

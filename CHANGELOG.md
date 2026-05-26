@@ -2,6 +2,47 @@
 
 ---
 
+## v2.5.1 — Xero Check: Locked Checkbox on Action Blocks (26 May 2026)
+
+**Date:** 26 May 2026  
+**package.json version:** 2.5.0 _(UI refinement, no version bump required)_
+
+### Change
+
+The "Fresh Xero check before send" indicator on Email, SMS, and Call blocks has been redesigned from an amber text badge to a **locked, auto-ticked checkbox** labelled **"Check still unpaid in Xero"**.
+
+| Element | Before | After |
+|---------|--------|-------|
+| Node card footer | Amber badge with shield icon + "Fresh Xero check before send" | Grey footer with pre-ticked disabled checkbox + "Check still unpaid in Xero" + helper text "Required safety check before this action runs." |
+| Config panel | Amber info box with shield icon | Locked checkbox with helper text "Required safety check. Automatically verified before this action runs — cannot be disabled." |
+| Canvas notice | "A Fresh Xero check runs automatically before every Email, SMS, and Call action." | "Each Email, SMS, and Call block includes a locked ☑ Check still unpaid in Xero safety check." |
+
+The checkbox is `checked` and `disabled` — it reads as a required, immutable safety setting rather than a user-configurable option. The underlying server-side enforcement (`lib/lookup-engine.ts`) is unchanged.
+
+---
+
+## v2.5.0 — Timeline Dates · Simplified Automation Builder (26 May 2026)
+
+**Date:** 26 May 2026  
+**package.json version:** 2.5.0
+
+### Changes
+
+| # | Change | Files |
+|---|--------|-------|
+| 1 | **Timeline batch date label** — collapsed batch headers now show a date ("26 May 2026") instead of a time ("4:00 am"); if a batch spans multiple calendar days the header shows a range ("1 May 2026 – 2 May 2026"); individual events inside an expanded batch continue to show full timestamps | `components/invoices/BatchedTimeline.tsx` |
+| 2 | **Automation Builder — lookup_check nodes hidden from canvas** — Fresh Xero Check nodes are filtered out of the React Flow display; bypass edges connect the preceding step directly to the following step so the canvas reads Trigger → Email → Wait → SMS → Wait → Call → End; the underlying enforcement continues to run server-side before every action fires | `components/automations/builder/FlowBuilder.tsx` |
+| 3 | **Email / SMS / Call nodes — "Fresh Xero check before send" badge** — each send-type node now shows a small amber badge at its base, making it clear that a Xero check is automatically enforced before the action fires | `components/automations/builder/nodes/EmailNode.tsx`, `SMSNode.tsx`, `CallNode.tsx` |
+| 4 | **Builder enforcement notice updated** — bottom notice changed from "Connecting email/SMS/call without a Lookup Check node is blocked" to "A Fresh Xero check runs automatically before every Email, SMS, and Call action"; warning icon changed from ZapOff to ShieldCheck | `components/automations/builder/FlowBuilder.tsx` |
+| 5 | **Node config panel — automatic check callout** — Email, SMS, and Call config panels each show a small amber note: "A Fresh Xero check runs automatically before this [email/SMS/call] sends" | `components/automations/builder/NodeConfigPanel.tsx` |
+| 6 | **package.json version** bumped 2.4.0 → 2.5.0 | `package.json` |
+
+### Why the builder simplification?
+
+The Fresh Xero Check has always been enforced at the point of action-fire (server-side in `lib/lookup-engine.ts`), not at the builder canvas level. Showing explicit lookup_check nodes in the builder introduced visual noise without adding user value — users can't configure them and they don't change the enforcement. Moving the communication to a badge on each send node and a canvas-level notice is clearer for non-technical stakeholders reviewing the flow.
+
+---
+
 ## v2.4.1 — Hotfix: Invoice detail server crash (26 May 2026)
 
 **Date:** 26 May 2026  

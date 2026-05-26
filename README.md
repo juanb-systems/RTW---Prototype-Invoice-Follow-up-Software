@@ -1,6 +1,8 @@
-# CollectPilot — AI Receivables Assistant · v2.4
+# CollectPilot — AI Receivables Assistant · v2.5
 
 A Next.js 15 prototype for an AI-powered B2B receivables follow-up platform. Demonstrates automated invoice collection workflows with "Fresh Xero Check" safety gates before every customer contact.
+
+> **v2.5 update:** Timeline batch headers now show a date (e.g. "26 May 2026") instead of a time, with a date range when events span multiple days. Automation Builder simplified — Xero check nodes are hidden from the canvas; the visual flow reads Trigger → Email → Delay → SMS → Delay → Call → End. Each Email, SMS, and Call block displays a locked ☑ **Check still unpaid in Xero** checkbox (auto-ticked, cannot be disabled). Clicking any send block in the config panel also shows the same locked checkbox with helper text. The Xero check still runs server-side before every action fires — the checkbox is a UI representation of that enforced behaviour, not a user-configurable option.
 
 > **v2.4 update:** Invoice detail "View full message in Inbox" now deep-links to the exact message (scrolls + highlights). Timeline events grouped into collapsible batches. Invoice list has Status, Flow, and Reply status dropdown filters. Invoice detail has an "Open in Xero" button (placeholder until `xeroUrl` is populated on invoice records).
 

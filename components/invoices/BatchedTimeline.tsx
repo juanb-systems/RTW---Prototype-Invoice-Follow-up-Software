@@ -17,23 +17,25 @@ const BATCH_WINDOW_MS = 60 * 60 * 1000; // 60 minutes
 function getBatchLabel(events: TimelineEvent[]): string {
   const types = new Set<TimelineEventType>(events.map((e) => e.eventType));
   const count = events.length;
-  // Use the oldest event's time as the batch timestamp
-  const time = new Intl.DateTimeFormat("en-AU", {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  }).format(new Date(events[0].timestamp));
+
+  // events[] are in chronological order (oldest first) within each batch group
+  const fmtDate = (ts: string) =>
+    new Intl.DateTimeFormat("en-AU", { day: "numeric", month: "short", year: "numeric" })
+      .format(new Date(ts));
+  const firstDate = fmtDate(events[0].timestamp);
+  const lastDate  = fmtDate(events[events.length - 1].timestamp);
+  const dateLabel = firstDate === lastDate ? firstDate : `${firstDate} – ${lastDate}`;
 
   if (types.has("reply_received") || types.has("automation_paused")) {
-    return `Reply handling activity · ${count} actions · ${time}`;
+    return `Reply handling activity · ${count} actions · ${dateLabel}`;
   }
   if (types.has("email_sent") || types.has("sms_sent") || types.has("call_scheduled")) {
-    return `Collection workflow activity · ${count} actions · ${time}`;
+    return `Collection workflow activity · ${count} actions · ${dateLabel}`;
   }
   if ([...types].every((t) => t === "lookup_performed")) {
-    return `Lookup checks · ${count} checks · ${time}`;
+    return `Lookup checks · ${count} checks · ${dateLabel}`;
   }
-  return `Workflow activity · ${count} actions · ${time}`;
+  return `Workflow activity · ${count} actions · ${dateLabel}`;
 }
 
 function buildTimelineItems(events: TimelineEvent[]): TimelineItem[] {
