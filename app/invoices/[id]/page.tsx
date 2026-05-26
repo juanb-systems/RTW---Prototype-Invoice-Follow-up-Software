@@ -144,21 +144,26 @@ export default async function InvoiceDetailPage({
                   <div className="flex items-center justify-end gap-2">
                     <InvoiceStatusBadge status={invoice.status} />
                     {/* Open in Xero — placeholder until xeroUrl is set on invoice records */}
-                    <a
-                      href={invoice.xeroUrl ?? "#"}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      title={invoice.xeroUrl ? "Open this invoice in Xero" : "Xero URL not configured — add xeroUrl to invoice data"}
-                      className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium transition-colors ${
-                        invoice.xeroUrl
-                          ? "border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"
-                          : "border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed"
-                      }`}
-                      onClick={invoice.xeroUrl ? undefined : (e) => e.preventDefault()}
-                    >
-                      <ExternalLink className="h-3 w-3" />
-                      Open in Xero
-                    </a>
+                    {invoice.xeroUrl ? (
+                      <a
+                        href={invoice.xeroUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Open this invoice in Xero"
+                        className="inline-flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100 transition-colors"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                        Open in Xero
+                      </a>
+                    ) : (
+                      <span
+                        title="Xero URL not configured — add xeroUrl to invoice data"
+                        className="inline-flex items-center gap-1.5 rounded-md border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-400 cursor-not-allowed select-none"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                        Open in Xero
+                      </span>
+                    )}
                   </div>
                   {invoice.daysPastDue > 0 && (
                     <p className={`text-xs font-semibold ${agingColor(invoice.daysPastDue)}`}>

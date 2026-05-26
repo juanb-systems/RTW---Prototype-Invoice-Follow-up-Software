@@ -2,6 +2,29 @@
 
 ---
 
+## v2.4.1 — Hotfix: Invoice detail server crash (26 May 2026)
+
+**Date:** 26 May 2026  
+**package.json version:** 2.4.0 _(patch fix, no version bump required)_
+
+### Root cause
+`app/invoices/[id]/page.tsx` is a React Server Component. The "Open in Xero" button added in v2.4.0 used a conditional `onClick` handler:
+
+```tsx
+onClick={invoice.xeroUrl ? undefined : (e) => e.preventDefault()}
+```
+
+When `invoice.xeroUrl` is absent (all current records), this evaluates to an arrow function. **React Server Components cannot serialize functions in their output** — the RSC serializer throws at runtime, producing the "server-side exception" on Vercel. The bug only affects the invoice detail route because it is the only Server Component with an event handler on a native element.
+
+### Fix
+Replaced the single `<a>` with conditional rendering:
+- `invoice.xeroUrl` is set → renders a real `<a href=...>` with `target="_blank"` (no event handler needed)
+- `invoice.xeroUrl` is absent → renders a `<span>` (non-clickable by nature; no event handler needed)
+
+Event handlers on native elements are now absent from the Server Component entirely.
+
+---
+
 ## v2.4.0 — Deep Inbox Links · Batched Timeline · Invoice Filters · Xero Button (26 May 2026)
 
 **Date:** 26 May 2026  
