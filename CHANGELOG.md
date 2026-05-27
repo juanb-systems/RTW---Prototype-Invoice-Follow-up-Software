@@ -2,6 +2,43 @@
 
 ---
 
+## v2.7.1 — Automation Builder: Detailed Block Configuration (28 May 2026)
+
+**Date:** 28 May 2026
+**package.json version:** 2.7.0 _(field expansion, no version bump)_
+
+### Changes
+
+#### Email block — expanded fields
+- **Recipient** dropdown: Invoice contact email / Billing contact email / Custom email address (custom shows a free-text input).
+- **Email body** textarea (full multi-line) with merge field hint: `{{contactName}}`, `{{invoiceNumber}}`, `{{amount}}`, `{{dueDate}}`, `{{companyName}}`, `{{senderName}}`.
+- **Reply-to email** optional field (shown in preview header when set).
+- **Preview Email** toggle button — renders an inline email preview card with merge fields replaced by sample data (James Fletcher / INV-2026-001 / $12,500.00 etc.).
+
+#### SMS block — expanded fields
+- **Recipient** dropdown: Invoice contact phone / Billing contact phone / Custom phone number (custom shows a tel input).
+- **SMS message** textarea with merge field hint.
+
+#### Delay block — unit dropdown
+- New **Unit** dropdown next to the delay amount: Minutes / Hours / Days / Weeks.
+- Subtitle in the card header now reads e.g. "Wait 4 hours", "Wait 30 minutes", "Wait 2 weeks".
+- Backward compatible — existing flows without a `unit` field default to "days".
+
+#### Call block — scheduling logic
+- **Assigned to** dropdown: Accounts team / Admin / Custom assignee (custom shows a name input).
+- **Call timing** dropdown: Immediately after previous step / After a delay / Specific date & time.
+  - "After a delay" reveals a delay-amount + unit (minutes/hours/days) pair.
+  - "Specific date & time" reveals a `datetime-local` input (prototype only — not runtime-enforced).
+- **Call notes** textarea with a descriptive placeholder.
+
+#### Subtitle preview in card header
+- Each card's subtitle now reflects meaningful config: email shows recipient type, SMS shows recipient type, call shows timing, delay shows value + unit.
+
+### Files changed
+`components/automations/builder/FlowBuilder.tsx`
+
+---
+
 ## v2.7.0 — Functional Automation Builder (28 May 2026)
 
 **Date:** 28 May 2026

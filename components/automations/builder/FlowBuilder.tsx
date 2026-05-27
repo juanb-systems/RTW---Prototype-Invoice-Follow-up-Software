@@ -2,13 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
-  Save, Trash2, Plus, ChevronDown, ChevronUp,
+  Save, Trash2, Plus, ChevronDown, ChevronUp, Eye, EyeOff,
   Mail, MessageSquare, Phone, Clock, Zap,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { AutomationFlow, FlowEdge, FlowStep } from "@/lib/types";
 
-// ── Metadata ─────────────────────────────────────────────────────────────────
+// ── Step metadata ─────────────────────────────────────────────────────────────
 
 const STEP_META: Record<string, { label: string; iconCls: string; canDelete: boolean }> = {
   trigger: { label: "Trigger",        iconCls: "bg-gray-900 text-white",    canDelete: false },
@@ -31,17 +31,67 @@ const INSERTABLE = [
   { type: "wait"  as const, label: "Delay",  Icon: Clock,         cls: "border-gray-200 text-gray-700 hover:bg-gray-50" },
 ];
 
+// ── Email preview helpers ─────────────────────────────────────────────────────
+
+const PREVIEW_SAMPLE = {
+  contactName: "James Fletcher",
+  invoiceNumber: "INV-2026-001",
+  amount: "$12,500.00",
+  dueDate: "18 May 2026",
+  companyName: "Your Business Pty Ltd",
+};
+
+function fillMerge(text: string, senderName = "Accounts Team"): string {
+  return (text ?? "")
+    .replace(/\{\{contactName\}\}/g, PREVIEW_SAMPLE.contactName)
+    .replace(/\{\{invoiceNumber\}\}/g, PREVIEW_SAMPLE.invoiceNumber)
+    .replace(/\{\{amount\}\}/g, PREVIEW_SAMPLE.amount)
+    .replace(/\{\{dueDate\}\}/g, PREVIEW_SAMPLE.dueDate)
+    .replace(/\{\{companyName\}\}/g, PREVIEW_SAMPLE.companyName)
+    .replace(/\{\{senderName\}\}/g, senderName);
+}
+
 // ── Default configs ───────────────────────────────────────────────────────────
 
 function defaultConfig(type: string): Record<string, unknown> {
   switch (type) {
-    case "email":   return { label: "Send Email",    subject: "", body: "", senderName: "", template: "" };
-    case "sms":     return { label: "Send SMS",      template: "" };
-    case "call":    return { label: "Schedule Call", notes: "" };
-    case "wait":    return { label: "Wait",          days: 3 };
-    case "trigger": return { label: "Invoice 7 days overdue", days: 7, triggerType: "days_overdue" };
-    case "end":     return { label: "End Automation" };
-    default:        return { label: type };
+    case "email":
+      return {
+        label: "Send Email",
+        to: "contact",
+        customEmail: "",
+        subject: "",
+        body: "",
+        senderName: "",
+        replyTo: "",
+        template: "",
+      };
+    case "sms":
+      return {
+        label: "Send SMS",
+        to: "contact",
+        customPhone: "",
+        template: "",
+      };
+    case "wait":
+      return { label: "Wait", days: 3, unit: "days" };
+    case "call":
+      return {
+        label: "Schedule Call",
+        assignedTo: "accounts",
+        customAssignee: "",
+        timing: "immediately",
+        delayValue: 1,
+        delayUnit: "hours",
+        specificDateTime: "",
+        notes: "",
+      };
+    case "trigger":
+      return { label: "Invoice 7 days overdue", days: 7, triggerType: "days_overdue" };
+    case "end":
+      return { label: "End Automation" };
+    default:
+      return { label: type };
   }
 }
 
@@ -98,6 +148,21 @@ function generateEdges(finalSteps: FlowStep[]): FlowEdge[] {
   }));
 }
 
+// ── Reusable form helpers ─────────────────────────────────────────────────────
+
+function FieldRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="block text-[11px] font-medium text-gray-600 mb-1">{label}</label>
+      {children}
+    </div>
+  );
+}
+
+const inputCls = "w-full rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-700 focus:border-blue-400 focus:outline-none bg-white";
+const selectCls = `${inputCls}`;
+const textareaCls = `${inputCls} resize-none`;
+
 // ── Insert picker popover ─────────────────────────────────────────────────────
 
 function InsertPicker({
@@ -143,7 +208,7 @@ function InsertConnector({ onInsert }: { onInsert: (type: string) => void }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="relative flex flex-col items-center py-0.5 group">
+    <div className="relative flex flex-col items-center py-0.5">
       <div className="h-5 w-px bg-gray-200" />
       <div className="relative">
         <button
@@ -160,6 +225,18 @@ function InsertConnector({ onInsert }: { onInsert: (type: string) => void }) {
   );
 }
 
+// ── XeroLock: locked safety checkbox shown on action blocks ───────────────────
+
+function XeroLock() {
+  return (
+    <div className="border-t border-gray-100 bg-gray-50 px-4 py-2 flex items-center gap-2">
+      <input type="checkbox" checked disabled readOnly className="h-3 w-3 accent-amber-500 cursor-not-allowed" />
+      <span className="text-[11px] font-medium text-gray-600">Check still unpaid in Xero</span>
+      <span className="text-[10px] text-gray-400">— required, cannot be disabled</span>
+    </div>
+  );
+}
+
 // ── Individual step card ──────────────────────────────────────────────────────
 
 function StepCard({
@@ -172,6 +249,8 @@ function StepCard({
   onUpdate: (id: string, config: Record<string, unknown>) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+
   const cfg = step.config as Record<string, unknown>;
   const meta = STEP_META[step.type] ?? STEP_META.end;
   const Icon = STEP_ICONS[step.type] ?? Zap;
@@ -192,17 +271,34 @@ function StepCard({
       if (t === "reply_received") return "Reply received";
       return "Manual start";
     }
-    if (isWait) return `Wait ${cfg.days ?? "?"} days`;
+    if (isWait) {
+      const unit = (cfg.unit as string) ?? "days";
+      return `Wait ${cfg.days ?? 3} ${unit}`;
+    }
+    if (step.type === "call") {
+      const timing = (cfg.timing as string) ?? "immediately";
+      const name = (cfg.label as string) || "Schedule Call";
+      if (timing === "after_delay") return `${name} — after ${cfg.delayValue ?? 1} ${cfg.delayUnit ?? "hours"}`;
+      if (timing === "specific_time") return `${name} — specific date/time`;
+      return `${name} — immediately`;
+    }
+    if (step.type === "email") {
+      const to = (cfg.to as string) ?? "contact";
+      const dest = to === "billing" ? "billing contact" : to === "custom" ? (cfg.customEmail as string) || "custom email" : "invoice contact";
+      return `${(cfg.label as string) || "Send Email"} → ${dest}`;
+    }
+    if (step.type === "sms") {
+      const to = (cfg.to as string) ?? "contact";
+      const dest = to === "billing" ? "billing contact" : to === "custom" ? (cfg.customPhone as string) || "custom number" : "invoice contact";
+      return `${(cfg.label as string) || "Send SMS"} → ${dest}`;
+    }
     return (cfg.label as string) || meta.label;
   }
 
   return (
-    <div
-      className={`rounded-xl border bg-white shadow-sm overflow-hidden transition-shadow ${
-        expanded ? "border-blue-300 shadow-md" : "border-gray-200"
-      }`}
-    >
-      {/* Header row */}
+    <div className={`rounded-xl border bg-white shadow-sm overflow-hidden transition-shadow ${expanded ? "border-blue-300 shadow-md" : "border-gray-200"}`}>
+
+      {/* ── Header row ── */}
       <div className="flex items-center gap-3 px-4 py-3">
         <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${meta.iconCls}`}>
           <Icon className="h-3.5 w-3.5" />
@@ -214,7 +310,7 @@ function StepCard({
         <div className="flex items-center gap-1 shrink-0">
           {!isEnd && (
             <button
-              onClick={() => setExpanded(p => !p)}
+              onClick={() => { setExpanded(p => !p); if (expanded) setShowPreview(false); }}
               className="flex items-center gap-0.5 rounded-md border border-gray-200 px-2 py-1 text-[11px] font-medium text-gray-500 hover:bg-gray-50 transition-colors"
             >
               {expanded
@@ -234,167 +330,260 @@ function StepCard({
         </div>
       </div>
 
-      {/* Xero safety checkbox — email/sms/call only */}
-      {isAction && (
-        <div className="border-t border-gray-100 bg-gray-50 px-4 py-2 flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked
-            disabled
-            readOnly
-            className="h-3 w-3 accent-amber-500 cursor-not-allowed"
-          />
-          <span className="text-[11px] font-medium text-gray-600">Check still unpaid in Xero</span>
-          <span className="text-[10px] text-gray-400">— required, cannot be disabled</span>
-        </div>
-      )}
+      {/* ── Xero safety checkbox ── */}
+      {isAction && <XeroLock />}
 
-      {/* Inline edit panel */}
+      {/* ── Inline edit panel ── */}
       {expanded && !isEnd && (
         <div className="border-t border-blue-100 bg-blue-50/20 px-4 py-3 space-y-3">
 
-          {/* TRIGGER */}
+          {/* ════ TRIGGER ════ */}
           {isTrigger && (
             <>
-              <div>
-                <label className="block text-[11px] font-medium text-gray-600 mb-1">Trigger type</label>
-                <select
-                  value={(cfg.triggerType as string) ?? "days_overdue"}
-                  onChange={e => set("triggerType", e.target.value)}
-                  className="w-full rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-700 bg-white focus:border-blue-400 focus:outline-none"
-                >
+              <FieldRow label="Trigger type">
+                <select value={(cfg.triggerType as string) ?? "days_overdue"} onChange={e => set("triggerType", e.target.value)} className={selectCls}>
                   <option value="days_overdue">Invoice overdue by X days</option>
                   <option value="invoice_created">Invoice created</option>
                   <option value="reply_received">Reply received</option>
                   <option value="manual">Manual start</option>
                 </select>
-              </div>
+              </FieldRow>
               {(!cfg.triggerType || cfg.triggerType === "days_overdue") && (
-                <div>
-                  <label className="block text-[11px] font-medium text-gray-600 mb-1">Days overdue</label>
+                <FieldRow label="Days overdue">
+                  <input type="number" min={1} value={(cfg.days as number) ?? 7} onChange={e => set("days", parseInt(e.target.value) || 1)} className="w-24 rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-700 focus:border-blue-400 focus:outline-none" />
+                </FieldRow>
+              )}
+            </>
+          )}
+
+          {/* ════ DELAY ════ */}
+          {isWait && (
+            <>
+              <FieldRow label="Label">
+                <input type="text" value={(cfg.label as string) ?? ""} onChange={e => set("label", e.target.value)} placeholder="e.g. Wait before next contact" className={inputCls} />
+              </FieldRow>
+              <div className="flex items-end gap-2">
+                <div className="flex-1">
+                  <label className="block text-[11px] font-medium text-gray-600 mb-1">Delay amount</label>
                   <input
                     type="number"
                     min={1}
-                    value={(cfg.days as number) ?? 7}
+                    value={(cfg.days as number) ?? 3}
                     onChange={e => set("days", parseInt(e.target.value) || 1)}
-                    className="w-24 rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-700 focus:border-blue-400 focus:outline-none"
+                    className="w-full rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-700 focus:border-blue-400 focus:outline-none"
+                    placeholder="3"
                   />
+                </div>
+                <div className="w-32">
+                  <label className="block text-[11px] font-medium text-gray-600 mb-1">Unit</label>
+                  <select value={(cfg.unit as string) ?? "days"} onChange={e => set("unit", e.target.value)} className={selectCls}>
+                    <option value="minutes">Minutes</option>
+                    <option value="hours">Hours</option>
+                    <option value="days">Days</option>
+                    <option value="weeks">Weeks</option>
+                  </select>
+                </div>
+              </div>
+              <p className="text-[10px] text-gray-400 -mt-1">
+                e.g. Wait 3 days · Wait 4 hours · Wait 30 minutes
+              </p>
+            </>
+          )}
+
+          {/* ════ EMAIL ════ */}
+          {step.type === "email" && (
+            <>
+              <FieldRow label="Label / Name">
+                <input type="text" value={(cfg.label as string) ?? ""} onChange={e => set("label", e.target.value)} placeholder="e.g. Gentle Reminder" className={inputCls} />
+              </FieldRow>
+
+              <FieldRow label="Recipient">
+                <select value={(cfg.to as string) ?? "contact"} onChange={e => set("to", e.target.value)} className={selectCls}>
+                  <option value="contact">Invoice contact email</option>
+                  <option value="billing">Billing contact email</option>
+                  <option value="custom">Custom email address</option>
+                </select>
+              </FieldRow>
+              {cfg.to === "custom" && (
+                <FieldRow label="Custom email address">
+                  <input type="email" value={(cfg.customEmail as string) ?? ""} onChange={e => set("customEmail", e.target.value)} placeholder="billing@example.com" className={inputCls} />
+                </FieldRow>
+              )}
+
+              <FieldRow label="Subject line">
+                <input type="text" value={(cfg.subject as string) ?? ""} onChange={e => set("subject", e.target.value)} placeholder="e.g. Friendly reminder — Invoice {{invoiceNumber}} is overdue" className={inputCls} />
+              </FieldRow>
+
+              <FieldRow label="Email body">
+                <textarea
+                  value={(cfg.body as string) ?? ""}
+                  onChange={e => set("body", e.target.value)}
+                  rows={6}
+                  placeholder={`Hi {{contactName}},\n\nJust a friendly reminder that Invoice {{invoiceNumber}} for {{amount}} was due on {{dueDate}} and remains outstanding.\n\nKind regards,\n{{senderName}}`}
+                  className={textareaCls}
+                />
+                <p className="text-[10px] text-gray-400 mt-1">
+                  Merge fields: {`{{contactName}}`} {`{{invoiceNumber}}`} {`{{amount}}`} {`{{dueDate}}`} {`{{companyName}}`} {`{{senderName}}`}
+                </p>
+              </FieldRow>
+
+              <div className="grid grid-cols-2 gap-2">
+                <FieldRow label="Sender name">
+                  <input type="text" value={(cfg.senderName as string) ?? ""} onChange={e => set("senderName", e.target.value)} placeholder="Accounts Team" className={inputCls} />
+                </FieldRow>
+                <FieldRow label="Reply-to email (optional)">
+                  <input type="email" value={(cfg.replyTo as string) ?? ""} onChange={e => set("replyTo", e.target.value)} placeholder="accounts@yourbiz.com" className={inputCls} />
+                </FieldRow>
+              </div>
+
+              {/* Preview toggle */}
+              <button
+                onClick={() => setShowPreview(p => !p)}
+                className="flex items-center gap-1.5 rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                {showPreview ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                {showPreview ? "Hide preview" : "Preview email"}
+              </button>
+
+              {showPreview && (
+                <div className="rounded-lg border border-gray-200 bg-white overflow-hidden text-xs">
+                  <p className="px-3 py-1.5 text-[10px] text-gray-400 italic border-b border-gray-100 bg-gray-50">
+                    Preview using sample data — merge fields replaced with dummy values
+                  </p>
+                  <div className="px-3 py-2 border-b border-gray-100 space-y-1">
+                    <div className="flex gap-2">
+                      <span className="text-gray-400 w-16 shrink-0">From:</span>
+                      <span className="text-gray-700">{(cfg.senderName as string) || "Accounts Team"}</span>
+                    </div>
+                    {Boolean(cfg.replyTo) && (
+                      <div className="flex gap-2">
+                        <span className="text-gray-400 w-16 shrink-0">Reply-to:</span>
+                        <span className="text-gray-700">{cfg.replyTo as string}</span>
+                      </div>
+                    )}
+                    <div className="flex gap-2">
+                      <span className="text-gray-400 w-16 shrink-0">To:</span>
+                      <span className="text-gray-700">james.fletcher@fletcherit.com.au</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <span className="text-gray-400 w-16 shrink-0">Subject:</span>
+                      <span className="font-medium text-gray-900">
+                        {fillMerge((cfg.subject as string) || "(no subject)", (cfg.senderName as string) || "")}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="px-3 py-3">
+                    <pre className="whitespace-pre-wrap font-sans text-xs text-gray-700 leading-relaxed">
+                      {fillMerge(
+                        (cfg.body as string) || "(No body — type your message above)",
+                        (cfg.senderName as string) || ""
+                      )}
+                    </pre>
+                  </div>
+                  <p className="px-3 py-1.5 text-[10px] text-gray-400 border-t border-gray-100 text-center">
+                    Links are not active in this prototype.
+                  </p>
                 </div>
               )}
             </>
           )}
 
-          {/* DELAY */}
-          {isWait && (
-            <>
-              <div>
-                <label className="block text-[11px] font-medium text-gray-600 mb-1">Label</label>
-                <input
-                  type="text"
-                  value={(cfg.label as string) ?? ""}
-                  onChange={e => set("label", e.target.value)}
-                  placeholder="e.g. Wait before next contact"
-                  className="w-full rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-700 focus:border-blue-400 focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] font-medium text-gray-600 mb-1">Days to wait</label>
-                <input
-                  type="number"
-                  min={1}
-                  value={(cfg.days as number) ?? 3}
-                  onChange={e => set("days", parseInt(e.target.value) || 1)}
-                  className="w-24 rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-700 focus:border-blue-400 focus:outline-none"
-                />
-              </div>
-            </>
-          )}
-
-          {/* EMAIL */}
-          {step.type === "email" && (
-            <>
-              <div>
-                <label className="block text-[11px] font-medium text-gray-600 mb-1">Label / Name</label>
-                <input
-                  type="text"
-                  value={(cfg.label as string) ?? ""}
-                  onChange={e => set("label", e.target.value)}
-                  placeholder="e.g. Gentle Reminder"
-                  className="w-full rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-700 focus:border-blue-400 focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] font-medium text-gray-600 mb-1">Subject line</label>
-                <input
-                  type="text"
-                  value={(cfg.subject as string) ?? ""}
-                  onChange={e => set("subject", e.target.value)}
-                  placeholder="Email subject"
-                  className="w-full rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-700 focus:border-blue-400 focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] font-medium text-gray-600 mb-1">Sender name</label>
-                <input
-                  type="text"
-                  value={(cfg.senderName as string) ?? ""}
-                  onChange={e => set("senderName", e.target.value)}
-                  placeholder="Accounts Team"
-                  className="w-full rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-700 focus:border-blue-400 focus:outline-none"
-                />
-              </div>
-            </>
-          )}
-
-          {/* SMS */}
+          {/* ════ SMS ════ */}
           {step.type === "sms" && (
             <>
-              <div>
-                <label className="block text-[11px] font-medium text-gray-600 mb-1">Label / Name</label>
-                <input
-                  type="text"
-                  value={(cfg.label as string) ?? ""}
-                  onChange={e => set("label", e.target.value)}
-                  placeholder="e.g. SMS Reminder"
-                  className="w-full rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-700 focus:border-blue-400 focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] font-medium text-gray-600 mb-1">Message</label>
+              <FieldRow label="Label / Name">
+                <input type="text" value={(cfg.label as string) ?? ""} onChange={e => set("label", e.target.value)} placeholder="e.g. SMS Reminder" className={inputCls} />
+              </FieldRow>
+
+              <FieldRow label="Recipient">
+                <select value={(cfg.to as string) ?? "contact"} onChange={e => set("to", e.target.value)} className={selectCls}>
+                  <option value="contact">Invoice contact phone</option>
+                  <option value="billing">Billing contact phone</option>
+                  <option value="custom">Custom phone number</option>
+                </select>
+              </FieldRow>
+              {cfg.to === "custom" && (
+                <FieldRow label="Custom phone number">
+                  <input type="tel" value={(cfg.customPhone as string) ?? ""} onChange={e => set("customPhone", e.target.value)} placeholder="+61 400 000 000" className={inputCls} />
+                </FieldRow>
+              )}
+
+              <FieldRow label="SMS message">
                 <textarea
                   value={(cfg.template as string) ?? ""}
                   onChange={e => set("template", e.target.value)}
-                  rows={3}
-                  placeholder="SMS body…"
-                  className="w-full rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-700 focus:border-blue-400 focus:outline-none resize-none"
+                  rows={4}
+                  placeholder={`Hi {{contactName}}, this is a reminder that Invoice {{invoiceNumber}} for {{amount}} is overdue. Please contact us at {{companyName}} to arrange payment.`}
+                  className={textareaCls}
                 />
-              </div>
+                <p className="text-[10px] text-gray-400 mt-1">
+                  Merge fields: {`{{contactName}}`} {`{{invoiceNumber}}`} {`{{amount}}`} {`{{companyName}}`}
+                </p>
+              </FieldRow>
             </>
           )}
 
-          {/* CALL */}
+          {/* ════ CALL ════ */}
           {step.type === "call" && (
             <>
-              <div>
-                <label className="block text-[11px] font-medium text-gray-600 mb-1">Label / Task name</label>
-                <input
-                  type="text"
-                  value={(cfg.label as string) ?? ""}
-                  onChange={e => set("label", e.target.value)}
-                  placeholder="e.g. Follow-up Call"
-                  className="w-full rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-700 focus:border-blue-400 focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] font-medium text-gray-600 mb-1">Call notes</label>
+              <FieldRow label="Label / Task name">
+                <input type="text" value={(cfg.label as string) ?? ""} onChange={e => set("label", e.target.value)} placeholder="e.g. Follow-up Call" className={inputCls} />
+              </FieldRow>
+
+              <FieldRow label="Assigned to">
+                <select value={(cfg.assignedTo as string) ?? "accounts"} onChange={e => set("assignedTo", e.target.value)} className={selectCls}>
+                  <option value="accounts">Accounts team</option>
+                  <option value="admin">Admin</option>
+                  <option value="custom">Custom assignee</option>
+                </select>
+              </FieldRow>
+              {cfg.assignedTo === "custom" && (
+                <FieldRow label="Assignee name">
+                  <input type="text" value={(cfg.customAssignee as string) ?? ""} onChange={e => set("customAssignee", e.target.value)} placeholder="e.g. Sarah Smith" className={inputCls} />
+                </FieldRow>
+              )}
+
+              <FieldRow label="Call timing">
+                <select value={(cfg.timing as string) ?? "immediately"} onChange={e => set("timing", e.target.value)} className={selectCls}>
+                  <option value="immediately">Immediately after previous step</option>
+                  <option value="after_delay">After a delay</option>
+                  <option value="specific_time">Specific date / time</option>
+                </select>
+              </FieldRow>
+
+              {cfg.timing === "after_delay" && (
+                <div className="flex items-end gap-2">
+                  <div className="flex-1">
+                    <label className="block text-[11px] font-medium text-gray-600 mb-1">Delay amount</label>
+                    <input type="number" min={1} value={(cfg.delayValue as number) ?? 1} onChange={e => set("delayValue", parseInt(e.target.value) || 1)} className="w-full rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-700 focus:border-blue-400 focus:outline-none" placeholder="1" />
+                  </div>
+                  <div className="w-32">
+                    <label className="block text-[11px] font-medium text-gray-600 mb-1">Unit</label>
+                    <select value={(cfg.delayUnit as string) ?? "hours"} onChange={e => set("delayUnit", e.target.value)} className={selectCls}>
+                      <option value="minutes">Minutes</option>
+                      <option value="hours">Hours</option>
+                      <option value="days">Days</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              {cfg.timing === "specific_time" && (
+                <FieldRow label="Date and time">
+                  <input type="datetime-local" value={(cfg.specificDateTime as string) ?? ""} onChange={e => set("specificDateTime", e.target.value)} className={inputCls} />
+                  <p className="text-[10px] text-gray-400 mt-1">Prototype only — not enforced at runtime.</p>
+                </FieldRow>
+              )}
+
+              <FieldRow label="Call notes">
                 <textarea
                   value={(cfg.notes as string) ?? ""}
                   onChange={e => set("notes", e.target.value)}
-                  rows={2}
-                  placeholder="Notes for the call…"
-                  className="w-full rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-700 focus:border-blue-400 focus:outline-none resize-none"
+                  rows={3}
+                  placeholder="What to discuss on the call, key invoice details, any disputes or payment arrangements to mention…"
+                  className={textareaCls}
                 />
-              </div>
+              </FieldRow>
             </>
           )}
 
@@ -433,7 +622,6 @@ export function FlowBuilder({ flow, onSaveNew, onAfterSave }: FlowBuilderProps) 
   }
 
   function addToFlow(type: string) {
-    // Insert before the last "end" step; fall back to appending
     let pos = steps.length;
     for (let i = steps.length - 1; i >= 0; i--) {
       if (steps[i].type === "end") { pos = i; break; }
@@ -483,9 +671,7 @@ export function FlowBuilder({ flow, onSaveNew, onAfterSave }: FlowBuilderProps) 
 
       {/* ── Add-block toolbar ── */}
       <div className="flex items-center gap-1.5 border-b border-gray-200 bg-white px-5 py-2.5 flex-shrink-0">
-        <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 mr-2">
-          Add block
-        </span>
+        <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 mr-2">Add block</span>
         {INSERTABLE.map(({ type, label, Icon, cls }) => (
           <button
             key={type}

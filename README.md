@@ -15,7 +15,7 @@ A Next.js 15 prototype for an AI-powered B2B receivables follow-up platform. Dem
 | **Dashboard** | KPIs (total outstanding, overdue, collection rate), aging breakdown chart, collections trend, recent activity feed |
 | **Invoices** | Searchable + sortable table with Status / Flow / Reply status dropdown filters; invoice detail with line items, collapsible batched timeline, customer reply panel, upcoming actions |
 | **Contacts** | Searchable + sortable table; contact detail with exclusion controls and invoice history |
-| **Automation Builder** | Functional vertical-list builder (Trigger → Email → Delay → SMS → Call → End); add blocks via toolbar or inline "+" insert between steps; delete blocks with trash icon; inline edit panel per block (trigger type, days, label, subject, message, notes); each Email/SMS/Call block shows a locked ☑ "Check still unpaid in Xero" safety checkbox |
+| **Automation Builder** | Functional vertical-list builder; add/insert/delete blocks; detailed inline config per block — Email (recipient logic, subject, body, sender, reply-to, live preview), SMS (recipient logic, message body), Delay (amount + unit: minutes/hours/days/weeks), Call (assignee, timing: immediate/after delay/specific time, notes); locked ☑ "Check still unpaid in Xero" on every Email/SMS/Call block |
 | **Scheduled Actions** | Run Lookup & Fire (executes full Fresh Xero Check engine), manual approve/skip per action |
 | **Inbox** | AI-classified customer replies (Promise to Pay / Dispute / Out of Office / Payment Query); automation pause control; deep-link from invoice detail |
 | **Settings** | Manual approval mode toggle, blocked keywords, sender name/email config |
@@ -113,6 +113,7 @@ No environment variables are required for the current prototype. All data is see
 
 | Version | Date | Summary |
 |---------|------|---------|
+| v2.7.1 | 28 May 2026 | Builder block config expanded: Email (recipient, body, reply-to, preview), SMS (recipient, body), Delay (unit dropdown), Call (assignee, timing, date/time) |
 | v2.7.0 | 28 May 2026 | Functional builder rewrite: add/insert/delete blocks, inline editing, Xero checkbox, Save ✓ feedback; React Flow canvas removed |
 | v2.6.0 | 28 May 2026 | Flow persistence via Zustand + localStorage; direct builder navigation without server round-trip |
 | v2.5.2 | 27 May 2026 | New Automation Flow button on Automations page — opens modal, creates blank draft flow, navigates directly to builder |
