@@ -1,4 +1,4 @@
-# CollectPilot — AI Receivables Assistant · v2.5
+# CollectPilot — AI Receivables Assistant · v2.6
 
 A Next.js 15 prototype for an AI-powered B2B receivables follow-up platform. Demonstrates automated invoice collection workflows with "Fresh Xero Check" safety gates before every customer contact.
 
@@ -15,7 +15,7 @@ A Next.js 15 prototype for an AI-powered B2B receivables follow-up platform. Dem
 | **Dashboard** | KPIs (total outstanding, overdue, collection rate), aging breakdown chart, collections trend, recent activity feed |
 | **Invoices** | Searchable + sortable table with Status / Flow / Reply status dropdown filters; invoice detail with line items, collapsible batched timeline, customer reply panel, upcoming actions |
 | **Contacts** | Searchable + sortable table; contact detail with exclusion controls and invoice history |
-| **Automation Builder** | Visual drag-and-drop flow builder (Trigger → Email → Delay → SMS → Delay → Call → End); each send block shows a locked ☑ "Check still unpaid in Xero" safety checkbox; create new flows from the Automations list |
+| **Automation Builder** | Visual drag-and-drop flow builder (Trigger → Email → Delay → SMS → Delay → Call → End); each send block shows a locked ☑ "Check still unpaid in Xero" safety checkbox; create new flows from the Automations list; node palette toolbar to add Email/SMS/Call/Delay/Branch/End blocks; trigger type dropdown (days overdue, invoice created, reply received, manual) |
 | **Scheduled Actions** | Run Lookup & Fire (executes full Fresh Xero Check engine), manual approve/skip per action |
 | **Inbox** | AI-classified customer replies (Promise to Pay / Dispute / Out of Office / Payment Query); automation pause control; deep-link from invoice detail |
 | **Settings** | Manual approval mode toggle, blocked keywords, sender name/email config |
@@ -64,8 +64,8 @@ CollectPilot has two independent search mechanisms:
 - **Icons:** Lucide React
 - **Charts:** Recharts v2
 - **Flow Builder:** @xyflow/react v12
-- **State:** Zustand v5 (client-side search store)
-- **Data:** In-memory JSON store — seeded from `/data/*.json` on server start, resets on restart
+- **State:** Zustand v5 (client-side search store + flow persistence store)
+- **Data:** In-memory JSON store (seeded from `/data/*.json`, resets on server restart) + localStorage for user-created/edited flows
 
 ---
 
@@ -93,7 +93,7 @@ The app is deployed to Vercel via GitHub integration. Any push to `main` trigger
 
 No environment variables are required for the current prototype. All data is seeded from `/data/*.json` files.
 
-> **Note on data persistence:** This prototype uses an in-memory store. Data resets on every Vercel serverless cold start. This is expected behaviour for a prototype — for persistence, replace the JSON store with Supabase or similar.
+> **Note on data persistence:** Seeded data (contacts, invoices, scheduled actions, inbox) uses an in-memory store and resets on every Vercel cold start — this is expected for a prototype. **Automation flows** created or edited in the builder are persisted to `localStorage` via Zustand and survive cold starts. For full persistence, replace the JSON store with Supabase or similar.
 
 ---
 
@@ -113,6 +113,7 @@ No environment variables are required for the current prototype. All data is see
 
 | Version | Date | Summary |
 |---------|------|---------|
+| v2.6.0 | 27 May 2026 | Flow persistence via Zustand + localStorage; node palette toolbar (add Email/SMS/Call/Delay/Branch/End); trigger type dropdown; direct builder navigation without server round-trip |
 | v2.5.2 | 26 May 2026 | New Automation Flow button on Automations page — opens modal, creates blank draft flow, navigates directly to builder |
 | v2.5.1 | 26 May 2026 | Xero check on action blocks changed from amber badge to locked auto-ticked checkbox |
 | v2.5.0 | 26 May 2026 | Timeline batch headers show date not time; Automation Builder simplified (lookup nodes hidden, send blocks show Xero check checkbox) |
