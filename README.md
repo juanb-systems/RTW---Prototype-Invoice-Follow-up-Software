@@ -113,15 +113,15 @@ No environment variables are required for the current prototype. All data is see
 
 | Version | Date | Summary |
 |---------|------|---------|
-| v2.6.0 | 27 May 2026 | Flow persistence via Zustand + localStorage; node palette toolbar (add Email/SMS/Call/Delay/Branch/End); trigger type dropdown; direct builder navigation without server round-trip |
-| v2.5.2 | 26 May 2026 | New Automation Flow button on Automations page — opens modal, creates blank draft flow, navigates directly to builder |
-| v2.5.1 | 26 May 2026 | Xero check on action blocks changed from amber badge to locked auto-ticked checkbox |
-| v2.5.0 | 26 May 2026 | Timeline batch headers show date not time; Automation Builder simplified (lookup nodes hidden, send blocks show Xero check checkbox) |
-| v2.4.1 | 26 May 2026 | Hotfix: RSC serialization crash on invoice detail page (onClick on server component) |
-| v2.4.0 | 26 May 2026 | Inbox deep-links, batched timeline, invoice dropdown filters, Open in Xero button |
-| v2.3.0 | 26 May 2026 | True global TopBar search (all sections), interactive notification bell |
-| v2.2.0 | 26 May 2026 | Zustand search store, TopBar embedded search, search on Automations/Scheduled/Inbox |
-| v2.1.0 | 26 May 2026 | Invoice/contact search improvements, Reply column on invoice list |
-| v2.0.0 | 26 May 2026 | Initial prototype (James C feedback: search, sort, timelines, flow builder, inbox) |
+| v2.6.0 | 28 May 2026 | Flow persistence via Zustand + localStorage; node palette toolbar (add Email/SMS/Call/Delay/Branch/End); trigger type dropdown; direct builder navigation without server round-trip |
+| v2.5.2 | 27 May 2026 | New Automation Flow button on Automations page — opens modal, creates blank draft flow, navigates directly to builder |
+| v2.5.1 | 27 May 2026 | Xero check on action blocks changed from amber badge to locked auto-ticked checkbox |
+| v2.5.0 | 27 May 2026 | Timeline batch headers show date not time; Automation Builder simplified (lookup nodes hidden, send blocks show Xero check checkbox) |
+| v2.4.1 | 27 May 2026 | Hotfix: RSC serialization crash on invoice detail page (onClick on server component) |
+| v2.4.0 | 27 May 2026 | Inbox deep-links, batched timeline, invoice dropdown filters, Open in Xero button |
+| v2.3.0 | 27 May 2026 | True global TopBar search (all sections), interactive notification bell |
+| v2.2.0 | 27 May 2026 | Zustand search store, TopBar embedded search, search on Automations/Scheduled/Inbox |
+| v2.1.0 | 27 May 2026 | Invoice/contact search improvements, Reply column on invoice list |
+| v2.0.0 | 27 May 2026 | Initial prototype (James C feedback: search, sort, timelines, flow builder, inbox) |
 
 Full details in [CHANGELOG.md](CHANGELOG.md).

@@ -2,9 +2,9 @@
 
 ---
 
-## v2.6.0 — Persistent Automation Builder + Node Palette (27 May 2026)
+## v2.6.0 — Persistent Automation Builder + Node Palette (28 May 2026)
 
-**Date:** 27 May 2026  
+**Date:** 28 May 2026  
 **package.json version:** 2.6.0
 
 ### Changes
@@ -32,9 +32,9 @@
 
 ---
 
-## v2.5.1 — Xero Check: Locked Checkbox on Action Blocks (26 May 2026)
+## v2.5.1 — Xero Check: Locked Checkbox on Action Blocks (27 May 2026)
 
-**Date:** 26 May 2026  
+**Date:** 27 May 2026  
 **package.json version:** 2.5.0 _(UI refinement, no version bump required)_
 
 ### Change
@@ -51,9 +51,9 @@ The checkbox is `checked` and `disabled` — it reads as a required, immutable s
 
 ---
 
-## v2.5.0 — Timeline Dates · Simplified Automation Builder (26 May 2026)
+## v2.5.0 — Timeline Dates · Simplified Automation Builder (27 May 2026)
 
-**Date:** 26 May 2026  
+**Date:** 27 May 2026  
 **package.json version:** 2.5.0
 
 ### Changes
@@ -73,9 +73,9 @@ The Fresh Xero Check has always been enforced at the point of action-fire (serve
 
 ---
 
-## v2.4.1 — Hotfix: Invoice detail server crash (26 May 2026)
+## v2.4.1 — Hotfix: Invoice detail server crash (27 May 2026)
 
-**Date:** 26 May 2026  
+**Date:** 27 May 2026  
 **package.json version:** 2.4.0 _(patch fix, no version bump required)_
 
 ### Root cause
@@ -96,9 +96,9 @@ Event handlers on native elements are now absent from the Server Component entir
 
 ---
 
-## v2.4.0 — Deep Inbox Links · Batched Timeline · Invoice Filters · Xero Button (26 May 2026)
+## v2.4.0 — Deep Inbox Links · Batched Timeline · Invoice Filters · Xero Button (27 May 2026)
 
-**Date:** 26 May 2026  
+**Date:** 27 May 2026  
 **package.json version:** 2.4.0
 
 ### Changes
@@ -116,9 +116,9 @@ The "Open in Xero" button is always visible on the invoice detail page. In the c
 
 ---
 
-## v2.3.0 — True Global Search + Notification Bell (26 May 2026)
+## v2.3.0 — True Global Search + Notification Bell (27 May 2026)
 
-**Date:** 26 May 2026  
+**Date:** 27 May 2026  
 **package.json version:** 2.3.0
 
 ### Changes
@@ -133,9 +133,9 @@ The "Open in Xero" button is always visible on the invoice detail page. In the c
 
 ---
 
-## v2.2.0 — Global TopBar Search (26 May 2026)
+## v2.2.0 — Global TopBar Search (27 May 2026)
 
-**Date:** 26 May 2026  
+**Date:** 27 May 2026  
 **package.json version:** 2.2.0
 
 ### Changes
@@ -154,7 +154,7 @@ The "Open in Xero" button is always visible on the invoice detail page. In the c
 
 ## v2.1.0 — CollectPilot v2.1 Update Summary
 
-**Date:** 26 May 2026  
+**Date:** 27 May 2026  
 **package.json version:** 2.1.0
 
 ### Changes
@@ -171,9 +171,9 @@ The "Open in Xero" button is always visible on the invoice detail page. In the c
 
 ---
 
-## v2.0.0 — Initial Prototype (26 May 2026)
+## v2.0.0 — Initial Prototype (27 May 2026)
 
-**Session date:** 26 May 2026  
+**Session date:** 27 May 2026  
 **Requested by:** James C (via Slack + Loom)  
 **Implemented by:** Juan B + Claude
 
