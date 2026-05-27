@@ -2,6 +2,36 @@
 
 ---
 
+## v2.6.0 — Persistent Automation Builder + Node Palette (27 May 2026)
+
+**Date:** 27 May 2026  
+**package.json version:** 2.6.0
+
+### Changes
+
+#### Flow persistence (Zustand + localStorage)
+- New flows created via "New Automation Flow" are now saved immediately to `localStorage` via Zustand (`collectpilot-flows` key) and persist across page navigations and Vercel cold starts.
+- The Automations list merges seeded API flows with Zustand-persisted flows — user-created flows survive server restarts.
+- The flow builder at `/automations/[id]/builder` reads from Zustand first, then falls back to the API for seeded flows. New `FlowBuilderPageClient` component handles this client-side lookup.
+- Every "Save Flow" in the builder also calls `upsert` on the Zustand store, so edits to any flow (seeded or user-created) are persisted locally.
+
+#### New flow creation — direct navigation
+- "New Automation Flow" modal now generates a real `FLOW-{timestamp}` ID immediately on the client, writes the stub flow to Zustand, and navigates directly to `/automations/{id}/builder` — no server round-trip needed.
+
+#### Node palette toolbar
+- Added an **Add** toolbar at the top-left of the flow canvas with buttons for: Email, SMS, Call, Delay, Branch (Condition), End.
+- Clicking any button inserts a new node below the existing canvas nodes.
+
+#### Trigger type dropdown
+- The Trigger node config panel now includes a **Trigger Type** dropdown: _Invoice X days overdue_, _Invoice created_, _Reply received_, _Manual / on demand_.
+- The "Days overdue" number input is shown conditionally — only when "Invoice X days overdue" is selected.
+- The TriggerNode canvas card displays the trigger type label when a non-default type is selected.
+
+### Files changed
+`lib/flow-store.ts` (new), `components/automations/builder/FlowBuilderPageClient.tsx` (new), `app/automations/[id]/builder/page.tsx`, `app/automations/page.tsx`, `app/automations/new/builder/page.tsx`, `components/automations/builder/FlowBuilder.tsx`, `components/automations/builder/NodeConfigPanel.tsx`, `components/automations/builder/nodes/TriggerNode.tsx`
+
+---
+
 ## v2.5.1 — Xero Check: Locked Checkbox on Action Blocks (26 May 2026)
 
 **Date:** 26 May 2026  

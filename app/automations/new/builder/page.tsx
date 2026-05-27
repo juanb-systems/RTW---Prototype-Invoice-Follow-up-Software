@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, RefreshCw } from "lucide-react";
 import { FlowBuilder } from "@/components/automations/builder/FlowBuilder";
+import { useFlowStore } from "@/lib/flow-store";
 import type { AutomationFlow, FlowStep, FlowEdge } from "@/lib/types";
 
 function defaultFlow(name: string): AutomationFlow {
@@ -37,6 +38,7 @@ function defaultFlow(name: string): AutomationFlow {
 function NewBuilderContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const upsert = useFlowStore((s) => s.upsert);
   const name = searchParams.get("name") || "Untitled Flow";
   const flow = defaultFlow(name);
 
@@ -47,11 +49,9 @@ function NewBuilderContent() {
       body: JSON.stringify({ name, steps, edges }),
     });
     if (res.ok) {
-      // Navigate to the list — the new flow appears there in the current
-      // server instance. We avoid navigating to /automations/{id}/builder
-      // directly because Vercel serverless may route that request to a fresh
-      // instance where the in-memory store no longer has the new flow.
-      router.push("/automations");
+      const savedFlow = await res.json() as AutomationFlow;
+      upsert(savedFlow);
+      router.push(`/automations/${savedFlow.id}/builder`);
     }
   }
 

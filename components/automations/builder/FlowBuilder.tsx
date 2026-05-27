@@ -18,7 +18,7 @@ import "@xyflow/react/dist/style.css";
 import { nodeTypes } from "./nodeTypes";
 import { NodeConfigPanel } from "./NodeConfigPanel";
 import type { AutomationFlow, FlowStep, FlowEdge } from "@/lib/types";
-import { Save, CheckSquare } from "lucide-react";
+import { Save, CheckSquare, Plus } from "lucide-react";
 
 function stepsToDisplayNodes(steps: FlowStep[]): Node[] {
   return steps
@@ -69,13 +69,31 @@ function buildDisplayEdges(steps: FlowStep[], edges: FlowEdge[]): Edge[] {
   return displayEdges;
 }
 
+const PALETTE_ITEMS = [
+  { type: "email",     label: "Email",  cls: "text-blue-600 hover:bg-blue-50" },
+  { type: "sms",       label: "SMS",    cls: "text-purple-600 hover:bg-purple-50" },
+  { type: "call",      label: "Call",   cls: "text-green-600 hover:bg-green-50" },
+  { type: "wait",      label: "Delay",  cls: "text-gray-600 hover:bg-gray-50" },
+  { type: "condition", label: "Branch", cls: "text-indigo-600 hover:bg-indigo-50" },
+  { type: "end",       label: "End",    cls: "text-gray-500 hover:bg-gray-50" },
+] as const;
+
+const DEFAULT_CONFIGS: Record<string, Record<string, unknown>> = {
+  email:     { label: "Send Email",      subject: "", body: "" },
+  sms:       { label: "Send SMS",        template: "" },
+  call:      { label: "Schedule Call",   notes: "" },
+  wait:      { label: "Wait",            days: 3 },
+  condition: { label: "Condition",       condition: "" },
+  end:       { label: "End" },
+};
+
 interface FlowBuilderProps {
   flow: AutomationFlow;
-  // Provided for new (unsaved) flows. Called instead of PATCH on first save.
   onSaveNew?: (steps: FlowStep[], edges: FlowEdge[]) => Promise<void>;
+  onAfterSave?: (flow: AutomationFlow) => void;
 }
 
-function FlowCanvas({ flow, onSaveNew }: FlowBuilderProps) {
+function FlowCanvas({ flow, onSaveNew, onAfterSave }: FlowBuilderProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState(stepsToDisplayNodes(flow.steps));
   const [edges, setEdges, onEdgesChange] = useEdgesState(buildDisplayEdges(flow.steps, flow.edges));
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
@@ -90,6 +108,17 @@ function FlowCanvas({ flow, onSaveNew }: FlowBuilderProps) {
     },
     [setEdges]
   );
+
+  function addBlock(type: typeof PALETTE_ITEMS[number]["type"]) {
+    const id = `${type}-${Date.now()}`;
+    const newNode: Node = {
+      id,
+      type,
+      position: { x: 300, y: (nodes.length + 1) * 150 },
+      data: DEFAULT_CONFIGS[type] ?? { label: type },
+    };
+    setNodes((nds) => [...nds, newNode]);
+  }
 
   async function handleSave() {
     setSaving(true);
@@ -120,7 +149,11 @@ function FlowCanvas({ flow, onSaveNew }: FlowBuilderProps) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ steps, edges: flowEdges }),
     });
-    if (!res.ok) setSaveError("Failed to save. Please try again.");
+    if (!res.ok) {
+      setSaveError("Failed to save. Please try again.");
+    } else {
+      onAfterSave?.({ ...flow, steps, edges: flowEdges });
+    }
     setSaving(false);
   }
 
@@ -135,7 +168,22 @@ function FlowCanvas({ flow, onSaveNew }: FlowBuilderProps) {
     <div className="flex h-full">
       {/* Canvas */}
       <div className="flex-1 relative">
-        {/* Toolbar */}
+        {/* Node palette */}
+        <div className="absolute top-3 left-3 z-10 flex items-center gap-0.5 rounded-lg border border-gray-200 bg-white px-2 py-1.5 shadow-sm">
+          <span className="mr-1.5 text-[10px] font-semibold uppercase tracking-wide text-gray-400">Add</span>
+          {PALETTE_ITEMS.map(({ type, label, cls }) => (
+            <button
+              key={type}
+              onClick={() => addBlock(type)}
+              className={`flex items-center gap-0.5 rounded px-1.5 py-1 text-xs font-medium transition-colors ${cls}`}
+            >
+              <Plus className="h-3 w-3" />
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Save toolbar */}
         <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
           {saveError && (
             <span className="text-xs text-red-600">{saveError}</span>
@@ -186,10 +234,10 @@ function FlowCanvas({ flow, onSaveNew }: FlowBuilderProps) {
   );
 }
 
-export function FlowBuilder({ flow, onSaveNew }: FlowBuilderProps) {
+export function FlowBuilder({ flow, onSaveNew, onAfterSave }: FlowBuilderProps) {
   return (
     <ReactFlowProvider>
-      <FlowCanvas flow={flow} onSaveNew={onSaveNew} />
+      <FlowCanvas flow={flow} onSaveNew={onSaveNew} onAfterSave={onAfterSave} />
     </ReactFlowProvider>
   );
 }

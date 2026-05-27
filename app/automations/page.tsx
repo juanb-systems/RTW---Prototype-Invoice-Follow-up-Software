@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { TopBar } from "@/components/layout/TopBar";
 import { Mail, MessageSquare, Phone, Clock, GitBranch, RefreshCw, Zap, Search, X, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSearchStore } from "@/lib/search-store";
+import { useFlowStore } from "@/lib/flow-store";
 import type { AutomationFlow, FlowStep } from "@/lib/types";
 
 const statusConfig = {
@@ -99,28 +100,49 @@ function NewFlowModal({ onClose, onCreate }: {
 
 export default function AutomationsPage() {
   const router = useRouter();
-  const [flows, setFlows] = useState<AutomationFlow[]>([]);
+  const [apiFlows, setApiFlows] = useState<AutomationFlow[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
 
   const { query, setQuery, clear } = useSearchStore();
   const searchRef = useRef<HTMLInputElement>(null);
 
+  const upsert = useFlowStore((s) => s.upsert);
+  const storeFlows = useFlowStore((s) => s.flows);
+
+  // Merge seeded API flows with Zustand-persisted flows.
+  // Zustand entries override same-ID API entries and append new ones.
+  const flows = useMemo(() => {
+    const merged = new Map<string, AutomationFlow>();
+    apiFlows.forEach((f) => merged.set(f.id, f));
+    Object.values(storeFlows).forEach((f) => merged.set(f.id, f));
+    return Array.from(merged.values());
+  }, [apiFlows, storeFlows]);
+
   async function handleCreate(name: string) {
-    // Navigate to the client-side new-flow builder. We pass the name via query
-    // param so the page can label the flow. Creation (POST) happens only when
-    // the user clicks "Create Flow" inside the builder — this avoids a Vercel
-    // cold-start 404 that would occur if we created via API then navigated to
-    // a server-rendered page that looks up the flow from the in-memory store.
-    const encoded = encodeURIComponent(name.trim() || "Untitled Flow");
-    router.push(`/automations/new/builder?name=${encoded}`);
+    const id = `FLOW-${Date.now()}`;
+    const trimmedName = name.trim() || "Untitled Flow";
+    const newFlow: AutomationFlow = {
+      id,
+      name: trimmedName,
+      description: "New automation flow",
+      status: "draft",
+      trigger: { type: "days_overdue", value: 7 },
+      steps: [
+        { id: `${id}-T`,   type: "trigger", order: 1, config: { label: "Invoice 7 days overdue", days: 7 },   position: { x: 300, y: 50 } },
+        { id: `${id}-END`, type: "end",     order: 2, config: { label: "End" },                                position: { x: 300, y: 230 } },
+      ],
+      edges: [{ id: `${id}-E1`, source: `${id}-T`, target: `${id}-END` }],
+    };
+    upsert(newFlow);
+    router.push(`/automations/${id}/builder`);
   }
 
   useEffect(() => {
     fetch("/api/automations", { cache: "no-store" })
       .then((r) => r.json())
       .then((data) => {
-        setFlows(data);
+        setApiFlows(data);
         setLoading(false);
       });
   }, []);

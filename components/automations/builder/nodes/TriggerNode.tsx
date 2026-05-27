@@ -3,8 +3,17 @@
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { Zap } from "lucide-react";
 
+const TRIGGER_TYPE_LABELS: Record<string, string> = {
+  days_overdue: "",
+  invoice_created: "Invoice created",
+  reply_received: "Reply received",
+  manual: "Manual / on demand",
+};
+
 export function TriggerNode({ data, selected }: NodeProps) {
-  const cfg = data as { label?: string; days?: number };
+  const cfg = data as { label?: string; days?: number; triggerType?: string };
+  const triggerType = cfg.triggerType ?? "days_overdue";
+
   return (
     <div
       className={`rounded-xl border-2 bg-white shadow-md w-52 ${
@@ -19,9 +28,13 @@ export function TriggerNode({ data, selected }: NodeProps) {
         <p className="text-xs font-medium text-gray-700">
           {cfg.label ?? "When invoice is overdue"}
         </p>
-        {cfg.days !== undefined && (
+        {triggerType !== "days_overdue" ? (
+          <p className="text-xs text-gray-400 mt-0.5">
+            {TRIGGER_TYPE_LABELS[triggerType] ?? triggerType}
+          </p>
+        ) : cfg.days !== undefined ? (
           <p className="text-xs text-gray-400 mt-0.5">{cfg.days} days past due</p>
-        )}
+        ) : null}
       </div>
       <Handle type="source" position={Position.Bottom} className="!w-3 !h-3 !bg-gray-400" />
     </div>

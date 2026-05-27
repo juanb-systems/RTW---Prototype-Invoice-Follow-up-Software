@@ -286,9 +286,24 @@ export function NodeConfigPanel({ node, onSave, onClose }: NodeConfigPanelProps)
               <input type="text" value={(values.label as string) ?? ""} onChange={(e) => handleChange("label", e.target.value)} className="w-full rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-700 focus:border-blue-400 focus:outline-none" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Days overdue to trigger</label>
-              <input type="number" value={(values.days as number) ?? ""} onChange={(e) => handleChange("days", parseInt(e.target.value) || 0)} className="w-full rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-700 focus:border-blue-400 focus:outline-none" />
+              <label className="block text-xs font-medium text-gray-600 mb-1">Trigger Type</label>
+              <select
+                value={(values.triggerType as string) ?? "days_overdue"}
+                onChange={(e) => handleChange("triggerType", e.target.value)}
+                className="w-full rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-700 focus:border-blue-400 focus:outline-none bg-white"
+              >
+                <option value="days_overdue">Invoice X days overdue</option>
+                <option value="invoice_created">Invoice created</option>
+                <option value="reply_received">Reply received</option>
+                <option value="manual">Manual / on demand</option>
+              </select>
             </div>
+            {(!(values.triggerType) || values.triggerType === "days_overdue") && (
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Days overdue to trigger</label>
+                <input type="number" value={(values.days as number) ?? ""} onChange={(e) => handleChange("days", parseInt(e.target.value) || 0)} className="w-full rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-700 focus:border-blue-400 focus:outline-none" />
+              </div>
+            )}
           </>
         )}
 
