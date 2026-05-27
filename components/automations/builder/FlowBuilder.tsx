@@ -36,7 +36,6 @@ function buildDisplayEdges(steps: FlowStep[], edges: FlowEdge[]): Edge[] {
   const displayEdges: Edge[] = [];
   const processedIds = new Set<string>();
 
-  // For each hidden lookup node, create a bypass edge: (predecessor → successor)
   for (const lookupId of lookupIds) {
     const inEdge  = edges.find((e) => e.target === lookupId);
     const outEdge = edges.find((e) => e.source === lookupId);
@@ -53,7 +52,6 @@ function buildDisplayEdges(steps: FlowStep[], edges: FlowEdge[]): Edge[] {
     }
   }
 
-  // Include all edges that don't touch a lookup node
   for (const edge of edges) {
     if (!processedIds.has(edge.id) && !lookupIds.has(edge.source) && !lookupIds.has(edge.target)) {
       displayEdges.push({
@@ -73,14 +71,18 @@ function buildDisplayEdges(steps: FlowStep[], edges: FlowEdge[]): Edge[] {
 
 interface FlowBuilderProps {
   flow: AutomationFlow;
+  // Provided for new (unsaved) flows. Called instead of PATCH on first save.
+  onSaveNew?: (steps: FlowStep[], edges: FlowEdge[]) => Promise<void>;
 }
 
-function FlowCanvas({ flow }: FlowBuilderProps) {
+function FlowCanvas({ flow, onSaveNew }: FlowBuilderProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState(stepsToDisplayNodes(flow.steps));
   const [edges, setEdges, onEdgesChange] = useEdgesState(buildDisplayEdges(flow.steps, flow.edges));
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+
+  const isNew = flow.id === "new";
 
   const onConnect = useCallback(
     (connection: Connection) => {
@@ -106,6 +108,13 @@ function FlowCanvas({ flow }: FlowBuilderProps) {
       sourceHandle: e.sourceHandle ?? undefined,
       targetHandle: e.targetHandle ?? undefined,
     }));
+
+    if (isNew && onSaveNew) {
+      await onSaveNew(steps, flowEdges);
+      setSaving(false);
+      return;
+    }
+
     const res = await fetch(`/api/automations/${flow.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -137,7 +146,7 @@ function FlowCanvas({ flow }: FlowBuilderProps) {
             className="flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white shadow-md hover:bg-blue-700 disabled:opacity-50"
           >
             <Save className="h-3.5 w-3.5" />
-            {saving ? "Saving..." : "Save Flow"}
+            {saving ? "Saving..." : isNew ? "Create Flow" : "Save Flow"}
           </button>
         </div>
 
@@ -177,10 +186,10 @@ function FlowCanvas({ flow }: FlowBuilderProps) {
   );
 }
 
-export function FlowBuilder({ flow }: FlowBuilderProps) {
+export function FlowBuilder({ flow, onSaveNew }: FlowBuilderProps) {
   return (
     <ReactFlowProvider>
-      <FlowCanvas flow={flow} />
+      <FlowCanvas flow={flow} onSaveNew={onSaveNew} />
     </ReactFlowProvider>
   );
 }

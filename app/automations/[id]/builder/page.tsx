@@ -1,6 +1,5 @@
-import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, RefreshCw } from "lucide-react";
+import { ArrowLeft, RefreshCw, AlertTriangle } from "lucide-react";
 import { FlowBuilder } from "@/components/automations/builder/FlowBuilder";
 import { getAutomationFlow } from "@/lib/server-data";
 
@@ -13,7 +12,27 @@ export default async function FlowBuilderPage({
 }) {
   const { id } = await params;
   const flow = getAutomationFlow(id);
-  if (!flow) notFound();
+
+  if (!flow) {
+    return (
+      <div className="flex h-screen flex-col items-center justify-center gap-4 bg-gray-50">
+        <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm text-center max-w-sm">
+          <AlertTriangle className="h-8 w-8 text-amber-400 mx-auto mb-3" />
+          <h2 className="text-sm font-semibold text-gray-900 mb-1">Flow not found</h2>
+          <p className="text-xs text-gray-500 leading-relaxed mb-4">
+            This flow could not be loaded. If you just created it, the server may have restarted and cleared in-memory data. Go back to Automations and use <strong>Edit Flow</strong> on an existing flow.
+          </p>
+          <Link
+            href="/automations"
+            className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-xs font-medium text-white hover:bg-blue-700"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back to Automations
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">

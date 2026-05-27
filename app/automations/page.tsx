@@ -107,15 +107,13 @@ export default function AutomationsPage() {
   const searchRef = useRef<HTMLInputElement>(null);
 
   async function handleCreate(name: string) {
-    const res = await fetch("/api/automations", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name }),
-    });
-    if (res.ok) {
-      const newFlow: AutomationFlow = await res.json();
-      router.push(`/automations/${newFlow.id}/builder`);
-    }
+    // Navigate to the client-side new-flow builder. We pass the name via query
+    // param so the page can label the flow. Creation (POST) happens only when
+    // the user clicks "Create Flow" inside the builder — this avoids a Vercel
+    // cold-start 404 that would occur if we created via API then navigated to
+    // a server-rendered page that looks up the flow from the in-memory store.
+    const encoded = encodeURIComponent(name.trim() || "Untitled Flow");
+    router.push(`/automations/new/builder?name=${encoded}`);
   }
 
   useEffect(() => {
