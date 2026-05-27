@@ -1,4 +1,4 @@
-# CollectPilot — AI Receivables Assistant · v2.6
+# CollectPilot — AI Receivables Assistant · v2.7
 
 A Next.js 15 prototype for an AI-powered B2B receivables follow-up platform. Demonstrates automated invoice collection workflows with "Fresh Xero Check" safety gates before every customer contact.
 
@@ -15,7 +15,7 @@ A Next.js 15 prototype for an AI-powered B2B receivables follow-up platform. Dem
 | **Dashboard** | KPIs (total outstanding, overdue, collection rate), aging breakdown chart, collections trend, recent activity feed |
 | **Invoices** | Searchable + sortable table with Status / Flow / Reply status dropdown filters; invoice detail with line items, collapsible batched timeline, customer reply panel, upcoming actions |
 | **Contacts** | Searchable + sortable table; contact detail with exclusion controls and invoice history |
-| **Automation Builder** | Visual drag-and-drop flow builder (Trigger → Email → Delay → SMS → Delay → Call → End); each send block shows a locked ☑ "Check still unpaid in Xero" safety checkbox; create new flows from the Automations list; node palette toolbar to add Email/SMS/Call/Delay/Branch/End blocks; trigger type dropdown (days overdue, invoice created, reply received, manual) |
+| **Automation Builder** | Functional vertical-list builder (Trigger → Email → Delay → SMS → Call → End); add blocks via toolbar or inline "+" insert between steps; delete blocks with trash icon; inline edit panel per block (trigger type, days, label, subject, message, notes); each Email/SMS/Call block shows a locked ☑ "Check still unpaid in Xero" safety checkbox |
 | **Scheduled Actions** | Run Lookup & Fire (executes full Fresh Xero Check engine), manual approve/skip per action |
 | **Inbox** | AI-classified customer replies (Promise to Pay / Dispute / Out of Office / Payment Query); automation pause control; deep-link from invoice detail |
 | **Settings** | Manual approval mode toggle, blocked keywords, sender name/email config |
@@ -113,7 +113,8 @@ No environment variables are required for the current prototype. All data is see
 
 | Version | Date | Summary |
 |---------|------|---------|
-| v2.6.0 | 28 May 2026 | Flow persistence via Zustand + localStorage; node palette toolbar (add Email/SMS/Call/Delay/Branch/End); trigger type dropdown; direct builder navigation without server round-trip |
+| v2.7.0 | 28 May 2026 | Functional builder rewrite: add/insert/delete blocks, inline editing, Xero checkbox, Save ✓ feedback; React Flow canvas removed |
+| v2.6.0 | 28 May 2026 | Flow persistence via Zustand + localStorage; direct builder navigation without server round-trip |
 | v2.5.2 | 27 May 2026 | New Automation Flow button on Automations page — opens modal, creates blank draft flow, navigates directly to builder |
 | v2.5.1 | 27 May 2026 | Xero check on action blocks changed from amber badge to locked auto-ticked checkbox |
 | v2.5.0 | 27 May 2026 | Timeline batch headers show date not time; Automation Builder simplified (lookup nodes hidden, send blocks show Xero check checkbox) |

@@ -2,6 +2,59 @@
 
 ---
 
+## v2.7.0 — Functional Automation Builder (28 May 2026)
+
+**Date:** 28 May 2026
+**package.json version:** 2.7.0
+
+### Summary
+
+Complete rewrite of the Automation Builder UI. Replaced the React Flow canvas (which rendered as a static-feeling mockup) with a functional vertical-list builder that users can actually edit.
+
+### Changes
+
+#### Builder rebuilt as a functional list
+- The canvas (`@xyflow/react`) has been removed from the builder view. The builder now renders as a scrollable vertical list of step cards.
+- Each card shows the block type icon, a readable subtitle (e.g. "Invoice 7 days overdue", "Wait 3 days"), and action buttons.
+
+#### Add block toolbar (functional)
+- Toolbar at the top of the builder with **Email**, **SMS**, **Call**, and **Delay** buttons.
+- Each button adds the corresponding block immediately before the End Automation step.
+- Branch (Condition) removed from the toolbar — not yet functional; will be re-added in a future release.
+
+#### Inline "+" insert between blocks
+- A dashed-circle **+** button appears between every pair of steps.
+- Clicking it opens a small floating picker (Email / SMS / Call / Delay) to insert a block at that exact position.
+
+#### Delete blocks
+- Every editable block (Email, SMS, Call, Delay) has a trash icon in its header row.
+- Trigger and End Automation cannot be deleted.
+
+#### Inline editing
+- Each block has an **Edit / Done** toggle that expands an inline edit panel.
+- **Trigger**: trigger type dropdown + days-overdue input (conditional).
+- **Delay**: label + days-to-wait number input.
+- **Email**: label/name, subject line, sender name.
+- **SMS**: label/name, message body.
+- **Call**: label/task name, call notes.
+
+#### Xero safety checkbox
+- Email, SMS, and Call cards each display a locked, pre-ticked **"Check still unpaid in Xero"** checkbox below the header.
+- Disabled and non-removable. Footer notice reinforces this for the whole flow.
+
+#### Save behaviour
+- "Save Flow" serialises the display steps back to the full `AutomationFlow` format (re-inserting `lookup_check` nodes before every action step and generating linear edges), PATCHes to the API, and calls `upsert` on the Zustand store.
+- "Saved ✓" confirmation appears for 2.5 seconds after a successful save.
+- Reopening the builder after save shows the correct persisted state.
+
+#### Bundle size
+- Builder bundle reduced from **171 kB → 114 kB** (React Flow dependency removed from the critical path).
+
+### Files changed
+`components/automations/builder/FlowBuilder.tsx` (major rewrite), `package.json`
+
+---
+
 ## v2.6.0 — Persistent Automation Builder + Node Palette (28 May 2026)
 
 **Date:** 28 May 2026  
