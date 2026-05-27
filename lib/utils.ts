@@ -46,6 +46,21 @@ export function formatRelativeTime(dateString: string): string {
   return formatDate(dateString);
 }
 
+export function formatActivityTimestamp(dateString: string): string {
+  const date = new Date(dateString);
+  const datePart = new Intl.DateTimeFormat("en-AU", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(date);
+  const timePart = new Intl.DateTimeFormat("en-AU", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).format(date).replace("am", "AM").replace("pm", "PM");
+  return `${datePart} · ${timePart}`;
+}
+
 export function agingBucket(daysPastDue: number): string {
   if (daysPastDue <= 14) return "1–14 days";
   if (daysPastDue <= 30) return "15–30 days";

@@ -12,7 +12,7 @@ import {
   GitBranch,
   PauseCircle,
 } from "lucide-react";
-import { formatRelativeTime } from "@/lib/utils";
+import { formatActivityTimestamp } from "@/lib/utils";
 import type { TimelineEventType } from "@/lib/types";
 
 interface ActivityItem {
@@ -74,7 +74,7 @@ export function RecentActivityFeed({ items }: { items: ActivityItem[] }) {
                   {item.contact && (
                     <span className="truncate">{item.contact.name}</span>
                   )}
-                  <span className="ml-auto flex-shrink-0">{formatRelativeTime(item.timestamp)}</span>
+                  <span className="ml-auto flex-shrink-0">{formatActivityTimestamp(item.timestamp)}</span>
                 </div>
               </div>
             </li>
