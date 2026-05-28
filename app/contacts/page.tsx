@@ -9,7 +9,7 @@ import { useSearchStore } from "@/lib/search-store";
 import { Mail, Phone, Building2, Search, X, ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 import type { ContactStatus } from "@/lib/types";
 
-type SortCol = "name" | "email" | "invoices" | "totalOwed" | "overdueCount" | "status";
+type SortCol = "name" | "email" | "phone" | "invoices" | "totalOwed" | "overdueCount" | "status";
 type SortDir = "asc" | "desc";
 
 interface ContactRow {
@@ -91,6 +91,7 @@ export default function ContactsPage() {
     switch (sortCol) {
       case "name":         return dir * a.name.localeCompare(b.name);
       case "email":        return dir * a.email.localeCompare(b.email);
+      case "phone":        return dir * a.phone.localeCompare(b.phone);
       case "invoices":     return dir * (a.invoiceCount - b.invoiceCount);
       case "totalOwed":    return dir * (a.totalOwed - b.totalOwed);
       case "overdueCount": return dir * (a.overdueCount - b.overdueCount);
@@ -105,6 +106,7 @@ export default function ContactsPage() {
   const columns: { col: SortCol; label: string; align: "left" | "right" | "center" }[] = [
     { col: "name",         label: "Contact",    align: "left" },
     { col: "email",        label: "Email",      align: "left" },
+    { col: "phone",        label: "Phone",      align: "left" },
     { col: "invoices",     label: "Invoices",   align: "center" },
     { col: "totalOwed",    label: "Total Owed", align: "right" },
     { col: "overdueCount", label: "Overdue",    align: "center" },
@@ -175,7 +177,6 @@ export default function ContactsPage() {
                         </span>
                       </th>
                     ))}
-                    <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
                     <th className="px-5 py-3" />
                   </tr>
                 </thead>
@@ -216,6 +217,12 @@ export default function ContactsPage() {
                             {contact.email}
                           </div>
                         </td>
+                        <td className="px-5 py-3.5">
+                          <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                            <Phone className="h-3 w-3 text-gray-300 flex-shrink-0" />
+                            {contact.phone}
+                          </div>
+                        </td>
                         <td className="px-5 py-3.5 text-center">
                           <span className="text-xs font-medium text-gray-900">{contact.invoiceCount}</span>
                         </td>
@@ -235,12 +242,6 @@ export default function ContactsPage() {
                         </td>
                         <td className="px-5 py-3.5">
                           <ContactStatusBadge status={contact.status as ContactStatus} />
-                        </td>
-                        <td className="px-5 py-3.5">
-                          <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                            <Phone className="h-3 w-3 text-gray-300 flex-shrink-0" />
-                            {contact.phone}
-                          </div>
                         </td>
                         <td className="px-5 py-3.5">
                           <Link href={`/contacts/${contact.id}`} className="text-xs font-medium text-blue-600 hover:text-blue-800 hover:underline">
