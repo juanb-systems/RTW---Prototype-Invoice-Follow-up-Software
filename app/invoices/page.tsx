@@ -8,7 +8,7 @@ import { formatCurrency, formatDate, agingColor } from "@/lib/utils";
 import { useSearchStore } from "@/lib/search-store";
 import { Search, X, ChevronUp, ChevronDown, ChevronsUpDown, PauseCircle, SlidersHorizontal } from "lucide-react";
 
-type SortCol = "invoiceNumber" | "contact" | "amount" | "dueDate" | "daysPastDue" | "status" | "flow";
+type SortCol = "invoiceNumber" | "contact" | "amount" | "dueDate" | "daysPastDue" | "status" | "flow" | "reply";
 type SortDir = "asc" | "desc";
 
 interface InvoiceRow {
@@ -167,6 +167,11 @@ export default function InvoicesPage() {
       case "daysPastDue":   return dir * (a.daysPastDue - b.daysPastDue);
       case "status":        return dir * a.status.localeCompare(b.status);
       case "flow":          return dir * ((flowMap[a.assignedFlowId ?? ""] ?? "").localeCompare(flowMap[b.assignedFlowId ?? ""] ?? ""));
+      case "reply": {
+        const aLabel = replyMap[a.id] ? REPLY_LABELS[replyMap[a.id].classification] : "No reply";
+        const bLabel = replyMap[b.id] ? REPLY_LABELS[replyMap[b.id].classification] : "No reply";
+        return dir * aLabel.localeCompare(bLabel);
+      }
       default:              return 0;
     }
   });
@@ -193,6 +198,7 @@ export default function InvoicesPage() {
     { col: "daysPastDue",   label: "Days Overdue", align: "center" },
     { col: "status",        label: "Status",       align: "left" },
     { col: "flow",          label: "Flow",         align: "left" },
+    { col: "reply",         label: "Reply",        align: "left" },
   ];
 
   return (
@@ -305,9 +311,6 @@ export default function InvoicesPage() {
                         </span>
                       </th>
                     ))}
-                    <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      Reply
-                    </th>
                     <th className="px-5 py-3" />
                   </tr>
                 </thead>

@@ -40,6 +40,12 @@ Improves the Call Templates editor UX and adds unsaved-changes protection across
 - All sidebar NavItem links now intercept navigation when dirty and show a confirmation dialog before proceeding.
 - NavItem converted from `<Link>` to a guarded `<button>` using `useRouter.push`.
 
+#### Fix: Invoice table Reply column sorting
+- The Reply column was non-sortable (static header, no sort handler).
+- Added `"reply"` to `SortCol` type, included it in the sortable `columns` array, and removed the separate static `<th>`.
+- Sort compares the reply label text alphabetically (`Dispute` → `No reply` → `Out of Office` → `Payment Query` → `Promise to Pay` → `Reply received`); `"No reply"` sorts consistently as the literal string.
+- Works together with search, Status filter, Flow filter, and Reply filter.
+
 ---
 
 ## v2.9.0 — Additional Call Templates, Inbox Selection Fix, Merge Tag QA (28 May 2026)
