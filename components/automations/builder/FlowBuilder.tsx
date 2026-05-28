@@ -106,8 +106,6 @@ function defaultConfig(type: string): Record<string, unknown> {
         label: "AI Call",
         templateId: "TPL001",
         templateName: "Overdue Invoice AI Call",
-        assignedTo: "ai",
-        customAssignee: "",
         timing: "immediately",
         delayValue: 1,
         delayUnit: "hours",
@@ -685,20 +683,6 @@ function StepCard({
                 <div className="rounded-md border border-green-200 bg-green-50 px-3 py-1.5 text-[11px] text-green-700">
                   Template selected: <strong>{(cfg.templateName as string) || (cfg.templateId as string)}</strong>. The AI caller will use this script.
                 </div>
-              )}
-
-              <FieldRow label="Assigned to">
-                <select value={(cfg.assignedTo as string) ?? "ai"} onChange={e => set("assignedTo", e.target.value)} className={selectCls}>
-                  <option value="ai">AI caller</option>
-                  <option value="accounts">Accounts team</option>
-                  <option value="admin">Admin</option>
-                  <option value="custom">Custom assignee</option>
-                </select>
-              </FieldRow>
-              {cfg.assignedTo === "custom" && (
-                <FieldRow label="Assignee name">
-                  <input type="text" value={(cfg.customAssignee as string) ?? ""} onChange={e => set("customAssignee", e.target.value)} placeholder="e.g. Sarah Smith" className={inputCls} />
-                </FieldRow>
               )}
 
               <FieldRow label="Call timing">
