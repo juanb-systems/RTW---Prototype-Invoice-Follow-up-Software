@@ -41,7 +41,6 @@ type Message = {
   automationPaused: boolean;
   invoice?: { invoiceNumber: string; amount: number };
   contact?: { name: string; company: string };
-  // Call-specific
   type?: "email" | "call";
   callStatus?: CallStatus;
   callOutcome?: string;
@@ -110,57 +109,51 @@ const callOutcomeClassColor: Record<MessageClassification, string> = {
 
 function CallCard({
   message,
-  onUpdate,
-  highlighted = false,
-  defaultExpanded = false,
+  isSelected,
+  onSelect,
+  onPatch,
 }: {
   message: Message;
-  onUpdate: () => void;
-  highlighted?: boolean;
-  defaultExpanded?: boolean;
+  isSelected: boolean;
+  onSelect: () => void;
+  onPatch: (changes: Partial<Message>) => void;
 }) {
-  const [expanded, setExpanded] = useState(defaultExpanded);
   const [pausing, setPausing] = useState(false);
 
   const callCfg = callStatusConfig[message.callStatus ?? "completed"] ?? callStatusConfig.completed;
   const CallStatusIcon = callCfg.icon;
   const outcomeCls = callOutcomeClassColor[message.classification] ?? callOutcomeClassColor.unclassified;
 
+  function handleClick() {
+    onSelect();
+    if (!message.isRead) onPatch({ isRead: true });
+  }
+
   async function pauseAutomation() {
     setPausing(true);
+    onPatch({ automationPaused: true, isRead: true });
     await fetch("/api/inbox", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: message.id, automationPaused: true, isRead: true }),
     });
     setPausing(false);
-    onUpdate();
-  }
-
-  async function markRead() {
-    if (message.isRead) return;
-    await fetch("/api/inbox", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: message.id, isRead: true }),
-    });
-    onUpdate();
   }
 
   return (
     <div
       id={`msg-${message.id}`}
       className={`rounded-xl border bg-white shadow-sm transition-shadow hover:shadow-md ${
-        highlighted
-          ? "border-green-400 ring-2 ring-green-200"
+        isSelected
+          ? "border-green-400 ring-2 ring-green-200 shadow-md"
           : !message.isRead
           ? "border-green-300"
           : "border-gray-200"
       }`}
     >
       <div
-        className="flex items-start gap-3 p-4 cursor-pointer"
-        onClick={() => { setExpanded(!expanded); markRead(); }}
+        className="flex items-start gap-3 p-4 cursor-pointer select-none"
+        onClick={handleClick}
       >
         {/* Unread indicator */}
         <div className="mt-1 flex-shrink-0">
@@ -186,20 +179,16 @@ function CallCard({
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
-            {/* Call status */}
             <div className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-medium ${callCfg.color}`}>
               <CallStatusIcon className="h-3 w-3" />
               {callCfg.label}
             </div>
-
-            {/* Outcome classification */}
             {message.callOutcome && (
               <div className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${outcomeCls}`}>
                 <BrainCircuit className="h-3 w-3" />
                 {message.callOutcome}
               </div>
             )}
-
             {message.automationPaused && (
               <div className="inline-flex items-center gap-1 rounded-full border border-orange-200 bg-orange-50 px-2 py-0.5 text-xs font-medium text-orange-700">
                 <PauseCircle className="h-3 w-3" />
@@ -211,7 +200,11 @@ function CallCard({
           {message.invoice && (
             <p className="mt-1 text-xs text-gray-400">
               Re:{" "}
-              <Link href={`/invoices/${message.invoiceId}`} className="text-blue-500 hover:underline font-medium" onClick={(e) => e.stopPropagation()}>
+              <Link
+                href={`/invoices/${message.invoiceId}`}
+                className="text-blue-500 hover:underline font-medium"
+                onClick={(e) => e.stopPropagation()}
+              >
                 {message.invoice.invoiceNumber}
               </Link>
               {" · "}
@@ -222,15 +215,14 @@ function CallCard({
           )}
         </div>
 
-        <button className="text-gray-300 hover:text-gray-500 flex-shrink-0 mt-0.5">
-          {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-        </button>
+        <div className="text-gray-300 hover:text-gray-500 flex-shrink-0 mt-0.5 pointer-events-none">
+          {isSelected ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        </div>
       </div>
 
       {/* Expanded transcript */}
-      {expanded && (
+      {isSelected && (
         <div className="border-t border-gray-100 px-4 py-3 space-y-3">
-          {/* Status-specific banners */}
           {message.callStatus === "needs_review" && (
             <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 flex items-start gap-2">
               <UserCheck className="h-4 w-4 text-red-500 flex-shrink-0 mt-0.5" />
@@ -256,7 +248,6 @@ function CallCard({
             </div>
           )}
 
-          {/* Transcript preview */}
           <div>
             <p className="text-[11px] font-medium text-gray-500 mb-1.5 uppercase tracking-wide">Call Transcript</p>
             <div className="rounded-md bg-gray-50 border border-gray-100 p-3 max-h-72 overflow-y-auto">
@@ -266,11 +257,10 @@ function CallCard({
             </div>
           </div>
 
-          {/* Actions */}
           <div className="flex gap-2 flex-wrap">
             {!message.automationPaused && (
               <button
-                onClick={pauseAutomation}
+                onClick={(e) => { e.stopPropagation(); pauseAutomation(); }}
                 disabled={pausing}
                 className="flex items-center gap-1.5 rounded-md border border-orange-200 bg-orange-50 px-3 py-1.5 text-xs font-medium text-orange-700 hover:bg-orange-100 disabled:opacity-50"
               >
@@ -281,6 +271,7 @@ function CallCard({
             <Link
               href={`/invoices/${message.invoiceId}`}
               className="flex items-center gap-1.5 rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
+              onClick={(e) => e.stopPropagation()}
             >
               View Invoice →
             </Link>
@@ -295,16 +286,15 @@ function CallCard({
 
 function MessageCard({
   message,
-  onUpdate,
-  highlighted = false,
-  defaultExpanded = false,
+  isSelected,
+  onSelect,
+  onPatch,
 }: {
   message: Message;
-  onUpdate: () => void;
-  highlighted?: boolean;
-  defaultExpanded?: boolean;
+  isSelected: boolean;
+  onSelect: () => void;
+  onPatch: (changes: Partial<Message>) => void;
 }) {
-  const [expanded, setExpanded] = useState(defaultExpanded);
   const [replyText, setReplyText] = useState("");
   const [showReply, setShowReply] = useState(false);
   const [pausing, setPausing] = useState(false);
@@ -313,29 +303,26 @@ function MessageCard({
   const cfg = classificationConfig[message.classification] ?? classificationConfig.unclassified;
   const Icon = cfg.icon;
 
+  function handleClick() {
+    onSelect();
+    if (!message.isRead) onPatch({ isRead: true });
+  }
+
   async function pauseAutomation() {
     setPausing(true);
+    onPatch({ automationPaused: true, isRead: true });
     await fetch("/api/inbox", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: message.id, automationPaused: true, isRead: true }),
     });
     setPausing(false);
-    onUpdate();
-  }
-
-  async function markRead() {
-    await fetch("/api/inbox", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: message.id, isRead: true }),
-    });
-    onUpdate();
   }
 
   async function sendReply() {
     if (!replyText.trim()) return;
     setReplying(true);
+    onPatch({ isReplied: true, isRead: true });
     await fetch("/api/inbox", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -344,26 +331,22 @@ function MessageCard({
     setReplyText("");
     setShowReply(false);
     setReplying(false);
-    onUpdate();
   }
 
   return (
     <div
       id={`msg-${message.id}`}
       className={`rounded-xl border bg-white shadow-sm transition-shadow hover:shadow-md ${
-        highlighted
-          ? "border-blue-400 ring-2 ring-blue-200"
+        isSelected
+          ? "border-blue-400 ring-2 ring-blue-200 shadow-md"
           : !message.isRead
           ? "border-blue-200"
           : "border-gray-200"
       }`}
     >
       <div
-        className="flex items-start gap-3 p-4 cursor-pointer"
-        onClick={() => {
-          setExpanded(!expanded);
-          if (!message.isRead) markRead();
-        }}
+        className="flex items-start gap-3 p-4 cursor-pointer select-none"
+        onClick={handleClick}
       >
         <div className="mt-1 flex-shrink-0">
           {!message.isRead ? (
@@ -381,9 +364,7 @@ function MessageCard({
               </p>
               <p className="text-xs text-gray-400 mt-0.5">{message.from}</p>
             </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <span className="text-xs text-gray-400">{formatDateTime(message.receivedAt)}</span>
-            </div>
+            <span className="text-xs text-gray-400 flex-shrink-0">{formatDateTime(message.receivedAt)}</span>
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
@@ -409,7 +390,11 @@ function MessageCard({
           {message.invoice && (
             <p className="mt-1 text-xs text-gray-400">
               Re:{" "}
-              <Link href={`/invoices/${message.invoiceId}`} className="text-blue-500 hover:underline font-medium" onClick={(e) => e.stopPropagation()}>
+              <Link
+                href={`/invoices/${message.invoiceId}`}
+                className="text-blue-500 hover:underline font-medium"
+                onClick={(e) => e.stopPropagation()}
+              >
                 {message.invoice.invoiceNumber}
               </Link>
               {" · "}
@@ -419,9 +404,13 @@ function MessageCard({
             </p>
           )}
         </div>
+
+        <div className="text-gray-300 hover:text-gray-500 flex-shrink-0 mt-0.5 pointer-events-none">
+          {isSelected ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        </div>
       </div>
 
-      {expanded && (
+      {isSelected && (
         <div className="border-t border-gray-100 px-4 py-3 space-y-3">
           {message.classification === "dispute" && (
             <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 flex items-start gap-2">
@@ -449,7 +438,7 @@ function MessageCard({
           <div className="flex gap-2 flex-wrap">
             {!message.automationPaused && (
               <button
-                onClick={pauseAutomation}
+                onClick={(e) => { e.stopPropagation(); pauseAutomation(); }}
                 disabled={pausing}
                 className="flex items-center gap-1.5 rounded-md border border-orange-200 bg-orange-50 px-3 py-1.5 text-xs font-medium text-orange-700 hover:bg-orange-100 disabled:opacity-50"
               >
@@ -458,7 +447,7 @@ function MessageCard({
               </button>
             )}
             <button
-              onClick={() => setShowReply(!showReply)}
+              onClick={(e) => { e.stopPropagation(); setShowReply(!showReply); }}
               className="flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100"
             >
               <Reply className="h-3.5 w-3.5" />
@@ -467,13 +456,14 @@ function MessageCard({
             <Link
               href={`/invoices/${message.invoiceId}`}
               className="flex items-center gap-1.5 rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
+              onClick={(e) => e.stopPropagation()}
             >
               View Invoice →
             </Link>
           </div>
 
           {showReply && (
-            <div className="space-y-2">
+            <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
               <textarea
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
@@ -514,6 +504,8 @@ function InboxPageContent() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
+  const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
+  const deepLinkInitialized = useRef(false);
 
   const { query, setQuery, clear } = useSearchStore();
   const searchRef = useRef<HTMLInputElement>(null);
@@ -526,13 +518,37 @@ function InboxPageContent() {
     setLoading(false);
   }, []);
 
+  // Initial load only
   useEffect(() => { load(); }, [load]);
 
+  // Initialize selected message from deep link query param (once, after first load)
   useEffect(() => {
-    if (!focusedMessageId || loading) return;
-    const el = document.getElementById(`msg-${focusedMessageId}`);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, [focusedMessageId, loading]);
+    if (!loading && focusedMessageId && !deepLinkInitialized.current) {
+      setSelectedMessageId(focusedMessageId);
+      deepLinkInitialized.current = true;
+    }
+  }, [loading, focusedMessageId]);
+
+  // Scroll to selected message when it changes (handles both deep links and normal clicks)
+  useEffect(() => {
+    if (!selectedMessageId || loading) return;
+    const el = document.getElementById(`msg-${selectedMessageId}`);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [selectedMessageId, loading]);
+
+  // Optimistic local update + background API sync — no re-fetch, no loading flash
+  function patchMessage(id: string, changes: Partial<Message>) {
+    setMessages(prev => prev.map(m => m.id === id ? { ...m, ...changes } : m));
+    fetch("/api/inbox", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, ...changes }),
+    });
+  }
+
+  function toggleSelect(id: string) {
+    setSelectedMessageId(prev => (prev === id ? null : id));
+  }
 
   const emailMessages = messages.filter(m => !m.type || m.type === "email");
   const callMessages  = messages.filter(m => m.type === "call");
@@ -688,17 +704,17 @@ function InboxPageContent() {
                 <CallCard
                   key={message.id}
                   message={message}
-                  onUpdate={load}
-                  highlighted={message.id === focusedMessageId}
-                  defaultExpanded={message.id === focusedMessageId}
+                  isSelected={message.id === selectedMessageId}
+                  onSelect={() => toggleSelect(message.id)}
+                  onPatch={(changes) => patchMessage(message.id, changes)}
                 />
               ) : (
                 <MessageCard
                   key={message.id}
                   message={message}
-                  onUpdate={load}
-                  highlighted={message.id === focusedMessageId}
-                  defaultExpanded={message.id === focusedMessageId}
+                  isSelected={message.id === selectedMessageId}
+                  onSelect={() => toggleSelect(message.id)}
+                  onPatch={(changes) => patchMessage(message.id, changes)}
                 />
               )
             )}
