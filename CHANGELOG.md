@@ -2,6 +2,17 @@
 
 ---
 
+## v2.10.1 — Hotfix: Invoice Reply Column Sorting (28 May 2026)
+
+**Date:** 28 May 2026
+**package.json version:** 2.10.1
+
+### Summary
+
+Hotfix: the Reply column on the Invoices table was missing sort behaviour. Added `"reply"` to `SortCol`, included it in the sortable `columns` array, and removed the old static non-sortable header. Sorts alphabetically by label text (`Dispute` → `No reply` → `Out of Office` → `Payment Query` → `Promise to Pay` → `Reply received`). Works together with all existing search and filter combinations.
+
+---
+
 ## v2.10.0 — Call Template Editor UX + Unsaved Changes Protection (28 May 2026)
 
 **Date:** 28 May 2026
@@ -39,12 +50,6 @@ Improves the Call Templates editor UX and adds unsaved-changes protection across
 - New Zustand store (no persistence) tracks global dirty state: `isDirty`, `dirtySource`, `setDirty`.
 - All sidebar NavItem links now intercept navigation when dirty and show a confirmation dialog before proceeding.
 - NavItem converted from `<Link>` to a guarded `<button>` using `useRouter.push`.
-
-#### Fix: Invoice table Reply column sorting
-- The Reply column was non-sortable (static header, no sort handler).
-- Added `"reply"` to `SortCol` type, included it in the sortable `columns` array, and removed the separate static `<th>`.
-- Sort compares the reply label text alphabetically (`Dispute` → `No reply` → `Out of Office` → `Payment Query` → `Promise to Pay` → `Reply received`); `"No reply"` sorts consistently as the literal string.
-- Works together with search, Status filter, Flow filter, and Reply filter.
 
 ---
 
