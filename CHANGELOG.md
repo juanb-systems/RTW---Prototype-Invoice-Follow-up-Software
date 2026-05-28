@@ -2,6 +2,57 @@
 
 ---
 
+## v2.9.0 — Additional Call Templates, Inbox Selection Fix, Merge Tag QA (28 May 2026)
+
+**Date:** 28 May 2026
+**package.json version:** 2.9.0
+
+### Summary
+
+Adds 6 new AI call templates to the Call Templates page, fixes the Inbox message selection bug that caused a page-reload flash on every click, and completes clickable merge tag insertion in the Call Templates editor. Verified via live browser testing.
+
+### Changes
+
+#### New: 6 additional call templates (TPL002–TPL007)
+
+All templates include opening disclosure, full AI prompt, outcome classifications, voicemail behavior, and escalation rules. All seeded templates are protected from accidental deletion and display in fixed TPL001→TPL007 order. User-created templates sort after them by date.
+
+| ID | Name | Status |
+|----|------|--------|
+| TPL002 | Promise-to-Pay Follow-up Call | Active |
+| TPL003 | Dispute Review Follow-up Call | Draft |
+| TPL004 | Invoice Copy Request Call | Active |
+| TPL005 | Wrong Contact / Accounts Payable Update Call | Active |
+| TPL006 | Final Reminder Before Human Review | Draft |
+| TPL007 | Voicemail Only Template | Active |
+
+- Call Templates page subtitle now reads "7 templates".
+- Automation Builder Call block template dropdown automatically lists all 7 templates.
+- `SEEDED_TEMPLATE_IDS` exported from store so the page can protect all defaults from deletion.
+
+#### Fix: Inbox message selection without page reload
+
+**Root cause:** Every click on an unread message triggered `markRead()` → `onUpdate()` → `load()` → `setLoading(true)`, which replaced the entire message list with loading skeletons. This was perceived as a full page reload. The same problem applied to `pauseAutomation()` and `sendReply()`.
+
+**Fix:**
+- Lifted expand/collapse to `selectedMessageId` page-level state (controlled). Clicking any item calls `toggleSelect(id)` — pure client-side, no network call.
+- Replaced all `onUpdate()` calls with `onPatch(changes)` — optimistic local state update + background fire-and-forget PATCH request. No re-fetch, no loading flash.
+- `load()` is now only called on initial mount and the explicit Refresh button.
+- Deep links (`?message=...` from invoice detail) still work: `selectedMessageId` is initialized from the query param once after first load via `deepLinkInitialized` ref.
+- Filter/search/tab state fully preserved when opening or switching messages.
+
+**Verified (live browser):**
+- Email click → expands in-place, URL stays `/inbox`, no skeleton flash ✅
+- AI call transcript click → expands in-place with full transcript ✅
+- Filter tab switch → list filters without reload, expanded item stays open ✅
+- Unread count updates correctly via optimistic mark-read ✅
+
+#### Fix: Clickable merge tags in Call Templates editor
+
+Merge tags in the Call Templates page were display-only `<span>` elements. Fixed to be clickable buttons in edit mode, inserting at the cursor position in the disclosure, prompt, voicemail behavior, and escalation rules textareas. Uses the same `onMouseDown` + `e.preventDefault()` + `requestAnimationFrame` cursor-restore pattern as the Automation Builder.
+
+---
+
 ## v2.8.0 — Call Templates, AI Call Inbox, Merge Tags, Builder Save Fix (28 May 2026)
 
 **Date:** 28 May 2026
