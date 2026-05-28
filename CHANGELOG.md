@@ -2,6 +2,80 @@
 
 ---
 
+## v2.8.0 — Call Templates, AI Call Inbox, Merge Tags, Builder Save Fix (28 May 2026)
+
+**Date:** 28 May 2026
+**package.json version:** 2.8.0
+
+### Summary
+
+Major feature update introducing Call Templates, AI call transcript records in the Inbox, clickable merge tags in the Automation Builder, a Call Template dropdown on Call blocks, and a fix to flow save persistence so user-created flows never lose data on save.
+
+### Changes
+
+#### New: Call Templates page
+- New sidebar nav item: **Call Templates** (Phone icon).
+- New page at `/call-templates` listing all call templates.
+- Default template **"Overdue Invoice AI Call"** seeded with James' full prompt, opening disclosure, 9 outcome classifications, voicemail behavior, and escalation rules.
+- Each template card is expandable with full field display and inline editing.
+- **Create Call Template** button opens a modal to name and create a new Draft template.
+- Templates persist across browser refresh via Zustand + localStorage (`collectpilot-call-templates`).
+- Default template is always present (re-seeded on every store merge, cannot be fully deleted).
+- Compliance amber banner: real AI calling requires ACCC/telco compliance before production use.
+
+#### Automation Builder: Call block — template dropdown
+- Call block now shows a **Call Template** dropdown listing all templates from the Zustand store.
+- Selecting a template stores `templateId` and `templateName` in the step config.
+- Card subtitle displays the selected template name.
+- Default Call block pre-selects "Overdue Invoice AI Call" (TPL001).
+- Assigned-to options now include **AI caller** as the first/default option.
+- Merge tag bar shown in Call block (inserts into notes field).
+
+#### Automation Builder: Clickable merge tags
+- All Email, SMS, and Call (notes) fields now show a **merge tag bar** with 10 clickable tags:
+  `{{contact_name}}`, `{{invoice_number}}`, `{{invoice_amount}}`, `{{due_date}}`, `{{days_overdue}}`, `{{company_name}}`, `{{customer_company}}`, `{{payment_link}}`, `{{contact_email}}`, `{{accounts_email}}`
+- Clicking a tag while a text field is focused inserts it at the cursor position (cursor position preserved via `requestAnimationFrame`).
+- `onMouseDown` + `e.preventDefault()` prevents blur on click so cursor position is accurate.
+- If no field is focused, the tag appends to the main body/notes field.
+- Legacy `{{contactName}}`-format tags still supported in email preview `fillMerge`.
+
+#### Automation Builder: Flow save persistence fix
+- **Root cause fixed:** Saving a user-created flow (ID like `FLOW-${timestamp}`) was calling `PATCH /api/automations/${id}`, which returned 404 because the API only knows about seeded flows (FLOW001–003). On 404, `onAfterSave` was never called, so Zustand was never updated with the new block configuration.
+- **Fix:** `handleSave` now calls `onAfterSave?.(updatedFlow)` **before** the API request. Zustand/localStorage is always updated first. The API call is attempted as a best-effort server sync; 404 responses (expected for client-created flows) are silently ignored.
+- User-created flows now reliably persist all block edits across save → back → reopen → refresh.
+
+#### Inbox: AI call transcript records
+- Inbox now displays **AI call records** alongside email replies.
+- New filter tabs: **Emails** and **AI Calls** (in addition to existing classification filters).
+- TopBar subtitle now shows counts: `X emails · Y AI calls`.
+- 3 dummy AI call records added to seed data:
+  - **CALL001** — INV-2026-013 / Harbour Kitchen — Completed / Promise to Pay (5 June 2026)
+  - **CALL002** — INV-2026-009 / Walsh Civil Engineering — Voicemail left
+  - **CALL003** — INV-2026-017 / Fletcher IT Solutions — Needs Human Review / Dispute raised
+- Call records render with a green left border, Phone icon, call status badge (Completed / Voicemail Left / No Answer / Needs Human Review), and outcome classification badge.
+- Expanding a call record shows the full transcript in a scrollable pre-formatted block.
+- Dispute and promise-to-pay call outcomes show informational banners matching the email inbox behavior.
+- Automation pause button available on call records.
+- Inbox search now includes transcript and call outcome fields.
+
+#### Minor improvements
+- `FlowBuilderPageClient.tsx`: "server may have restarted" message replaced with "flow ID may be invalid" (no server state reference).
+- Xero checkbox styling updated: amber background + amber text for better visibility.
+- Dashboard Recent Activity already uses `formatActivityTimestamp` (full date + time); confirmed working.
+- Inbox timestamps updated from `formatRelativeTime` to `formatDateTime` (absolute, not relative).
+
+### Files changed
+- `lib/types.ts` — added `CallTemplateStatus`, `InboxItemType`, `CallStatus`, `CallTemplate`; updated `InboxMessage`
+- `lib/call-template-store.ts` — new Zustand persist store with default template
+- `data/inbox-messages.json` — added CALL001, CALL002, CALL003
+- `components/layout/Sidebar.tsx` — added Call Templates nav item
+- `components/automations/builder/FlowBuilderPageClient.tsx` — updated "flow not found" message
+- `components/automations/builder/FlowBuilder.tsx` — merge tags, call template dropdown, save fix, new MERGE_TAGS constant, updated fillMerge, MergeTagBar component
+- `app/call-templates/page.tsx` — new page
+- `app/inbox/page.tsx` — CallCard component, filter tabs, call record support
+
+---
+
 ## v2.7.1 — Automation Builder: Detailed Block Configuration (28 May 2026)
 
 **Date:** 28 May 2026

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import {
   LayoutDashboard,
   FileText,
@@ -10,6 +9,7 @@ import {
   Inbox,
   Settings,
   TrendingUp,
+  Phone,
 } from "lucide-react";
 import { NavItem } from "./NavItem";
 
@@ -20,6 +20,7 @@ const navItems = [
   { href: "/automations", icon: Zap, label: "Automations" },
   { href: "/scheduled", icon: Calendar, label: "Scheduled Actions" },
   { href: "/inbox", icon: Inbox, label: "Inbox" },
+  { href: "/call-templates", icon: Phone, label: "Call Templates" },
 ];
 
 export function Sidebar() {

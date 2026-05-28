@@ -3,10 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import {
   Save, Trash2, Plus, ChevronDown, ChevronUp, Eye, EyeOff,
-  Mail, MessageSquare, Phone, Clock, Zap,
+  Mail, MessageSquare, Phone, Clock, Zap, Tag,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import type { AutomationFlow, FlowEdge, FlowStep } from "@/lib/types";
+import { useCallTemplateStore } from "@/lib/call-template-store";
+import type { AutomationFlow, FlowEdge, FlowStep, CallTemplate } from "@/lib/types";
 
 // ── Step metadata ─────────────────────────────────────────────────────────────
 
@@ -14,7 +15,7 @@ const STEP_META: Record<string, { label: string; iconCls: string; canDelete: boo
   trigger: { label: "Trigger",        iconCls: "bg-gray-900 text-white",    canDelete: false },
   email:   { label: "Send Email",     iconCls: "bg-blue-600 text-white",    canDelete: true  },
   sms:     { label: "Send SMS",       iconCls: "bg-purple-600 text-white",  canDelete: true  },
-  call:    { label: "Schedule Call",  iconCls: "bg-green-600 text-white",   canDelete: true  },
+  call:    { label: "AI Call",        iconCls: "bg-green-600 text-white",   canDelete: true  },
   wait:    { label: "Delay",          iconCls: "bg-gray-500 text-white",    canDelete: true  },
   end:     { label: "End Automation", iconCls: "bg-gray-200 text-gray-600", canDelete: false },
 };
@@ -31,24 +32,50 @@ const INSERTABLE = [
   { type: "wait"  as const, label: "Delay",  Icon: Clock,         cls: "border-gray-200 text-gray-700 hover:bg-gray-50" },
 ];
 
+// ── Merge tags ────────────────────────────────────────────────────────────────
+
+const MERGE_TAGS = [
+  { tag: "{{contact_name}}",     label: "Contact Name" },
+  { tag: "{{invoice_number}}",   label: "Invoice #" },
+  { tag: "{{invoice_amount}}",   label: "Amount" },
+  { tag: "{{due_date}}",         label: "Due Date" },
+  { tag: "{{days_overdue}}",     label: "Days Overdue" },
+  { tag: "{{company_name}}",     label: "Company" },
+  { tag: "{{customer_company}}", label: "Customer Co." },
+  { tag: "{{payment_link}}",     label: "Pay Link" },
+  { tag: "{{contact_email}}",    label: "Contact Email" },
+  { tag: "{{accounts_email}}",   label: "Accounts Email" },
+];
+
 // ── Email preview helpers ─────────────────────────────────────────────────────
 
-const PREVIEW_SAMPLE = {
-  contactName: "James Fletcher",
-  invoiceNumber: "INV-2026-001",
-  amount: "$12,500.00",
-  dueDate: "18 May 2026",
-  companyName: "Your Business Pty Ltd",
+const PREVIEW_SAMPLE: Record<string, string> = {
+  contact_name:     "James Fletcher",
+  invoice_number:   "INV-2026-001",
+  invoice_amount:   "$12,500.00",
+  due_date:         "18 May 2026",
+  days_overdue:     "15",
+  company_name:     "Refresh The Web",
+  customer_company: "Fletcher IT Solutions",
+  payment_link:     "https://pay.collectpilot.demo/inv-001",
+  contact_email:    "james.fletcher@fletcherit.com.au",
+  accounts_email:   "accounts@refreshtheweb.com.au",
+  // legacy keys
+  contactName:    "James Fletcher",
+  invoiceNumber:  "INV-2026-001",
+  amount:         "$12,500.00",
+  dueDate:        "18 May 2026",
+  companyName:    "Refresh The Web",
 };
 
 function fillMerge(text: string, senderName = "Accounts Team"): string {
-  return (text ?? "")
-    .replace(/\{\{contactName\}\}/g, PREVIEW_SAMPLE.contactName)
-    .replace(/\{\{invoiceNumber\}\}/g, PREVIEW_SAMPLE.invoiceNumber)
-    .replace(/\{\{amount\}\}/g, PREVIEW_SAMPLE.amount)
-    .replace(/\{\{dueDate\}\}/g, PREVIEW_SAMPLE.dueDate)
-    .replace(/\{\{companyName\}\}/g, PREVIEW_SAMPLE.companyName)
-    .replace(/\{\{senderName\}\}/g, senderName);
+  let result = text ?? "";
+  Object.entries(PREVIEW_SAMPLE).forEach(([key, val]) => {
+    result = result.replace(new RegExp(`\\{\\{${key}\\}\\}`, "g"), val);
+  });
+  return result
+    .replace(/\{\{senderName\}\}/g, senderName)
+    .replace(/\{\{sender_name\}\}/g, senderName);
 }
 
 // ── Default configs ───────────────────────────────────────────────────────────
@@ -64,7 +91,6 @@ function defaultConfig(type: string): Record<string, unknown> {
         body: "",
         senderName: "",
         replyTo: "",
-        template: "",
       };
     case "sms":
       return {
@@ -77,8 +103,10 @@ function defaultConfig(type: string): Record<string, unknown> {
       return { label: "Wait", days: 3, unit: "days" };
     case "call":
       return {
-        label: "Schedule Call",
-        assignedTo: "accounts",
+        label: "AI Call",
+        templateId: "TPL001",
+        templateName: "Overdue Invoice AI Call",
+        assignedTo: "ai",
         customAssignee: "",
         timing: "immediately",
         delayValue: 1,
@@ -163,6 +191,50 @@ const inputCls = "w-full rounded-md border border-gray-200 px-3 py-1.5 text-xs t
 const selectCls = `${inputCls}`;
 const textareaCls = `${inputCls} resize-none`;
 
+// ── Merge tag bar ─────────────────────────────────────────────────────────────
+
+function MergeTagBar({
+  onInsert,
+  focusedField,
+}: {
+  onInsert: (tag: string) => void;
+  focusedField: string | null;
+}) {
+  return (
+    <div className="rounded-md border border-dashed border-gray-200 bg-gray-50 px-3 py-2">
+      <div className="flex items-start gap-1.5 flex-wrap">
+        <span className="flex items-center gap-1 text-[10px] font-medium text-gray-400 shrink-0 mt-0.5">
+          <Tag className="h-3 w-3" />
+          Insert:
+        </span>
+        {MERGE_TAGS.map(({ tag, label }) => (
+          <button
+            key={tag}
+            type="button"
+            title={tag}
+            onMouseDown={(e) => {
+              e.preventDefault(); // keep textarea focused so cursor position is preserved
+              onInsert(tag);
+            }}
+            className={`rounded border px-1.5 py-0.5 font-mono text-[10px] transition-colors ${
+              focusedField
+                ? "border-blue-200 bg-white text-blue-700 hover:bg-blue-50 cursor-pointer"
+                : "border-gray-200 bg-white text-gray-500 hover:bg-gray-100 cursor-pointer"
+            }`}
+          >
+            {tag}
+          </button>
+        ))}
+      </div>
+      {!focusedField && (
+        <p className="text-[10px] text-gray-400 mt-1.5">
+          Click a field above, then click a tag to insert it at the cursor position.
+        </p>
+      )}
+    </div>
+  );
+}
+
 // ── Insert picker popover ─────────────────────────────────────────────────────
 
 function InsertPicker({
@@ -229,10 +301,10 @@ function InsertConnector({ onInsert }: { onInsert: (type: string) => void }) {
 
 function XeroLock() {
   return (
-    <div className="border-t border-gray-100 bg-gray-50 px-4 py-2 flex items-center gap-2">
+    <div className="border-t border-gray-100 bg-amber-50/50 px-4 py-2 flex items-center gap-2">
       <input type="checkbox" checked disabled readOnly className="h-3 w-3 accent-amber-500 cursor-not-allowed" />
-      <span className="text-[11px] font-medium text-gray-600">Check still unpaid in Xero</span>
-      <span className="text-[10px] text-gray-400">— required, cannot be disabled</span>
+      <span className="text-[11px] font-medium text-amber-700">Check still unpaid in Xero</span>
+      <span className="text-[10px] text-amber-500">— required, cannot be disabled</span>
     </div>
   );
 }
@@ -243,13 +315,18 @@ function StepCard({
   step,
   onRemove,
   onUpdate,
+  callTemplates,
 }: {
   step: FlowStep;
   onRemove: (id: string) => void;
   onUpdate: (id: string, config: Record<string, unknown>) => void;
+  callTemplates: Record<string, CallTemplate>;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [focusedFieldKey, setFocusedFieldKey] = useState<string | null>(null);
+
+  const fieldRefs = useRef<Record<string, HTMLTextAreaElement | HTMLInputElement | null>>({});
 
   const cfg = step.config as Record<string, unknown>;
   const meta = STEP_META[step.type] ?? STEP_META.end;
@@ -261,6 +338,47 @@ function StepCard({
 
   function set(key: string, value: unknown) {
     onUpdate(step.id, { ...cfg, [key]: value });
+  }
+
+  function bindField(key: string) {
+    return {
+      ref: (el: HTMLTextAreaElement | HTMLInputElement | null) => {
+        fieldRefs.current[key] = el;
+      },
+      onFocus: () => setFocusedFieldKey(key),
+    };
+  }
+
+  function insertMergeTag(tag: string) {
+    const key = focusedFieldKey;
+    if (!key) {
+      // Default to body/template if nothing focused
+      const fallback = step.type === "sms" ? "template" : step.type === "call" ? "notes" : "body";
+      const el = fieldRefs.current[fallback];
+      if (el) {
+        const val = (cfg[fallback] as string) ?? "";
+        set(fallback, val + tag);
+      }
+      return;
+    }
+    const el = fieldRefs.current[key];
+    if (!el) {
+      set(key, ((cfg[key] as string) ?? "") + tag);
+      return;
+    }
+    const start = el.selectionStart ?? el.value.length;
+    const end = el.selectionEnd ?? el.value.length;
+    const current = el.value;
+    const newValue = current.substring(0, start) + tag + current.substring(end);
+    const newCursor = start + tag.length;
+    set(key, newValue);
+    requestAnimationFrame(() => {
+      const newEl = fieldRefs.current[key];
+      if (newEl) {
+        newEl.selectionStart = newEl.selectionEnd = newCursor;
+        newEl.focus();
+      }
+    });
   }
 
   function subtitle(): string {
@@ -276,11 +394,12 @@ function StepCard({
       return `Wait ${cfg.days ?? 3} ${unit}`;
     }
     if (step.type === "call") {
+      const templateName = (cfg.templateName as string) || "No template selected";
       const timing = (cfg.timing as string) ?? "immediately";
-      const name = (cfg.label as string) || "Schedule Call";
-      if (timing === "after_delay") return `${name} — after ${cfg.delayValue ?? 1} ${cfg.delayUnit ?? "hours"}`;
-      if (timing === "specific_time") return `${name} — specific date/time`;
-      return `${name} — immediately`;
+      const name = (cfg.label as string) || "AI Call";
+      if (timing === "after_delay") return `${name} · ${templateName} — after ${cfg.delayValue ?? 1} ${cfg.delayUnit ?? "hours"}`;
+      if (timing === "specific_time") return `${name} · ${templateName} — specific date/time`;
+      return `${name} · ${templateName}`;
     }
     if (step.type === "email") {
       const to = (cfg.to as string) ?? "contact";
@@ -294,6 +413,8 @@ function StepCard({
     }
     return (cfg.label as string) || meta.label;
   }
+
+  const showMergeTags = expanded && (step.type === "email" || step.type === "sms" || step.type === "call");
 
   return (
     <div className={`rounded-xl border bg-white shadow-sm overflow-hidden transition-shadow ${expanded ? "border-blue-300 shadow-md" : "border-gray-200"}`}>
@@ -310,7 +431,7 @@ function StepCard({
         <div className="flex items-center gap-1 shrink-0">
           {!isEnd && (
             <button
-              onClick={() => { setExpanded(p => !p); if (expanded) setShowPreview(false); }}
+              onClick={() => { setExpanded(p => !p); if (expanded) { setShowPreview(false); setFocusedFieldKey(null); } }}
               className="flex items-center gap-0.5 rounded-md border border-gray-200 px-2 py-1 text-[11px] font-medium text-gray-500 hover:bg-gray-50 transition-colors"
             >
               {expanded
@@ -350,7 +471,13 @@ function StepCard({
               </FieldRow>
               {(!cfg.triggerType || cfg.triggerType === "days_overdue") && (
                 <FieldRow label="Days overdue">
-                  <input type="number" min={1} value={(cfg.days as number) ?? 7} onChange={e => set("days", parseInt(e.target.value) || 1)} className="w-24 rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-700 focus:border-blue-400 focus:outline-none" />
+                  <input
+                    type="number"
+                    min={1}
+                    value={(cfg.days as number) ?? 7}
+                    onChange={e => set("days", parseInt(e.target.value) || 1)}
+                    className="w-24 rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-700 focus:border-blue-400 focus:outline-none"
+                  />
                 </FieldRow>
               )}
             </>
@@ -385,7 +512,7 @@ function StepCard({
                 </div>
               </div>
               <p className="text-[10px] text-gray-400 -mt-1">
-                e.g. Wait 3 days · Wait 4 hours · Wait 30 minutes
+                e.g. Wait 3 days · Wait 4 hours · Wait 30 minutes · Wait 1 week
               </p>
             </>
           )}
@@ -411,21 +538,28 @@ function StepCard({
               )}
 
               <FieldRow label="Subject line">
-                <input type="text" value={(cfg.subject as string) ?? ""} onChange={e => set("subject", e.target.value)} placeholder="e.g. Friendly reminder — Invoice {{invoiceNumber}} is overdue" className={inputCls} />
+                <input
+                  {...bindField("subject")}
+                  type="text"
+                  value={(cfg.subject as string) ?? ""}
+                  onChange={e => set("subject", e.target.value)}
+                  placeholder="e.g. Friendly reminder — Invoice {{invoice_number}} is overdue"
+                  className={inputCls}
+                />
               </FieldRow>
 
               <FieldRow label="Email body">
                 <textarea
+                  {...bindField("body")}
                   value={(cfg.body as string) ?? ""}
                   onChange={e => set("body", e.target.value)}
                   rows={6}
-                  placeholder={`Hi {{contactName}},\n\nJust a friendly reminder that Invoice {{invoiceNumber}} for {{amount}} was due on {{dueDate}} and remains outstanding.\n\nKind regards,\n{{senderName}}`}
+                  placeholder={`Hi {{contact_name}},\n\nJust a friendly reminder that Invoice {{invoice_number}} for {{invoice_amount}} was due on {{due_date}} and remains outstanding.\n\nKind regards,\n{{company_name}}`}
                   className={textareaCls}
                 />
-                <p className="text-[10px] text-gray-400 mt-1">
-                  Merge fields: {`{{contactName}}`} {`{{invoiceNumber}}`} {`{{amount}}`} {`{{dueDate}}`} {`{{companyName}}`} {`{{senderName}}`}
-                </p>
               </FieldRow>
+
+              <MergeTagBar onInsert={insertMergeTag} focusedField={focusedFieldKey} />
 
               <div className="grid grid-cols-2 gap-2">
                 <FieldRow label="Sender name">
@@ -510,16 +644,16 @@ function StepCard({
 
               <FieldRow label="SMS message">
                 <textarea
+                  {...bindField("template")}
                   value={(cfg.template as string) ?? ""}
                   onChange={e => set("template", e.target.value)}
                   rows={4}
-                  placeholder={`Hi {{contactName}}, this is a reminder that Invoice {{invoiceNumber}} for {{amount}} is overdue. Please contact us at {{companyName}} to arrange payment.`}
+                  placeholder={`Hi {{contact_name}}, this is a reminder that Invoice {{invoice_number}} for {{invoice_amount}} is overdue. Please contact {{company_name}} to arrange payment.`}
                   className={textareaCls}
                 />
-                <p className="text-[10px] text-gray-400 mt-1">
-                  Merge fields: {`{{contactName}}`} {`{{invoiceNumber}}`} {`{{amount}}`} {`{{companyName}}`}
-                </p>
               </FieldRow>
+
+              <MergeTagBar onInsert={insertMergeTag} focusedField={focusedFieldKey} />
             </>
           )}
 
@@ -527,11 +661,35 @@ function StepCard({
           {step.type === "call" && (
             <>
               <FieldRow label="Label / Task name">
-                <input type="text" value={(cfg.label as string) ?? ""} onChange={e => set("label", e.target.value)} placeholder="e.g. Follow-up Call" className={inputCls} />
+                <input type="text" value={(cfg.label as string) ?? ""} onChange={e => set("label", e.target.value)} placeholder="e.g. AI Follow-up Call" className={inputCls} />
               </FieldRow>
 
+              <FieldRow label="Call Template">
+                <select
+                  value={(cfg.templateId as string) ?? ""}
+                  onChange={e => {
+                    const tid = e.target.value;
+                    const tmpl = callTemplates[tid];
+                    set("templateId", tid);
+                    set("templateName", tmpl?.name ?? "");
+                  }}
+                  className={selectCls}
+                >
+                  <option value="">— Select a template —</option>
+                  {Object.values(callTemplates).map(tmpl => (
+                    <option key={tmpl.id} value={tmpl.id}>{tmpl.name}</option>
+                  ))}
+                </select>
+              </FieldRow>
+              {(cfg.templateId as string) && (
+                <div className="rounded-md border border-green-200 bg-green-50 px-3 py-1.5 text-[11px] text-green-700">
+                  Template selected: <strong>{(cfg.templateName as string) || (cfg.templateId as string)}</strong>. The AI caller will use this script.
+                </div>
+              )}
+
               <FieldRow label="Assigned to">
-                <select value={(cfg.assignedTo as string) ?? "accounts"} onChange={e => set("assignedTo", e.target.value)} className={selectCls}>
+                <select value={(cfg.assignedTo as string) ?? "ai"} onChange={e => set("assignedTo", e.target.value)} className={selectCls}>
+                  <option value="ai">AI caller</option>
                   <option value="accounts">Accounts team</option>
                   <option value="admin">Admin</option>
                   <option value="custom">Custom assignee</option>
@@ -555,7 +713,7 @@ function StepCard({
                 <div className="flex items-end gap-2">
                   <div className="flex-1">
                     <label className="block text-[11px] font-medium text-gray-600 mb-1">Delay amount</label>
-                    <input type="number" min={1} value={(cfg.delayValue as number) ?? 1} onChange={e => set("delayValue", parseInt(e.target.value) || 1)} className="w-full rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-700 focus:border-blue-400 focus:outline-none" placeholder="1" />
+                    <input type="number" min={1} value={(cfg.delayValue as number) ?? 1} onChange={e => set("delayValue", parseInt(e.target.value) || 1)} className="w-full rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-700 focus:border-blue-400 focus:outline-none" />
                   </div>
                   <div className="w-32">
                     <label className="block text-[11px] font-medium text-gray-600 mb-1">Unit</label>
@@ -575,15 +733,18 @@ function StepCard({
                 </FieldRow>
               )}
 
-              <FieldRow label="Call notes">
+              <FieldRow label="Call notes / context">
                 <textarea
+                  {...bindField("notes")}
                   value={(cfg.notes as string) ?? ""}
                   onChange={e => set("notes", e.target.value)}
                   rows={3}
-                  placeholder="What to discuss on the call, key invoice details, any disputes or payment arrangements to mention…"
+                  placeholder="Key invoice details, any payment arrangements or disputes to reference…"
                   className={textareaCls}
                 />
               </FieldRow>
+
+              <MergeTagBar onInsert={insertMergeTag} focusedField={focusedFieldKey} />
             </>
           )}
 
@@ -606,6 +767,8 @@ export function FlowBuilder({ flow, onSaveNew, onAfterSave }: FlowBuilderProps) 
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [savedOk, setSavedOk] = useState(false);
+
+  const callTemplates = useCallTemplateStore((s) => s.templates);
 
   const isNew = flow.id === "new";
 
@@ -644,6 +807,7 @@ export function FlowBuilder({ flow, onSaveNew, onAfterSave }: FlowBuilderProps) 
 
     const finalSteps = toFinalSteps(steps);
     const edges = generateEdges(finalSteps);
+    const updatedFlow = { ...flow, steps: finalSteps, edges };
 
     if (isNew && onSaveNew) {
       await onSaveNew(finalSteps, edges);
@@ -651,18 +815,25 @@ export function FlowBuilder({ flow, onSaveNew, onAfterSave }: FlowBuilderProps) 
       return;
     }
 
-    const res = await fetch(`/api/automations/${flow.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ steps: finalSteps, edges }),
-    });
-    if (!res.ok) {
-      setSaveError("Failed to save. Please try again.");
-    } else {
-      onAfterSave?.({ ...flow, steps: finalSteps, edges });
-      setSavedOk(true);
-      setTimeout(() => setSavedOk(false), 2500);
+    // Always persist to Zustand/localStorage first — this is the source of truth
+    onAfterSave?.(updatedFlow);
+
+    // Attempt server sync (works for seeded flows FLOW001–003; 404 expected for client-created ones)
+    try {
+      const res = await fetch(`/api/automations/${flow.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ steps: finalSteps, edges }),
+      });
+      if (!res.ok && res.status !== 404) {
+        setSaveError("Saved locally. Server sync failed — changes are still preserved.");
+      }
+    } catch {
+      // Network error — local save already succeeded
     }
+
+    setSavedOk(true);
+    setTimeout(() => setSavedOk(false), 2500);
     setSaving(false);
   }
 
@@ -683,7 +854,7 @@ export function FlowBuilder({ flow, onSaveNew, onAfterSave }: FlowBuilderProps) 
           </button>
         ))}
         <div className="ml-auto flex items-center gap-2">
-          {saveError && <span className="text-xs text-red-500">{saveError}</span>}
+          {saveError && <span className="text-xs text-amber-600">{saveError}</span>}
           {savedOk   && <span className="text-xs font-medium text-green-600">Saved ✓</span>}
           <button
             onClick={handleSave}
@@ -708,6 +879,7 @@ export function FlowBuilder({ flow, onSaveNew, onAfterSave }: FlowBuilderProps) 
                 step={step}
                 onRemove={removeBlock}
                 onUpdate={updateBlock}
+                callTemplates={callTemplates}
               />
             </div>
           ))}
@@ -720,8 +892,8 @@ export function FlowBuilder({ flow, onSaveNew, onAfterSave }: FlowBuilderProps) 
         <span>
           Each <strong className="font-medium text-gray-700">Email</strong>,{" "}
           <strong className="font-medium text-gray-700">SMS</strong>, and{" "}
-          <strong className="font-medium text-gray-700">Call</strong> block includes a locked{" "}
-          <strong className="font-medium text-gray-700">Check still unpaid in Xero</strong> safety check — enforced before every action fires.
+          <strong className="font-medium text-gray-700">AI Call</strong> block includes a locked{" "}
+          <strong className="font-medium text-amber-600">Check still unpaid in Xero</strong> safety check — enforced before every action fires.
         </span>
       </div>
 

@@ -44,7 +44,7 @@ export function FlowBuilderPageClient({ id }: { id: string }) {
           <AlertTriangle className="h-8 w-8 text-amber-400 mx-auto mb-3" />
           <h2 className="text-sm font-semibold text-gray-900 mb-1">Flow not found</h2>
           <p className="text-xs text-gray-500 leading-relaxed mb-4">
-            This flow could not be loaded. Go back to Automations to create a new flow or edit an existing one.
+            This flow could not be loaded. The flow ID may be invalid. Go back to Automations to create or edit a flow.
           </p>
           <Link
             href="/automations"

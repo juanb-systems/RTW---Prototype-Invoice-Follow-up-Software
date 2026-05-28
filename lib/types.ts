@@ -16,6 +16,9 @@ export type TimelineEventType =
   | "automation_paused";
 export type FlowStatus = "active" | "paused" | "draft";
 export type StepType = "trigger" | "email" | "sms" | "call" | "wait" | "condition" | "lookup_check" | "end";
+export type CallTemplateStatus = "draft" | "active";
+export type InboxItemType = "email" | "call";
+export type CallStatus = "completed" | "no_answer" | "voicemail" | "needs_review";
 export type ScheduledActionStatus =
   | "pending"
   | "sent"
@@ -145,6 +148,23 @@ export interface InboxMessage {
   isRead: boolean;
   isReplied: boolean;
   automationPaused: boolean;
+  type?: InboxItemType;
+  callStatus?: CallStatus;
+  callOutcome?: string;
+  transcript?: string;
+}
+
+export interface CallTemplate {
+  id: string;
+  name: string;
+  status: CallTemplateStatus;
+  category: string;
+  disclosure: string;
+  prompt: string;
+  outcomeClassifications: string[];
+  voicemailBehavior: string;
+  escalationRules: string;
+  createdAt: ISO8601;
 }
 
 export interface AppSettings {
@@ -164,4 +184,9 @@ export interface DataStore {
   scheduledActions: ScheduledAction[];
   inboxMessages: InboxMessage[];
   settings: AppSettings;
+}
+
+export interface FlowTriggerExtended {
+  type: "days_overdue" | "invoice_created" | "reply_received" | "manual";
+  value: number;
 }
