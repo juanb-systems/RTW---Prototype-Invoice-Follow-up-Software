@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useCallTemplateStore } from "@/lib/call-template-store";
+import { useNavGuardStore } from "@/lib/nav-guard-store";
 import type { AutomationFlow, FlowEdge, FlowStep, CallTemplate } from "@/lib/types";
 
 // ── Step metadata ─────────────────────────────────────────────────────────────
@@ -751,10 +752,29 @@ export function FlowBuilder({ flow, onSaveNew, onAfterSave }: FlowBuilderProps) 
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [savedOk, setSavedOk] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
 
   const callTemplates = useCallTemplateStore((s) => s.templates);
+  const { setDirty } = useNavGuardStore();
 
   const isNew = flow.id === "new";
+
+  // Sync global nav guard dirty state
+  useEffect(() => {
+    setDirty(isDirty, "flow-builder");
+    return () => { setDirty(false); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDirty]);
+
+  // Browser-level navigation guard
+  useEffect(() => {
+    if (!isDirty) return;
+    function onBeforeUnload(e: BeforeUnloadEvent) { e.preventDefault(); }
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [isDirty]);
+
+  function markDirty() { setIsDirty(true); }
 
   function insertAt(type: string, position: number) {
     const id = `${type}-${Date.now()}`;
@@ -766,6 +786,7 @@ export function FlowBuilder({ flow, onSaveNew, onAfterSave }: FlowBuilderProps) 
       position: { x: 300, y: position * 150 },
     };
     setSteps(prev => [...prev.slice(0, position), newStep, ...prev.slice(position)]);
+    markDirty();
   }
 
   function addToFlow(type: string) {
@@ -778,10 +799,12 @@ export function FlowBuilder({ flow, onSaveNew, onAfterSave }: FlowBuilderProps) 
 
   function removeBlock(id: string) {
     setSteps(prev => prev.filter(s => s.id !== id));
+    markDirty();
   }
 
   function updateBlock(id: string, config: Record<string, unknown>) {
     setSteps(prev => prev.map(s => s.id === id ? { ...s, config } : s));
+    markDirty();
   }
 
   async function handleSave() {
@@ -795,6 +818,7 @@ export function FlowBuilder({ flow, onSaveNew, onAfterSave }: FlowBuilderProps) 
 
     if (isNew && onSaveNew) {
       await onSaveNew(finalSteps, edges);
+      setIsDirty(false);
       setSaving(false);
       return;
     }
@@ -816,6 +840,7 @@ export function FlowBuilder({ flow, onSaveNew, onAfterSave }: FlowBuilderProps) 
       // Network error — local save already succeeded
     }
 
+    setIsDirty(false);
     setSavedOk(true);
     setTimeout(() => setSavedOk(false), 2500);
     setSaving(false);
@@ -840,6 +865,9 @@ export function FlowBuilder({ flow, onSaveNew, onAfterSave }: FlowBuilderProps) 
         <div className="ml-auto flex items-center gap-2">
           {saveError && <span className="text-xs text-amber-600">{saveError}</span>}
           {savedOk   && <span className="text-xs font-medium text-green-600">Saved ✓</span>}
+          {isDirty && !saving && !savedOk && (
+            <span className="text-xs text-amber-600 font-medium">Unsaved changes</span>
+          )}
           <button
             onClick={handleSave}
             disabled={saving}

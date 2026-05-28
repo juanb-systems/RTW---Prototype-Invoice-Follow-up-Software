@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, RefreshCw, AlertTriangle } from "lucide-react";
 import { FlowBuilder } from "./FlowBuilder";
 import { useFlowStore } from "@/lib/flow-store";
+import { useNavGuardStore } from "@/lib/nav-guard-store";
 import type { AutomationFlow } from "@/lib/types";
 
 export function FlowBuilderPageClient({ id }: { id: string }) {
@@ -12,6 +13,8 @@ export function FlowBuilderPageClient({ id }: { id: string }) {
   const upsert = useFlowStore((s) => s.upsert);
   const [apiFlow, setApiFlow] = useState<AutomationFlow | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const { isDirty } = useNavGuardStore();
 
   // Try localStorage store first; fall back to seeded API flow
   const storeFlow = storeFlows[id];
@@ -28,6 +31,13 @@ export function FlowBuilderPageClient({ id }: { id: string }) {
   }, [id, storeFlow]);
 
   const flow: AutomationFlow | null = storeFlow ?? apiFlow;
+
+  function handleBackClick() {
+    if (isDirty) {
+      if (!window.confirm("You have unsaved changes in the flow builder. Leave without saving?")) return;
+    }
+    router.push("/automations");
+  }
 
   if (loading) {
     return (
@@ -46,13 +56,13 @@ export function FlowBuilderPageClient({ id }: { id: string }) {
           <p className="text-xs text-gray-500 leading-relaxed mb-4">
             This flow could not be loaded. The flow ID may be invalid. Go back to Automations to create or edit a flow.
           </p>
-          <Link
-            href="/automations"
+          <button
+            onClick={() => router.push("/automations")}
             className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-xs font-medium text-white hover:bg-blue-700"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             Back to Automations
-          </Link>
+          </button>
         </div>
       </div>
     );
@@ -62,13 +72,13 @@ export function FlowBuilderPageClient({ id }: { id: string }) {
     <div className="flex h-screen flex-col overflow-hidden">
       <div className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 flex-shrink-0">
         <div className="flex items-center gap-3">
-          <Link
-            href="/automations"
+          <button
+            onClick={handleBackClick}
             className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             Automations
-          </Link>
+          </button>
           <span className="text-gray-300">/</span>
           <h1 className="text-sm font-semibold text-gray-900">{flow.name}</h1>
           <span

@@ -1,4 +1,4 @@
-# CollectPilot — AI Receivables Assistant · v2.9
+# CollectPilot — AI Receivables Assistant · v2.10
 
 A Next.js 15 prototype for an AI-powered B2B receivables follow-up platform. Demonstrates automated invoice collection workflows with "Fresh Xero Check" safety gates before every customer contact.
 
@@ -18,7 +18,7 @@ A Next.js 15 prototype for an AI-powered B2B receivables follow-up platform. Dem
 | **Automation Builder** | Functional vertical-list builder; add/insert/delete blocks; inline config per block — Email (recipient, subject, body with clickable merge tags, sender, reply-to, live preview), SMS (recipient, body with clickable merge tags), Delay (amount + unit: minutes/hours/days/weeks), Call (template dropdown, timing: immediate/after delay/specific time, notes, merge tags); locked ☑ "Check still unpaid in Xero" on every Email/SMS/Call block; flows persist across refresh via Zustand + localStorage |
 | **Scheduled Actions** | Run Lookup & Fire (executes full Fresh Xero Check engine), manual approve/skip per action |
 | **Inbox** | Unified feed for email replies and AI call transcripts; filter tabs: All / Emails / AI Calls / Unread / by classification; AI-classified replies (Promise to Pay / Dispute / Out of Office / Payment Query); call records with status (Completed / Voicemail / No Answer / Needs Review) and full transcript; messages expand in-place with no page reload; automation pause control; deep-link from invoice detail |
-| **Call Templates** | 7 built-in AI calling script templates (Active and Draft); each includes opening disclosure, AI prompt, outcome classifications, voicemail behavior, escalation rules, and clickable merge tag insertion; Automation Builder Call block dropdown lists all templates; create/edit/manage custom templates; prototype only — no real calls |
+| **Call Templates** | 7 built-in AI calling script templates (Active and Draft); each includes opening disclosure, AI prompt, fully editable outcome classifications (add/remove chips), voicemail behavior, escalation rules, and clickable merge tag insertion; new templates auto-open in edit mode; unsaved-changes protection on collapse; Automation Builder Call block dropdown lists all templates; create/edit/manage custom templates; prototype only — no real calls |
 | **Settings** | Manual approval mode toggle, blocked keywords, sender name/email config |
 
 ---
@@ -114,6 +114,7 @@ No environment variables are required for the current prototype. All data is see
 
 | Version | Date | Summary |
 |---------|------|---------|
+| v2.10.0 | 28 May 2026 | Editable outcome classifications in Call Templates, new templates auto-open in edit mode, unsaved-changes protection (Call Templates collapse + Automation Builder breadcrumb/sidebar), nav guard store |
 | v2.9.0 | 28 May 2026 | 6 additional call templates (TPL002–TPL007), Inbox message selection without page reload, clickable merge tags in Call Templates editor |
 | v2.8.0 | 28 May 2026 | Call Templates page, AI call transcripts in Inbox, clickable merge tags in builder, Call block template dropdown, flow save persistence fix |
 | v2.7.1 | 28 May 2026 | Builder block config expanded: Email (recipient, body, reply-to, preview), SMS (recipient, body), Delay (unit dropdown), Call (assignee, timing, date/time) |

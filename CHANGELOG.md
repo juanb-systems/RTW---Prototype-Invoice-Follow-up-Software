@@ -2,6 +2,46 @@
 
 ---
 
+## v2.10.0 — Call Template Editor UX + Unsaved Changes Protection (28 May 2026)
+
+**Date:** 28 May 2026
+**package.json version:** 2.10.0
+
+### Summary
+
+Improves the Call Templates editor UX and adds unsaved-changes protection across Call Templates and the Automation Builder. New templates now auto-open in edit mode. Outcome classifications are fully editable (add/remove chips) rather than toggling from a fixed list. Collapsing a card while editing with unsaved changes shows an inline Save / Discard / Continue editing confirmation. Sidebar navigation and the builder breadcrumb both guard against losing unsaved changes via a shared Zustand nav-guard store.
+
+### Changes
+
+#### Call Templates: fully editable outcome classifications
+- Outcome classification UI changed from toggle-from-fixed-list to fully editable chips.
+- Each outcome chip now has a × button to remove it.
+- An "Add outcome classification" input + Add button allows free-form entries (Enter key or button click).
+- A warning appears if all outcomes are removed.
+- Works on all 7 built-in templates and any user-created templates.
+
+#### Call Templates: new templates auto-open in edit mode
+- When a template is created via the "Create Call Template" modal, it now immediately opens in expanded + edit mode.
+- Previously templates were created but not auto-opened, requiring a manual click to expand and edit.
+
+#### Call Templates: unsaved-changes protection on collapse
+- When a user clicks the collapse chevron while editing a template with unsaved changes, an inline confirmation bar appears: Save / Discard / Continue editing.
+- Clicking Save saves the changes and collapses. Discard reverts and collapses. Continue editing dismisses the prompt and returns to edit mode.
+- The browser `beforeunload` event is also wired up when changes are pending.
+
+#### Automation Builder: unsaved-changes protection
+- The builder now tracks `isDirty` state when any block is added, removed, or edited.
+- An "Unsaved changes" label appears in the toolbar next to the Save button.
+- The `beforeunload` event fires if the user attempts to close the tab or browser while changes are unsaved.
+- The "← Automations" breadcrumb is now a guarded button: clicking it while unsaved shows a `window.confirm` prompt.
+
+#### Shared navigation guard (lib/nav-guard-store.ts)
+- New Zustand store (no persistence) tracks global dirty state: `isDirty`, `dirtySource`, `setDirty`.
+- All sidebar NavItem links now intercept navigation when dirty and show a confirmation dialog before proceeding.
+- NavItem converted from `<Link>` to a guarded `<button>` using `useRouter.push`.
+
+---
+
 ## v2.9.0 — Additional Call Templates, Inbox Selection Fix, Merge Tag QA (28 May 2026)
 
 **Date:** 28 May 2026

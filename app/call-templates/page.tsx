@@ -1,32 +1,21 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Phone, Plus, ChevronDown, ChevronUp, Trash2, Save,
   CheckCircle, Clock, Mic, Tag, X, AlertCircle,
 } from "lucide-react";
 import { TopBar } from "@/components/layout/TopBar";
 import { useCallTemplateStore, SEEDED_TEMPLATE_IDS } from "@/lib/call-template-store";
+import { useNavGuardStore } from "@/lib/nav-guard-store";
 import type { CallTemplate, CallTemplateStatus } from "@/lib/types";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 const statusConfig: Record<CallTemplateStatus, { label: string; cls: string; Icon: React.ElementType }> = {
-  active: { label: "Active",  cls: "border-green-200 bg-green-100 text-green-700", Icon: CheckCircle },
-  draft:  { label: "Draft",   cls: "border-gray-200 bg-gray-100 text-gray-600",   Icon: Clock },
+  active: { label: "Active", cls: "border-green-200 bg-green-100 text-green-700", Icon: CheckCircle },
+  draft:  { label: "Draft",  cls: "border-gray-200 bg-gray-100 text-gray-600",   Icon: Clock },
 };
-
-const OUTCOME_OPTIONS = [
-  "Promise to pay",
-  "Already paid",
-  "Dispute raised",
-  "Wrong contact",
-  "Request invoice copy",
-  "Needs human follow-up",
-  "No commitment given",
-  "Voicemail",
-  "Call back requested",
-];
 
 const MERGE_TAGS = [
   "{{company_name}}", "{{contact_name}}", "{{customer_company}}",
@@ -49,7 +38,13 @@ function emptyTemplate(): CallTemplate {
     category: "Overdue invoice follow-up",
     disclosure: "Hi, I'm an AI accounts receivable assistant calling on behalf of {{company_name}}. This is an automated and recorded business call regarding an outstanding invoice.",
     prompt: "",
-    outcomeClassifications: [...OUTCOME_OPTIONS],
+    outcomeClassifications: [
+      "Promise to pay",
+      "Already paid",
+      "Dispute raised",
+      "Needs human follow-up",
+      "Voicemail",
+    ],
     voicemailBehavior: "Keep the message under 20 seconds. Do not mention sensitive financial details. State the company name, invoice follow-up purpose, and callback/contact method only.",
     escalationRules: "Escalate to human review if a dispute is raised, the customer becomes frustrated, or the call outcome is ambiguous.",
     createdAt: new Date().toISOString(),
@@ -63,18 +58,43 @@ function TemplateCard({
   onSave,
   onDelete,
   defaultExpanded,
+  defaultEditing,
 }: {
   template: CallTemplate;
   onSave: (t: CallTemplate) => void;
   onDelete: (id: string) => void;
   defaultExpanded?: boolean;
+  defaultEditing?: boolean;
 }) {
   const [expanded, setExpanded] = useState(defaultExpanded ?? false);
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(defaultEditing ?? false);
   const [draft, setDraft] = useState<CallTemplate>(template);
   const [focusedFieldKey, setFocusedFieldKey] = useState<string | null>(null);
+  const [outcomeInput, setOutcomeInput] = useState("");
+  const [collapseConfirm, setCollapseConfirm] = useState(false);
 
   const fieldRefs = useRef<Record<string, HTMLTextAreaElement | null>>({});
+  const { setDirty } = useNavGuardStore();
+
+  const isDirty = editing && JSON.stringify(draft) !== JSON.stringify(template);
+
+  // Sync global dirty state when editing starts/stops
+  useEffect(() => {
+    if (editing) setDirty(true, "call-templates");
+    else setDirty(false);
+    return () => { setDirty(false); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editing]);
+
+  // Browser-level guard when dirty
+  useEffect(() => {
+    if (!isDirty) return;
+    function onBeforeUnload(e: BeforeUnloadEvent) {
+      e.preventDefault();
+    }
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [isDirty]);
 
   function bindField(key: string) {
     return {
@@ -109,28 +129,56 @@ function TemplateCard({
     setDraft(prev => ({ ...prev, [key]: value }));
   }
 
-  function toggleOutcome(outcome: string) {
-    setDraft(prev => {
-      const next = prev.outcomeClassifications.includes(outcome)
-        ? prev.outcomeClassifications.filter(o => o !== outcome)
-        : [...prev.outcomeClassifications, outcome];
-      return { ...prev, outcomeClassifications: next };
-    });
+  function removeOutcome(outcome: string) {
+    setDraft(prev => ({
+      ...prev,
+      outcomeClassifications: prev.outcomeClassifications.filter(o => o !== outcome),
+    }));
+  }
+
+  function addOutcome() {
+    const trimmed = outcomeInput.trim();
+    if (!trimmed || draft.outcomeClassifications.includes(trimmed)) {
+      setOutcomeInput("");
+      return;
+    }
+    setDraft(prev => ({
+      ...prev,
+      outcomeClassifications: [...prev.outcomeClassifications, trimmed],
+    }));
+    setOutcomeInput("");
   }
 
   function handleSave() {
     onSave(draft);
     setEditing(false);
+    setCollapseConfirm(false);
   }
 
   function handleCancel() {
     setDraft(template);
     setEditing(false);
+    setCollapseConfirm(false);
+    setOutcomeInput("");
+  }
+
+  function handleCollapseClick() {
+    if (editing && isDirty) {
+      setCollapseConfirm(true);
+      return;
+    }
+    if (editing) {
+      // No unsaved changes — just cancel edit and collapse
+      handleCancel();
+    }
+    setExpanded(p => !p);
+    setCollapseConfirm(false);
   }
 
   return (
     <div className={`rounded-xl border bg-white shadow-sm overflow-hidden transition-shadow ${expanded ? "border-blue-300 shadow-md" : "border-gray-200"}`}>
-      {/* Header */}
+
+      {/* ── Header ── */}
       <div className="flex items-start gap-3 p-4">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-green-600">
           <Mic className="h-4 w-4 text-white" />
@@ -151,14 +199,14 @@ function TemplateCard({
         <div className="flex items-center gap-1.5 shrink-0">
           {!editing && (
             <button
-              onClick={() => { setEditing(true); setExpanded(true); }}
+              onClick={() => { setEditing(true); setExpanded(true); setCollapseConfirm(false); }}
               className="rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
             >
               Edit
             </button>
           )}
           <button
-            onClick={() => setExpanded(p => !p)}
+            onClick={handleCollapseClick}
             className="flex h-7 w-7 items-center justify-center rounded-md border border-gray-200 text-gray-400 hover:bg-gray-50"
           >
             {expanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
@@ -177,7 +225,34 @@ function TemplateCard({
         </div>
       </div>
 
-      {/* Expanded view / edit panel */}
+      {/* ── Unsaved changes collapse confirmation ── */}
+      {collapseConfirm && (
+        <div className="border-t border-amber-200 bg-amber-50 px-4 py-3 flex items-center gap-2 flex-wrap">
+          <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
+          <span className="text-xs text-amber-700 flex-1 min-w-0">You have unsaved changes.</span>
+          <button
+            onClick={handleSave}
+            className="flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
+          >
+            <Save className="h-3 w-3" />
+            Save
+          </button>
+          <button
+            onClick={() => { handleCancel(); setExpanded(false); }}
+            className="rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
+          >
+            Discard
+          </button>
+          <button
+            onClick={() => setCollapseConfirm(false)}
+            className="rounded-md px-3 py-1.5 text-xs font-medium text-gray-500 hover:bg-gray-100"
+          >
+            Continue editing
+          </button>
+        </div>
+      )}
+
+      {/* ── Expanded view / edit panel ── */}
       {expanded && (
         <div className="border-t border-gray-100 bg-gray-50/50 p-4 space-y-4">
 
@@ -268,27 +343,61 @@ function TemplateCard({
           {/* Outcome classifications */}
           <div>
             <label className="block text-[11px] font-medium text-gray-600 mb-1.5">Outcome classifications</label>
-            <div className="flex flex-wrap gap-1.5">
-              {OUTCOME_OPTIONS.map(outcome => {
-                const selected = (editing ? draft : template).outcomeClassifications.includes(outcome);
-                return editing ? (
+            {editing ? (
+              <div className="space-y-2">
+                {/* Editable chips */}
+                <div className="flex flex-wrap gap-1.5">
+                  {draft.outcomeClassifications.map(outcome => (
+                    <span
+                      key={outcome}
+                      className="inline-flex items-center gap-1 rounded-full border border-blue-300 bg-blue-100 pl-2.5 pr-1.5 py-1 text-[11px] font-medium text-blue-700"
+                    >
+                      {outcome}
+                      <button
+                        type="button"
+                        onClick={() => removeOutcome(outcome)}
+                        className="flex h-3.5 w-3.5 items-center justify-center rounded-full text-blue-400 hover:bg-blue-200 hover:text-blue-700 transition-colors"
+                        title={`Remove "${outcome}"`}
+                      >
+                        <X className="h-2.5 w-2.5" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+                {/* Add outcome input */}
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={outcomeInput}
+                    onChange={e => setOutcomeInput(e.target.value)}
+                    onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addOutcome(); } }}
+                    placeholder="Add outcome classification…"
+                    className="flex-1 rounded-md border border-dashed border-gray-300 px-3 py-1.5 text-xs text-gray-700 focus:border-blue-400 focus:outline-none bg-white placeholder-gray-400"
+                  />
                   <button
-                    key={outcome}
                     type="button"
-                    onClick={() => toggleOutcome(outcome)}
-                    className={`rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors ${
-                      selected
-                        ? "border-blue-300 bg-blue-100 text-blue-700"
-                        : "border-gray-200 bg-white text-gray-500 hover:bg-gray-50"
-                    }`}
+                    onClick={addOutcome}
+                    disabled={!outcomeInput.trim()}
+                    className="flex items-center gap-1 rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    {outcome}
+                    <Plus className="h-3 w-3" />
+                    Add
                   </button>
-                ) : selected ? (
+                </div>
+                {draft.outcomeClassifications.length === 0 && (
+                  <p className="text-[10px] text-amber-600">At least one outcome classification is recommended.</p>
+                )}
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-1.5">
+                {template.outcomeClassifications.map(outcome => (
                   <span key={outcome} className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-[11px] font-medium text-blue-700">{outcome}</span>
-                ) : null;
-              })}
-            </div>
+                ))}
+                {template.outcomeClassifications.length === 0 && (
+                  <span className="text-xs text-gray-400 italic">No outcome classifications defined.</span>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Voicemail behavior */}
@@ -395,7 +504,7 @@ export default function CallTemplatesPage() {
   const sorted = Object.values(templates).sort((a, b) => {
     const aSeeded = SEEDED_TEMPLATE_IDS.has(a.id);
     const bSeeded = SEEDED_TEMPLATE_IDS.has(b.id);
-    if (aSeeded && bSeeded) return a.id.localeCompare(b.id); // TPL001 → TPL007 in order
+    if (aSeeded && bSeeded) return a.id.localeCompare(b.id);
     if (aSeeded) return -1;
     if (bSeeded) return 1;
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
@@ -433,7 +542,7 @@ export default function CallTemplatesPage() {
           <div>
             <p className="text-sm font-medium text-blue-800 mb-0.5">AI Call Templates — Prototype</p>
             <p className="text-xs text-blue-700 leading-relaxed">
-              Templates define the AI caller's script, disclosure, outcome classifications, and escalation rules.
+              Templates define the AI caller&apos;s script, disclosure, outcome classifications, and escalation rules.
               Select a template in an Automation Builder <strong>Call</strong> block to assign it to a flow step.
               No real calls are made in this prototype.
             </p>
@@ -457,6 +566,7 @@ export default function CallTemplatesPage() {
               onSave={upsert}
               onDelete={remove}
               defaultExpanded={template.id === newlyCreatedId}
+              defaultEditing={template.id === newlyCreatedId}
             />
           ))}
         </div>
