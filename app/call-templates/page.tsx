@@ -6,7 +6,7 @@ import {
   CheckCircle, Clock, Mic, Tag, X, AlertCircle,
 } from "lucide-react";
 import { TopBar } from "@/components/layout/TopBar";
-import { useCallTemplateStore } from "@/lib/call-template-store";
+import { useCallTemplateStore, SEEDED_TEMPLATE_IDS } from "@/lib/call-template-store";
 import type { CallTemplate, CallTemplateStatus } from "@/lib/types";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -163,7 +163,7 @@ function TemplateCard({
           >
             {expanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
           </button>
-          {template.id !== "TPL001" && (
+          {!SEEDED_TEMPLATE_IDS.has(template.id) && (
             <button
               onClick={() => {
                 if (confirm(`Delete "${template.name}"?`)) onDelete(template.id);
@@ -393,8 +393,11 @@ export default function CallTemplatesPage() {
   const [newlyCreatedId, setNewlyCreatedId] = useState<string | null>(null);
 
   const sorted = Object.values(templates).sort((a, b) => {
-    if (a.id === "TPL001") return -1;
-    if (b.id === "TPL001") return 1;
+    const aSeeded = SEEDED_TEMPLATE_IDS.has(a.id);
+    const bSeeded = SEEDED_TEMPLATE_IDS.has(b.id);
+    if (aSeeded && bSeeded) return a.id.localeCompare(b.id); // TPL001 → TPL007 in order
+    if (aSeeded) return -1;
+    if (bSeeded) return 1;
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
