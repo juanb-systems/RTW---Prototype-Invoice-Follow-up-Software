@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   Phone, Plus, ChevronDown, ChevronUp, Trash2, Save,
   CheckCircle, Clock, Mic, Tag, X, AlertCircle,
@@ -72,6 +72,35 @@ function TemplateCard({
   const [expanded, setExpanded] = useState(defaultExpanded ?? false);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<CallTemplate>(template);
+  const [focusedFieldKey, setFocusedFieldKey] = useState<string | null>(null);
+
+  const fieldRefs = useRef<Record<string, HTMLTextAreaElement | null>>({});
+
+  function bindField(key: string) {
+    return {
+      ref: (el: HTMLTextAreaElement | null) => { fieldRefs.current[key] = el; },
+      onFocus: () => setFocusedFieldKey(key),
+    };
+  }
+
+  function insertMergeTag(tag: string) {
+    const key = focusedFieldKey ?? "prompt";
+    const el = fieldRefs.current[key];
+    const current = (draft[key as keyof CallTemplate] as string) ?? "";
+    if (!el) {
+      field(key as keyof CallTemplate, current + tag);
+      return;
+    }
+    const start = el.selectionStart ?? current.length;
+    const end = el.selectionEnd ?? current.length;
+    const newValue = current.substring(0, start) + tag + current.substring(end);
+    const newCursor = start + tag.length;
+    field(key as keyof CallTemplate, newValue);
+    requestAnimationFrame(() => {
+      const newEl = fieldRefs.current[key];
+      if (newEl) { newEl.selectionStart = newEl.selectionEnd = newCursor; newEl.focus(); }
+    });
+  }
 
   const cfg = statusConfig[template.status] ?? statusConfig.draft;
   const StatusIcon = cfg.Icon;
@@ -152,17 +181,36 @@ function TemplateCard({
       {expanded && (
         <div className="border-t border-gray-100 bg-gray-50/50 p-4 space-y-4">
 
-          {/* Merge tag hint */}
+          {/* Merge tag bar */}
           <div className="rounded-md border border-dashed border-gray-200 bg-white px-3 py-2">
             <div className="flex items-start gap-1.5 flex-wrap">
               <span className="flex items-center gap-1 text-[10px] font-medium text-gray-400 shrink-0 mt-0.5">
                 <Tag className="h-3 w-3" />
-                Available merge tags:
+                {editing ? "Insert:" : "Available merge tags:"}
               </span>
-              {MERGE_TAGS.map(tag => (
+              {MERGE_TAGS.map(tag => editing ? (
+                <button
+                  key={tag}
+                  type="button"
+                  title={tag}
+                  onMouseDown={(e) => { e.preventDefault(); insertMergeTag(tag); }}
+                  className={`rounded border px-1.5 py-0.5 font-mono text-[10px] transition-colors ${
+                    focusedFieldKey
+                      ? "border-blue-200 bg-white text-blue-700 hover:bg-blue-50 cursor-pointer"
+                      : "border-gray-200 bg-white text-gray-500 hover:bg-gray-100 cursor-pointer"
+                  }`}
+                >
+                  {tag}
+                </button>
+              ) : (
                 <span key={tag} className="rounded border border-gray-200 bg-white px-1.5 py-0.5 font-mono text-[10px] text-gray-500">{tag}</span>
               ))}
             </div>
+            {editing && !focusedFieldKey && (
+              <p className="text-[10px] text-gray-400 mt-1.5">
+                Click a field below, then click a tag to insert it at the cursor position.
+              </p>
+            )}
           </div>
 
           {/* Template name + status */}
@@ -201,7 +249,7 @@ function TemplateCard({
           <div>
             <label className="block text-[11px] font-medium text-gray-600 mb-1">Opening disclosure</label>
             {editing ? (
-              <textarea value={draft.disclosure} onChange={e => field("disclosure", e.target.value)} rows={3} className={textareaCls} placeholder="The first words the AI caller will say…" />
+              <textarea {...bindField("disclosure")} value={draft.disclosure} onChange={e => field("disclosure", e.target.value)} rows={3} className={textareaCls} placeholder="The first words the AI caller will say…" />
             ) : (
               <div className="rounded-md border border-gray-200 bg-white px-3 py-2 text-xs text-gray-700 leading-relaxed">{template.disclosure}</div>
             )}
@@ -211,7 +259,7 @@ function TemplateCard({
           <div>
             <label className="block text-[11px] font-medium text-gray-600 mb-1">Main AI prompt / instructions</label>
             {editing ? (
-              <textarea value={draft.prompt} onChange={e => field("prompt", e.target.value)} rows={14} className={textareaCls} placeholder="Full prompt instructions for the AI caller…" />
+              <textarea {...bindField("prompt")} value={draft.prompt} onChange={e => field("prompt", e.target.value)} rows={14} className={textareaCls} placeholder="Full prompt instructions for the AI caller…" />
             ) : (
               <div className="max-h-48 overflow-y-auto rounded-md border border-gray-200 bg-white px-3 py-2 text-xs text-gray-700 leading-relaxed whitespace-pre-wrap">{template.prompt}</div>
             )}
@@ -247,7 +295,7 @@ function TemplateCard({
           <div>
             <label className="block text-[11px] font-medium text-gray-600 mb-1">Voicemail behavior</label>
             {editing ? (
-              <textarea value={draft.voicemailBehavior} onChange={e => field("voicemailBehavior", e.target.value)} rows={3} className={textareaCls} />
+              <textarea {...bindField("voicemailBehavior")} value={draft.voicemailBehavior} onChange={e => field("voicemailBehavior", e.target.value)} rows={3} className={textareaCls} />
             ) : (
               <div className="rounded-md border border-gray-200 bg-white px-3 py-2 text-xs text-gray-700 leading-relaxed">{template.voicemailBehavior}</div>
             )}
@@ -257,7 +305,7 @@ function TemplateCard({
           <div>
             <label className="block text-[11px] font-medium text-gray-600 mb-1">Escalation / pause rules</label>
             {editing ? (
-              <textarea value={draft.escalationRules} onChange={e => field("escalationRules", e.target.value)} rows={3} className={textareaCls} />
+              <textarea {...bindField("escalationRules")} value={draft.escalationRules} onChange={e => field("escalationRules", e.target.value)} rows={3} className={textareaCls} />
             ) : (
               <div className="rounded-md border border-gray-200 bg-white px-3 py-2 text-xs text-gray-700 leading-relaxed">{template.escalationRules}</div>
             )}
