@@ -149,10 +149,20 @@ export function getDashboardData() {
       return { ...event, invoice, contact };
     });
 
+  const needsAttention = {
+    disputes: db.invoices.filter((i) => i.status === "disputed").length,
+    promisesToPay: db.inboxMessages.filter((m) => m.classification === "promise_to_pay").length,
+    unreadReplies: db.inboxMessages.filter((m) => !m.isRead).length,
+    pausedAutomations: db.inboxMessages.filter((m) => m.automationPaused).length,
+    awaitingApproval: db.scheduledActions.filter((a) => a.status === "awaiting_approval").length,
+    blocked: db.scheduledActions.filter((a) => a.status === "blocked").length,
+  };
+
   return {
     kpis: { totalOverdue: overdueInvoices.length, totalOverdueAmount, avgDaysPastDue, pendingActions },
     agingBuckets,
     collectionsTrend,
     recentActivity,
+    needsAttention,
   };
 }

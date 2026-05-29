@@ -12,7 +12,7 @@ import {
   getAutomationFlows,
   getLatestInboxMessageForInvoice,
 } from "@/lib/server-data";
-import { AlertTriangle, Calendar, Building2, Mail, Phone, GitBranch, ShieldX, MessageSquare, PauseCircle, ExternalLink } from "lucide-react";
+import { AlertTriangle, Calendar, Building2, Mail, Phone, GitBranch, ShieldX, MessageSquare, PauseCircle, ExternalLink, Zap, CheckCircle2, Clock, Info } from "lucide-react";
 import type { AutomationFlow, MessageClassification, InboxMessage } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -110,6 +110,33 @@ export default async function InvoiceDetailPage({
   const disputeDetected = invoice.status === "disputed";
   const contactExcluded = invoice.contact?.status === "excluded";
 
+  // Derive automation status for the summary panel
+  const autoStatus = (() => {
+    if (latestMessage?.automationPaused) return { label: "Paused", cls: "bg-amber-100 text-amber-700 border-amber-200", icon: PauseCircle };
+    if (invoice.status === "disputed") return { label: "Blocked (Dispute)", cls: "bg-red-100 text-red-700 border-red-200", icon: ShieldX };
+    if (invoice.contact?.status === "excluded") return { label: "Blocked (Contact)", cls: "bg-red-100 text-red-700 border-red-200", icon: ShieldX };
+    if (pendingActions.some(a => a.status === "awaiting_approval")) return { label: "Awaiting Approval", cls: "bg-purple-100 text-purple-700 border-purple-200", icon: Clock };
+    if (pendingActions.some(a => a.status === "pending")) return { label: "Active", cls: "bg-green-100 text-green-700 border-green-200", icon: Zap };
+    if (!invoice.assignedFlowId) return { label: "No Flow", cls: "bg-gray-100 text-gray-500 border-gray-200", icon: GitBranch };
+    return { label: "No Actions", cls: "bg-gray-100 text-gray-400 border-gray-200", icon: CheckCircle2 };
+  })();
+
+  const nextAction = pendingActions.find(a => a.status === "pending" || a.status === "awaiting_approval");
+  const assignedFlow = flows.find((f: AutomationFlow) => f.id === invoice.assignedFlowId);
+
+  const recommendedNext = (() => {
+    if (invoice.status === "disputed") return "Review the customer dispute before sending more reminders. Automation is paused.";
+    if (invoice.contact?.status === "excluded") return "This contact is excluded from all automations. Assign a new contact or follow up manually.";
+    if (latestMessage?.classification === "promise_to_pay") return "Payment promised. Automation paused — monitor the payment date and follow up if needed.";
+    if (latestMessage?.classification === "dispute") return "Dispute raised by customer. Pause automation and assign to your accounts team for review.";
+    if (latestMessage?.classification === "out_of_office") return "Customer is out of office. Delay follow-up until they return.";
+    if (latestMessage?.classification === "payment_query") return "Customer has a payment query. Reply with the full invoice breakdown and resend the original.";
+    if (pendingActions.some(a => a.status === "awaiting_approval")) return "Manual approval mode is enabled. Review and approve the next scheduled action.";
+    if (nextAction?.status === "pending") return `Next automated action scheduled: ${nextAction.stepType} on ${formatDate(nextAction.scheduledAt)}.`;
+    if (!invoice.assignedFlowId) return "No automation flow assigned. Assign a flow to start automated follow-up.";
+    return null;
+  })();
+
   return (
     <div>
       <TopBar
@@ -117,6 +144,80 @@ export default async function InvoiceDetailPage({
         subtitle={`${invoice.contact?.company ?? ""} · ${formatCurrency(invoice.amount)}`}
       />
       <div className="p-6 space-y-6">
+
+        {/* Status Overview */}
+        <div className="rounded-xl border border-gray-200 bg-white px-5 py-4 shadow-sm">
+          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+            <Info className="h-3.5 w-3.5" />
+            Status Overview
+          </h3>
+          <div className="flex flex-wrap gap-3 mb-3">
+            {/* Invoice status */}
+            <div className="flex flex-col gap-0.5">
+              <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Status</span>
+              <span className={`inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium capitalize ${
+                invoice.status === "overdue" || invoice.status === "disputed" ? "border-red-200 bg-red-50 text-red-700" :
+                invoice.status === "paid" ? "border-green-200 bg-green-50 text-green-700" :
+                invoice.status === "partial" ? "border-amber-200 bg-amber-50 text-amber-700" :
+                "border-gray-200 bg-gray-50 text-gray-600"
+              }`}>{invoice.status}</span>
+            </div>
+            {/* Days overdue */}
+            {invoice.daysPastDue > 0 && (
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Days Overdue</span>
+                <span className={`inline-flex items-center rounded border px-2 py-0.5 text-xs font-semibold ${agingColor(invoice.daysPastDue)} border-current/20 bg-current/5`}>
+                  {invoice.daysPastDue}d
+                </span>
+              </div>
+            )}
+            {/* Flow */}
+            <div className="flex flex-col gap-0.5">
+              <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Flow</span>
+              <span className="inline-flex items-center gap-1 rounded border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">
+                <GitBranch className="h-3 w-3" />
+                {assignedFlow?.name ?? "No flow assigned"}
+              </span>
+            </div>
+            {/* Automation status */}
+            <div className="flex flex-col gap-0.5">
+              <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Automation</span>
+              <span className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-xs font-medium ${autoStatus.cls}`}>
+                <autoStatus.icon className="h-3 w-3" />
+                {autoStatus.label}
+              </span>
+            </div>
+            {/* Customer reply */}
+            {latestMessage && (
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Customer Reply</span>
+                <span className={`inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium ${CLASSIFICATION_COLORS[latestMessage.classification]}`}>
+                  {CLASSIFICATION_LABELS[latestMessage.classification]}
+                </span>
+              </div>
+            )}
+            {/* Next action */}
+            {nextAction && (
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Next Action</span>
+                <span className="inline-flex items-center gap-1 rounded border border-gray-200 bg-gray-50 px-2 py-0.5 text-xs font-medium text-gray-600 capitalize">
+                  <Calendar className="h-3 w-3" />
+                  {nextAction.stepType} · {formatDate(nextAction.scheduledAt)}
+                </span>
+              </div>
+            )}
+          </div>
+          {/* Recommended next step */}
+          {recommendedNext && (
+            <div className="rounded-md border border-blue-100 bg-blue-50 px-3 py-2 flex items-start gap-2">
+              <Info className="h-3.5 w-3.5 text-blue-500 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-blue-700 leading-relaxed">
+                <strong>Recommended:</strong> {recommendedNext}
+              </p>
+            </div>
+          )}
+        </div>
+
         {needsReview && (
           <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 flex items-start gap-3">
             <AlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />

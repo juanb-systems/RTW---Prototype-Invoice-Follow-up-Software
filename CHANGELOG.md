@@ -2,6 +2,52 @@
 
 ---
 
+## v2.11.0 — Streamlined UX, Needs Attention Dashboard, Onboarding Wizard (28 May 2026)
+
+**Date:** 28 May 2026
+**package.json version:** 2.11.0
+
+### Summary
+
+Major UX update responding to James' product feedback. Focuses on making the daily workflow clearer for a business owner: everything important should be visible without jumping between sections. Adds a "Needs Attention" command-centre section to the Dashboard, automation status badges to the Invoice list, a Status Overview summary panel on invoice detail, and a full 6-step onboarding wizard with a dummy Xero connection and auto-generated flow output.
+
+### Changes
+
+#### 1. Streamlined navigation — sidebar groupings
+- Sidebar restructured into two labelled groups: **Daily Work** (Dashboard, Invoices, Inbox, Automations, Scheduled Actions, Contacts) and **Setup** (Call Templates, Setup & Onboarding).
+- A visual divider and section label clearly separate operational pages from configuration/setup pages.
+- New "Setup & Onboarding" link in the Setup group navigates to the new onboarding wizard.
+
+#### 2. Dashboard — Needs Attention section
+- New **Needs Attention** section appears between KPIs and charts when there are items requiring review.
+- Shows clickable cards for: Dispute(s) raised, Action(s) blocked, Awaiting approval, Automation(s) paused, Unread replies/calls, Promises to pay.
+- Each card links directly to the relevant page/filter.
+- A total badge shows the count of all attention items.
+- When all clear, a green "All clear" banner replaces the section.
+- Data computed server-side in `getDashboardData()` via new `needsAttention` field.
+
+#### 3. Invoice list — automation status and next action
+- The **Flow** column now shows a second row below the flow name: an automation status badge (Active / Paused / Blocked / Needs Approval / No Actions) derived from scheduled actions and inbox reply state.
+- When status is Active, a "Next: {type} · {date}" line shows the next pending scheduled action.
+- The **Reply** column now shows the received date below the reply classification badge.
+- Fetches `/api/scheduled` on load to derive per-invoice automation state.
+
+#### 4. Invoice detail — Status Overview panel
+- A new **Status Overview** panel appears at the top of every invoice detail page, above the existing content.
+- Shows compact status chips for: Invoice Status, Days Overdue, Flow, Automation status, Customer Reply classification, and Next Scheduled Action.
+- Shows a **Recommended next step** description based on the current invoice/automation/reply state (e.g. "Dispute raised — pause automation", "Payment promised — monitor date", "Next SMS scheduled tomorrow").
+
+#### 5. Setup & Onboarding wizard (new page: /onboarding)
+- 6-step wizard persisted to localStorage via Zustand (`collectpilot-onboarding` key).
+- **Step 1 — Connect Xero:** Dummy "Connect Xero" button shows connected state. Prototype notice included. No real OAuth.
+- **Step 2 — Business profile:** Business name, accounts email, sender name, communication tone (Friendly / Professional / Firm), follow-up style (Light / Standard / Proactive).
+- **Step 3 — Reminder timing:** First reminder day (1/3/7/14), action after 14 days (email/SMS/call/review), action after 30 days (call/escalate/final/pause).
+- **Step 4 — Channels:** Select Email, SMS, AI Call, Manual review (multi-select checkboxes).
+- **Step 5 — Safety rules:** Pause on reply / Pause on promise / Pause on dispute / Always check Xero (locked, required).
+- **Step 6 — Generated setup:** Shows the generated flow timeline (Day X email → Day 14 action → Day 30 action), template cards, and safety rule summary. "Apply Setup" button creates an `AutomationFlow` in `useFlowStore` and (if calls enabled) a `CallTemplate` in `useCallTemplateStore`. Navigation buttons to Automations, Dashboard, Call Templates, or restart setup.
+
+---
+
 ## v2.10.1 — Hotfix: Invoice Reply Column Sorting (28 May 2026)
 
 **Date:** 28 May 2026

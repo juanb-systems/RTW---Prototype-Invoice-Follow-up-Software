@@ -6,7 +6,7 @@ import { TopBar } from "@/components/layout/TopBar";
 import { InvoiceStatusBadge } from "@/components/invoices/InvoiceStatusBadge";
 import { formatCurrency, formatDate, agingColor } from "@/lib/utils";
 import { useSearchStore } from "@/lib/search-store";
-import { Search, X, ChevronUp, ChevronDown, ChevronsUpDown, PauseCircle, SlidersHorizontal } from "lucide-react";
+import { Search, X, ChevronUp, ChevronDown, ChevronsUpDown, PauseCircle, SlidersHorizontal, Zap } from "lucide-react";
 
 type SortCol = "invoiceNumber" | "contact" | "amount" | "dueDate" | "daysPastDue" | "status" | "flow" | "reply";
 type SortDir = "asc" | "desc";
@@ -25,6 +25,13 @@ interface InvoiceRow {
 interface ReplyInfo {
   classification: "promise_to_pay" | "dispute" | "out_of_office" | "payment_query" | "unclassified";
   automationPaused: boolean;
+  receivedAt: string;
+}
+
+interface ScheduledActionSummary {
+  status: string;
+  stepType: string;
+  scheduledAt: string;
 }
 
 const REPLY_LABELS: Record<ReplyInfo["classification"], string> = {
@@ -54,10 +61,20 @@ function normaliseAmount(raw: string): string {
   return raw.replace(/[$,]/g, "");
 }
 
+const AUTO_STATUS_CONFIG = {
+  paused:            { label: "Paused",          cls: "bg-amber-100 text-amber-700 border-amber-200" },
+  blocked:           { label: "Blocked",         cls: "bg-red-100 text-red-700 border-red-200" },
+  awaiting_approval: { label: "Needs Approval",  cls: "bg-purple-100 text-purple-700 border-purple-200" },
+  active:            { label: "Active",          cls: "bg-green-100 text-green-700 border-green-200" },
+  no_flow:           { label: "No Flow",         cls: "bg-gray-100 text-gray-400 border-gray-200" },
+  no_actions:        { label: "No Actions",      cls: "bg-gray-100 text-gray-400 border-gray-200" },
+} as const;
+
 export default function InvoicesPage() {
   const [invoices, setInvoices] = useState<InvoiceRow[]>([]);
   const [flowMap, setFlowMap] = useState<Record<string, string>>({});
   const [replyMap, setReplyMap] = useState<Record<string, ReplyInfo>>({});
+  const [scheduledMap, setScheduledMap] = useState<Record<string, ScheduledActionSummary[]>>({});
   const [sortCol, setSortCol] = useState<SortCol>("daysPastDue");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [loading, setLoading] = useState(true);
@@ -71,10 +88,11 @@ export default function InvoicesPage() {
 
   useEffect(() => {
     async function load() {
-      const [invoicesRes, flowsRes, inboxRes] = await Promise.all([
+      const [invoicesRes, flowsRes, inboxRes, scheduledRes] = await Promise.all([
         fetch("/api/invoices", { cache: "no-store" }),
         fetch("/api/automations", { cache: "no-store" }),
         fetch("/api/inbox", { cache: "no-store" }),
+        fetch("/api/scheduled", { cache: "no-store" }),
       ]);
       const invoicesData: InvoiceRow[] = await invoicesRes.json();
       const flowsData: { id: string; name: string }[] = await flowsRes.json();
@@ -84,6 +102,12 @@ export default function InvoicesPage() {
         automationPaused: boolean;
         receivedAt: string;
       }[] = await inboxRes.json();
+      const scheduledData: {
+        invoiceId: string;
+        status: string;
+        stepType: string;
+        scheduledAt: string;
+      }[] = await scheduledRes.json();
 
       const fMap: Record<string, string> = {};
       for (const f of flowsData) fMap[f.id] = f.name;
@@ -99,10 +123,18 @@ export default function InvoicesPage() {
           rMap[msg.invoiceId] = {
             classification: msg.classification,
             automationPaused: msg.automationPaused,
+            receivedAt: msg.receivedAt,
           };
         }
       }
       setReplyMap(rMap);
+
+      const sMap: Record<string, ScheduledActionSummary[]> = {};
+      for (const action of scheduledData) {
+        if (!sMap[action.invoiceId]) sMap[action.invoiceId] = [];
+        sMap[action.invoiceId].push({ status: action.status, stepType: action.stepType, scheduledAt: action.scheduledAt });
+      }
+      setScheduledMap(sMap);
       setLoading(false);
     }
     load();
@@ -375,24 +407,53 @@ export default function InvoicesPage() {
                           </td>
                           <td className="px-5 py-3.5">
                             {invoice.assignedFlowId ? (
-                              <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 border border-blue-200 whitespace-nowrap">
-                                {flowMap[invoice.assignedFlowId] ?? invoice.assignedFlowId}
-                              </span>
+                              <div className="space-y-1">
+                                <span className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 border border-blue-200 whitespace-nowrap">
+                                  <Zap className="h-2.5 w-2.5" />
+                                  {flowMap[invoice.assignedFlowId] ?? invoice.assignedFlowId}
+                                </span>
+                                {(() => {
+                                  const reply = replyMap[invoice.id];
+                                  const actions = scheduledMap[invoice.id] ?? [];
+                                  let key: keyof typeof AUTO_STATUS_CONFIG = "no_actions";
+                                  if (reply?.automationPaused) key = "paused";
+                                  else if (actions.some(a => a.status === "blocked")) key = "blocked";
+                                  else if (actions.some(a => a.status === "awaiting_approval")) key = "awaiting_approval";
+                                  else if (actions.some(a => a.status === "pending")) key = "active";
+                                  const cfg = AUTO_STATUS_CONFIG[key];
+                                  const pending = actions.find(a => a.status === "pending");
+                                  return (
+                                    <div>
+                                      <span className={`inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] font-medium ${cfg.cls}`}>
+                                        {cfg.label}
+                                      </span>
+                                      {key === "active" && pending && (
+                                        <p className="text-[10px] text-gray-400 mt-0.5 capitalize">
+                                          Next: {pending.stepType} · {formatDate(pending.scheduledAt)}
+                                        </p>
+                                      )}
+                                    </div>
+                                  );
+                                })()}
+                              </div>
                             ) : (
                               <span className="text-xs text-gray-300">No flow</span>
                             )}
                           </td>
                           <td className="px-5 py-3.5">
                             {reply ? (
-                              <div className="flex items-center gap-1.5">
-                                <span className={`inline-flex items-center rounded border px-1.5 py-0.5 text-xs font-medium whitespace-nowrap ${REPLY_COLORS[reply.classification]}`}>
-                                  {REPLY_LABELS[reply.classification]}
-                                </span>
-                                {reply.automationPaused && (
-                                  <span title="Automation paused">
-                                    <PauseCircle className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />
+                              <div className="space-y-0.5">
+                                <div className="flex items-center gap-1.5">
+                                  <span className={`inline-flex items-center rounded border px-1.5 py-0.5 text-xs font-medium whitespace-nowrap ${REPLY_COLORS[reply.classification]}`}>
+                                    {REPLY_LABELS[reply.classification]}
                                   </span>
-                                )}
+                                  {reply.automationPaused && (
+                                    <span title="Automation paused">
+                                      <PauseCircle className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-[10px] text-gray-400">{formatDate(reply.receivedAt)}</p>
                               </div>
                             ) : (
                               <span className="text-xs text-gray-300">No reply</span>

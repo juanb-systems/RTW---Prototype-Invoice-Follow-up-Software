@@ -10,18 +10,38 @@ import {
   Settings,
   TrendingUp,
   Phone,
+  Rocket,
 } from "lucide-react";
 import { NavItem } from "./NavItem";
 
-const navItems = [
-  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/invoices", icon: FileText, label: "Invoices" },
-  { href: "/contacts", icon: Users, label: "Contacts" },
-  { href: "/automations", icon: Zap, label: "Automations" },
-  { href: "/scheduled", icon: Calendar, label: "Scheduled Actions" },
-  { href: "/inbox", icon: Inbox, label: "Inbox" },
-  { href: "/call-templates", icon: Phone, label: "Call Templates" },
+const dailyWorkItems = [
+  { href: "/dashboard",  icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/invoices",   icon: FileText,         label: "Invoices" },
+  { href: "/inbox",      icon: Inbox,            label: "Inbox" },
+  { href: "/automations",icon: Zap,              label: "Automations" },
+  { href: "/scheduled",  icon: Calendar,         label: "Scheduled Actions" },
+  { href: "/contacts",   icon: Users,            label: "Contacts" },
 ];
+
+const setupItems = [
+  { href: "/call-templates", icon: Phone,   label: "Call Templates" },
+  { href: "/onboarding",     icon: Rocket,  label: "Setup & Onboarding" },
+];
+
+function NavSection({ label, items }: { label: string; items: typeof dailyWorkItems }) {
+  return (
+    <div className="mb-1">
+      <p className="px-3 pt-4 pb-1 text-[10px] font-semibold text-zinc-600 uppercase tracking-widest">
+        {label}
+      </p>
+      <div className="space-y-0.5">
+        {items.map((item) => (
+          <NavItem key={item.href} {...item} />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export function Sidebar() {
   return (
@@ -38,13 +58,10 @@ export function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
-        <p className="px-3 py-1 text-xs font-medium text-zinc-600 uppercase tracking-wider mb-2">
-          Main
-        </p>
-        {navItems.map((item) => (
-          <NavItem key={item.href} {...item} />
-        ))}
+      <nav className="flex-1 overflow-y-auto px-3 py-2">
+        <NavSection label="Daily Work" items={dailyWorkItems} />
+        <div className="my-2 border-t border-zinc-800" />
+        <NavSection label="Setup" items={setupItems} />
       </nav>
 
       {/* Bottom */}
