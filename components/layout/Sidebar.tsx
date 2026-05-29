@@ -75,58 +75,46 @@ function ProfileMenu({ onClose }: { onClose: () => void }) {
 
       {/* Menu items */}
       <div className="py-1">
-        <button
-          onClick={onClose}
-          className="flex w-full items-center gap-3 px-4 py-2 text-xs text-zinc-300 hover:bg-zinc-700/60 transition-colors cursor-not-allowed opacity-50"
-          disabled
-        >
-          <User className="h-3.5 w-3.5 flex-shrink-0" />
-          <span>Account</span>
-          <span className="ml-auto text-[10px] text-zinc-600">Soon</span>
-        </button>
+        {/* Disabled — coming soon */}
+        <div className="flex items-center gap-3 px-4 py-2 cursor-default select-none">
+          <User className="h-3.5 w-3.5 flex-shrink-0 text-zinc-600" />
+          <span className="text-xs text-zinc-600">Account</span>
+          <span className="ml-auto text-[10px] text-zinc-700">Coming soon</span>
+        </div>
 
-        <button
-          onClick={onClose}
-          className="flex w-full items-center gap-3 px-4 py-2 text-xs text-zinc-300 hover:bg-zinc-700/60 transition-colors cursor-not-allowed opacity-50"
-          disabled
-        >
-          <SlidersHorizontal className="h-3.5 w-3.5 flex-shrink-0" />
-          <span>Preferences</span>
-          <span className="ml-auto text-[10px] text-zinc-600">Soon</span>
-        </button>
+        <div className="flex items-center gap-3 px-4 py-2 cursor-default select-none">
+          <SlidersHorizontal className="h-3.5 w-3.5 flex-shrink-0 text-zinc-600" />
+          <span className="text-xs text-zinc-600">Preferences</span>
+          <span className="ml-auto text-[10px] text-zinc-700">Coming soon</span>
+        </div>
 
+        {/* Active — Settings */}
         <Link
           href="/settings"
           onClick={onClose}
-          className="flex w-full items-center gap-3 px-4 py-2 text-xs text-zinc-300 hover:bg-zinc-700/60 transition-colors"
+          className="flex w-full items-center gap-3 px-4 py-2 text-xs text-zinc-200 hover:bg-zinc-700/60 transition-colors rounded-sm"
         >
-          <Settings className="h-3.5 w-3.5 flex-shrink-0" />
+          <Settings className="h-3.5 w-3.5 flex-shrink-0 text-zinc-400" />
           <span>Settings</span>
         </Link>
       </div>
 
       <div className="border-t border-zinc-700/60 py-1">
-        <button
-          onClick={onClose}
-          className="flex w-full items-center gap-3 px-4 py-2 text-xs text-zinc-400 cursor-not-allowed opacity-50"
-          disabled
-        >
-          <Monitor className="h-3.5 w-3.5 flex-shrink-0" />
-          <span>Demo mode</span>
-          <span className="ml-auto inline-flex items-center rounded-full bg-blue-900/60 px-1.5 py-0.5 text-[10px] font-medium text-blue-400">
+        {/* Demo mode — informational status row, not a button */}
+        <div className="flex items-center gap-3 px-4 py-2 cursor-default select-none">
+          <Monitor className="h-3.5 w-3.5 flex-shrink-0 text-zinc-600" />
+          <span className="text-xs text-zinc-500">Demo mode</span>
+          <span className="ml-auto inline-flex items-center rounded-full bg-blue-900/50 px-1.5 py-0.5 text-[10px] font-medium text-blue-400">
             Active
           </span>
-        </button>
+        </div>
 
-        <button
-          onClick={onClose}
-          className="flex w-full items-center gap-3 px-4 py-2 text-xs text-zinc-400 cursor-not-allowed opacity-50"
-          disabled
-        >
-          <LogOut className="h-3.5 w-3.5 flex-shrink-0" />
-          <span>Sign out</span>
-          <span className="ml-auto text-[10px] text-zinc-600">Demo only</span>
-        </button>
+        {/* Disabled — sign out */}
+        <div className="flex items-center gap-3 px-4 py-2 cursor-default select-none">
+          <LogOut className="h-3.5 w-3.5 flex-shrink-0 text-zinc-700" />
+          <span className="text-xs text-zinc-600">Sign out</span>
+          <span className="ml-auto text-[10px] text-zinc-700">Disabled in demo</span>
+        </div>
       </div>
     </div>
   );

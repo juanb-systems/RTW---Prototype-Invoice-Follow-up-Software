@@ -2,6 +2,21 @@
 
 ---
 
+## v2.21.0 — Sidebar Account Menu Polish (29 May 2026)
+
+**Date:** 29 May 2026
+**package.json version:** 2.21.0
+
+### Changed
+
+- **Account menu disabled states** — Account, Preferences, and Sign out are now static `div` elements (not buttons) with `cursor-default select-none`. No hover background, no pointer cursor — they are visually inert and cannot be mistaken for clickable items.
+- **Clearer prototype labels** — "Soon" → "Coming soon" on Account and Preferences; "Demo only" → "Disabled in demo" on Sign out.
+- **Demo mode row** — converted from a disabled `<button>` to a plain informational `div`. Retains the "Active" badge. Not interactive.
+- **Settings** — remains the sole active/clickable item with hover state, pointer cursor, and full text color.
+- **Disabled text color** — reduced from `zinc-300/zinc-400` (medium) to `zinc-600` (dim) on disabled items so the contrast difference from the active Settings item is immediately apparent.
+
+---
+
 ## v2.20.0 — Sidebar Profile Account Menu (29 May 2026)
 
 **Date:** 29 May 2026
