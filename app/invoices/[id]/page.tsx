@@ -238,7 +238,7 @@ export default async function InvoiceDetailPage({
             <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <p className="text-2xl font-bold text-gray-900">{formatCurrency(invoice.amount)}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900">{formatCurrency(invoice.amount)}</p>
                   <p className="text-sm text-gray-500 mt-0.5">Due {formatDate(invoice.dueDate)}</p>
                 </div>
                 <div className="text-right space-y-2">

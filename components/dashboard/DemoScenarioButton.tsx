@@ -65,18 +65,21 @@ export function DemoScenarioButton() {
       <button
         onClick={runDemo}
         disabled={running}
-        className="flex items-center gap-2 rounded-lg bg-gray-900 px-3 py-2 text-xs font-semibold text-white hover:bg-gray-700 disabled:opacity-50 shadow-sm"
+        title={running ? "Running lookup…" : "Run Demo Scenario"}
+        className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-2 sm:px-3 py-2 text-xs font-semibold text-white hover:bg-gray-700 disabled:opacity-50 shadow-sm"
       >
         {running ? (
-          <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+          <RefreshCw className="h-3.5 w-3.5 animate-spin shrink-0" />
         ) : (
-          <PlayCircle className="h-3.5 w-3.5" />
+          <PlayCircle className="h-3.5 w-3.5 shrink-0" />
         )}
-        {running ? "Running lookup..." : "Run Demo Scenario"}
+        <span className="hidden sm:inline">
+          {running ? "Running…" : "Run Demo Scenario"}
+        </span>
       </button>
 
       {showResult && result && (
-        <div className="absolute right-0 top-10 z-20 w-72 rounded-xl border border-gray-200 bg-white p-4 shadow-xl">
+        <div className="absolute right-0 top-10 z-20 w-[min(18rem,calc(100vw-2rem))] rounded-xl border border-gray-200 bg-white p-4 shadow-xl">
           <div className="flex items-start justify-between mb-2">
             <p className="text-xs font-semibold text-gray-900">Demo Scenario Result</p>
             <button onClick={() => setShowResult(false)} className="text-gray-400 hover:text-gray-600 text-xs">✕</button>

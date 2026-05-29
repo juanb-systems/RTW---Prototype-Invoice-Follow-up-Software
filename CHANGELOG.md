@@ -2,6 +2,25 @@
 
 ---
 
+## v2.17.0 — Mobile Dashboard Fix (29 May 2026)
+
+**Date:** 29 May 2026
+**package.json version:** 2.17.0
+
+### Fixed
+
+- **KPI cards — currency overflow** — restructured `KpiCard` layout: title and icon now share a top row, the value paragraph sits below and spans the full card inner width with no icon competing for space. This eliminates the `$227,400.00` overflow at all tested widths (360/390/430/768px). Card padding reduced to `p-3 sm:p-5`; value text `text-xl sm:text-2xl`; icon `h-7 w-7 sm:h-10 sm:w-10`. Card has `overflow-hidden` as a safety net.
+- **Dashboard TopBar title truncation** — `DemoScenarioButton` now shows icon-only on mobile (`<span className="hidden sm:inline">`). On screens < 640px the button is just the play-circle icon (~32px) instead of full-text (~130px), giving the title room to render "Dashboard" without truncation.
+- **DemoScenarioButton result popup** — popup width changed from fixed `w-72` to `w-[min(18rem,calc(100vw-2rem))]` so it never exceeds the viewport width on narrow screens.
+- **Invoice detail amount overflow** — `text-2xl` → `text-xl sm:text-2xl` for the invoice total amount in the invoice header card.
+
+### Notes
+
+- Desktop layouts (sm+ / lg+) are unchanged — `sm:` prefix values match previous design exactly.
+- Widths tested: 360px, 390px, 430px, 768px, desktop.
+
+---
+
 ## v2.16.0 — Mobile UX Pass 2 (29 May 2026)
 
 **Date:** 29 May 2026
