@@ -13,8 +13,10 @@ import {
   Zap,
   Clock,
   Mail,
+  Menu,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import { useMobileMenuStore } from "@/lib/mobile-menu-store";
 
 interface TopBarProps {
   title: string;
@@ -275,12 +277,23 @@ export function TopBar({ title, subtitle, actions }: TopBarProps) {
   const groupedResults = showDropdown ? buildResults(allData, searchQuery) : {};
   const totalResults   = Object.values(groupedResults).reduce((n, arr) => n + arr.length, 0);
 
+  const toggleMobileMenu = useMobileMenuStore((s) => s.toggle);
+
   return (
-    <header className="flex h-14 items-center justify-between border-b border-gray-200 bg-white px-6 gap-4">
+    <header className="flex h-14 items-center justify-between border-b border-gray-200 bg-white px-4 md:px-6 gap-3">
+      {/* Mobile hamburger */}
+      <button
+        onClick={toggleMobileMenu}
+        aria-label="Open navigation menu"
+        className="md:hidden flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
+      >
+        <Menu className="h-5 w-5" />
+      </button>
+
       {/* Title */}
       <div className="min-w-0 flex-1">
         <h1 className="text-base font-semibold text-gray-900 truncate">{title}</h1>
-        {subtitle && <p className="text-xs text-gray-500 truncate">{subtitle}</p>}
+        {subtitle && <p className="text-xs text-gray-500 truncate hidden sm:block">{subtitle}</p>}
       </div>
 
       {/* Right controls */}
@@ -290,7 +303,7 @@ export function TopBar({ title, subtitle, actions }: TopBarProps) {
         {/* ── Global search ───────────────────────────────────────────── */}
         <div ref={searchPanelRef} className="relative">
           {searchOpen ? (
-            <div className="flex items-center gap-1.5 rounded-lg border border-blue-300 bg-white px-2.5 py-1.5 shadow-sm ring-1 ring-blue-100 w-72">
+            <div className="flex items-center gap-1.5 rounded-lg border border-blue-300 bg-white px-2.5 py-1.5 shadow-sm ring-1 ring-blue-100 w-44 sm:w-72">
               <Search className="h-3.5 w-3.5 text-blue-400 flex-shrink-0" />
               <input
                 ref={searchInputRef}
@@ -322,7 +335,7 @@ export function TopBar({ title, subtitle, actions }: TopBarProps) {
 
           {/* Results dropdown */}
           {showDropdown && (
-            <div className="absolute right-0 top-full mt-1.5 w-[26rem] rounded-xl border border-gray-200 bg-white shadow-xl z-50 overflow-hidden">
+            <div className="absolute right-0 top-full mt-1.5 w-[calc(100vw-2rem)] sm:w-[26rem] rounded-xl border border-gray-200 bg-white shadow-xl z-50 overflow-hidden">
               {!dataLoaded ? (
                 <div className="py-10 text-center text-xs text-gray-400">Searching all sections…</div>
               ) : totalResults === 0 ? (
@@ -385,7 +398,7 @@ export function TopBar({ title, subtitle, actions }: TopBarProps) {
           </button>
 
           {notifOpen && (
-            <div className="absolute right-0 top-full mt-1.5 w-80 rounded-xl border border-gray-200 bg-white shadow-xl z-50 overflow-hidden">
+            <div className="absolute right-0 top-full mt-1.5 w-[calc(100vw-2rem)] sm:w-80 rounded-xl border border-gray-200 bg-white shadow-xl z-50 overflow-hidden">
               <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                 <p className="text-xs font-semibold text-gray-900">Notifications</p>
                 {NOTIFICATIONS.length > 0 && (

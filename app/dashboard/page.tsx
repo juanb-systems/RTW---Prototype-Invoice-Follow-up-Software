@@ -80,7 +80,7 @@ export default function DashboardPage() {
       <div className="p-6 space-y-6">
 
         {/* KPI Row */}
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <KpiCard
             title="Overdue Invoices"
             value={kpis.totalOverdue.toString()}
@@ -127,7 +127,7 @@ export default function DashboardPage() {
                 {totalAttentionItems}
               </span>
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
               <AttentionCard
                 count={needsAttention.disputes}
                 label="Dispute(s) raised"
@@ -193,7 +193,7 @@ export default function DashboardPage() {
         )}
 
         {/* Charts Row */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <AgingChart data={agingBuckets} />
           <CollectionsTrendChart data={collectionsTrend} />
         </div>

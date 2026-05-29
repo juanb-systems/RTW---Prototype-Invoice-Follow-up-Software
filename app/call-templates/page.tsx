@@ -290,7 +290,7 @@ function TemplateCard({
 
           {/* Template name + status */}
           {editing ? (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-[11px] font-medium text-gray-600 mb-1">Template name</label>
                 <input type="text" value={draft.name} onChange={e => field("name", e.target.value)} placeholder="e.g. Overdue Invoice AI Call" className={inputCls} />
@@ -304,7 +304,7 @@ function TemplateCard({
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               <div><span className="text-gray-400">Name:</span> <span className="text-gray-700 font-medium">{template.name}</span></div>
               <div><span className="text-gray-400">Status:</span> <span className="text-gray-700 font-medium capitalize">{template.status}</span></div>
             </div>

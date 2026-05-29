@@ -2,6 +2,35 @@
 
 ---
 
+## v2.15.0 — Mobile Responsiveness (29 May 2026)
+
+**Date:** 29 May 2026
+**package.json version:** 2.15.0
+
+### Added
+
+- **Mobile sidebar drawer** — sidebar is hidden on mobile (< `md` / 768px); a hamburger/menu button appears in the TopBar on mobile to open a slide-in overlay drawer. Clicking a nav item or the backdrop closes the drawer. Implemented via `useMobileMenuStore` (Zustand) and a new `AppShell` client component.
+- **`lib/mobile-menu-store.ts`** — tiny Zustand store (`isOpen`, `open`, `close`, `toggle`) for mobile sidebar state. Not persisted.
+- **`components/layout/AppShell.tsx`** — new client component that wraps the app layout; renders desktop sidebar as `hidden md:flex` and mobile drawer as a fixed overlay.
+
+### Improved — Responsive layouts
+
+- **TopBar** — padding `px-4 md:px-6`; hamburger button (`md:hidden`); subtitle hidden on mobile; global search input `w-44 sm:w-72`; search dropdown and notification dropdown use `w-[calc(100vw-2rem)] sm:w-[26rem/w-80]` to prevent viewport overflow.
+- **Dashboard** — KPI row `grid-cols-2 md:grid-cols-4`; Needs Attention grid `grid-cols-1 sm:grid-cols-2 md:grid-cols-3`; Charts row `grid-cols-1 md:grid-cols-2`.
+- **Invoice Detail** — main/sidebar split `grid-cols-1 lg:grid-cols-3`; invoice info grid `grid-cols-1 sm:grid-cols-2`; line items table wrapped in `overflow-x-auto`.
+- **Onboarding wizard** — progress bar replaced with compact "Step N of 6 · Label" + linear bar on mobile (`sm:hidden`); full 6-step indicator on desktop (`hidden sm:block`); all wizard step grids collapse to 1 column on mobile (`grid-cols-1 sm:grid-cols-2/3`); wizard card padding `p-4 sm:p-8`.
+- **Inbox** — AI notes info bar `grid-cols-1 sm:grid-cols-2`.
+- **Call Templates** — template name/status form grid `grid-cols-1 sm:grid-cols-2`.
+- **Invoices list** — toolbar row uses `flex-wrap` and smaller mobile padding.
+
+### Notes
+
+- All desktop layouts (md+ / lg+) are unchanged.
+- Contacts and Scheduled Actions already had `overflow-x-auto` and single-column card layouts; no changes needed.
+- Automation Builder and Settings are already single-column; no changes needed.
+
+---
+
 ## v2.14.0 — Onboarding State Persistence: CompletedView & SkippedView (29 May 2026)
 
 **Date:** 29 May 2026

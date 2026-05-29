@@ -4,6 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
 import { useNavGuardStore } from "@/lib/nav-guard-store";
+import { useMobileMenuStore } from "@/lib/mobile-menu-store";
 
 interface NavItemProps {
   href: string;
@@ -17,9 +18,10 @@ export function NavItem({ href, icon: Icon, label, badge }: NavItemProps) {
   const router = useRouter();
   const isActive = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
   const { isDirty, dirtySource } = useNavGuardStore();
+  const closeMobileMenu = useMobileMenuStore((s) => s.close);
 
   function handleClick() {
-    if (isActive) return;
+    if (isActive) { closeMobileMenu(); return; }
     if (isDirty) {
       const msg =
         dirtySource === "flow-builder"
@@ -27,6 +29,7 @@ export function NavItem({ href, icon: Icon, label, badge }: NavItemProps) {
           : "You have unsaved changes. Leave without saving?";
       if (!window.confirm(msg)) return;
     }
+    closeMobileMenu();
     router.push(href);
   }
 

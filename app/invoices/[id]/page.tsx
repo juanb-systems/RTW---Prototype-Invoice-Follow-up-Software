@@ -232,8 +232,8 @@ export default async function InvoiceDetailPage({
           </div>
         )}
 
-        <div className="grid grid-cols-3 gap-6">
-          <div className="col-span-2 space-y-5">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-5">
             {/* Invoice header */}
             <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
               <div className="flex items-start justify-between mb-4">
@@ -273,7 +273,7 @@ export default async function InvoiceDetailPage({
                   )}
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4 text-sm border-t border-gray-100 pt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm border-t border-gray-100 pt-4">
                 <div>
                   <p className="text-xs text-gray-400">Invoice Number</p>
                   <p className="font-mono font-medium text-gray-700">{invoice.invoiceNumber}</p>
@@ -294,7 +294,8 @@ export default async function InvoiceDetailPage({
             {invoice.lineItems.length > 0 && (
               <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
                 <h3 className="text-sm font-semibold text-gray-900 mb-3">Line Items</h3>
-                <table className="w-full text-sm">
+                <div className="overflow-x-auto">
+                <table className="w-full text-sm min-w-[360px]">
                   <thead>
                     <tr className="border-b border-gray-100">
                       <th className="pb-2 text-left text-xs text-gray-400 font-medium">Description</th>
@@ -318,6 +319,7 @@ export default async function InvoiceDetailPage({
                     </tr>
                   </tbody>
                 </table>
+                </div>
               </div>
             )}
 

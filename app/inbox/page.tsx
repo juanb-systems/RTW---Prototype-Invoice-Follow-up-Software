@@ -612,7 +612,7 @@ function InboxPageContent() {
       />
       <div className="p-6 space-y-5">
         {/* AI notes */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="rounded-lg border border-purple-200 bg-purple-50 px-4 py-3 flex items-start gap-3">
             <BrainCircuit className="h-4 w-4 text-purple-600 flex-shrink-0 mt-0.5" />
             <p className="text-xs text-purple-700">

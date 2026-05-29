@@ -106,34 +106,51 @@ const STEPS = [
 ];
 
 function ProgressBar({ current }: { current: number }) {
+  const progressPct = ((current - 1) / (STEPS.length - 1)) * 100;
   return (
     <div className="mb-8">
-      <div className="flex items-center justify-between mb-2">
-        {STEPS.map((label, i) => {
-          const stepNum = i + 1;
-          const done = stepNum < current;
-          const active = stepNum === current;
-          return (
-            <div key={label} className="flex flex-col items-center gap-1 flex-1">
-              <div
-                className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-colors ${
-                  done ? "bg-blue-600 text-white" : active ? "bg-blue-600 text-white ring-4 ring-blue-100" : "bg-gray-100 text-gray-400"
-                }`}
-              >
-                {done ? <Check className="h-3.5 w-3.5" /> : stepNum}
-              </div>
-              <span className={`text-[10px] font-medium text-center leading-tight ${active ? "text-blue-600" : done ? "text-gray-500" : "text-gray-400"}`}>
-                {label}
-              </span>
-            </div>
-          );
-        })}
+      {/* Mobile: compact "Step N of 6 · Label" + bar */}
+      <div className="sm:hidden mb-3">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-xs font-semibold text-blue-600">{STEPS[current - 1]}</span>
+          <span className="text-xs text-gray-400">Step {current} of {STEPS.length}</span>
+        </div>
+        <div className="relative h-1.5 rounded-full bg-gray-100">
+          <div
+            className="absolute left-0 top-0 h-1.5 rounded-full bg-blue-500 transition-all duration-500"
+            style={{ width: `${progressPct}%` }}
+          />
+        </div>
       </div>
-      <div className="relative h-1.5 rounded-full bg-gray-100 mt-1">
-        <div
-          className="absolute left-0 top-0 h-1.5 rounded-full bg-blue-500 transition-all duration-500"
-          style={{ width: `${((current - 1) / (STEPS.length - 1)) * 100}%` }}
-        />
+      {/* Desktop: full step indicator */}
+      <div className="hidden sm:block">
+        <div className="flex items-center justify-between mb-2">
+          {STEPS.map((label, i) => {
+            const stepNum = i + 1;
+            const done = stepNum < current;
+            const active = stepNum === current;
+            return (
+              <div key={label} className="flex flex-col items-center gap-1 flex-1">
+                <div
+                  className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-colors ${
+                    done ? "bg-blue-600 text-white" : active ? "bg-blue-600 text-white ring-4 ring-blue-100" : "bg-gray-100 text-gray-400"
+                  }`}
+                >
+                  {done ? <Check className="h-3.5 w-3.5" /> : stepNum}
+                </div>
+                <span className={`text-[10px] font-medium text-center leading-tight ${active ? "text-blue-600" : done ? "text-gray-500" : "text-gray-400"}`}>
+                  {label}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+        <div className="relative h-1.5 rounded-full bg-gray-100 mt-1">
+          <div
+            className="absolute left-0 top-0 h-1.5 rounded-full bg-blue-500 transition-all duration-500"
+            style={{ width: `${progressPct}%` }}
+          />
+        </div>
       </div>
     </div>
   );
@@ -203,7 +220,7 @@ function StepProfile() {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-xs font-medium text-gray-600 mb-1">Business name</label>
           <input type="text" value={businessName} onChange={e => setField("businessName", e.target.value)} placeholder="Refresh The Web" className={inputCls} />
@@ -220,7 +237,7 @@ function StepProfile() {
 
       <div>
         <label className="block text-xs font-medium text-gray-600 mb-2">Communication tone</label>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <OptionCard selected={tone === "friendly"} onClick={() => setField("tone", "friendly")} icon={Mail} title="Friendly" description="Warm and conversational. Good for long-term customers." />
           <OptionCard selected={tone === "professional"} onClick={() => setField("tone", "professional")} icon={Building2} title="Professional" description="Clear and business-like. Neutral and respectful." />
           <OptionCard selected={tone === "firm"} onClick={() => setField("tone", "firm")} icon={ShieldCheck} title="Firm but polite" description="Assertive reminders with a professional edge." />
@@ -229,7 +246,7 @@ function StepProfile() {
 
       <div>
         <label className="block text-xs font-medium text-gray-600 mb-2">Follow-up style</label>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <OptionCard selected={followUpStyle === "light"} onClick={() => setField("followUpStyle", "light")} title="Light touch" description="Fewer reminders, longer gaps. Less pressure." />
           <OptionCard selected={followUpStyle === "standard"} onClick={() => setField("followUpStyle", "standard")} title="Standard" description="Balanced reminders at regular intervals. Most common." />
           <OptionCard selected={followUpStyle === "proactive"} onClick={() => setField("followUpStyle", "proactive")} title="More proactive" description="More frequent contact. Best for high-risk accounts." />
@@ -262,7 +279,7 @@ function StepTiming() {
 
       <div>
         <label className="block text-xs font-medium text-gray-600 mb-2">First reminder</label>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {dayOptions.map(({ days, label }) => (
             <OptionCard key={days} selected={firstReminderDays === days} onClick={() => setField("firstReminderDays", days)} icon={Clock} title={label} />
           ))}
@@ -271,7 +288,7 @@ function StepTiming() {
 
       <div>
         <label className="block text-xs font-medium text-gray-600 mb-2">After 14 days — still unpaid</label>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <OptionCard selected={after14Days === "email"} onClick={() => setField("after14Days", "email")} icon={Mail} title="Send another email" description="A firmer follow-up email." />
           <OptionCard selected={after14Days === "sms"} onClick={() => setField("after14Days", "sms")} icon={MessageSquare} title="Send SMS reminder" description="A short text message to the contact." />
           <OptionCard selected={after14Days === "call"} onClick={() => setField("after14Days", "call")} icon={Phone} title="Start AI call" description="An AI caller reaches out on your behalf." />
@@ -281,7 +298,7 @@ function StepTiming() {
 
       <div>
         <label className="block text-xs font-medium text-gray-600 mb-2">After 30 days — still unpaid</label>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <OptionCard selected={after30Days === "call"} onClick={() => setField("after30Days", "call")} icon={Phone} title="AI call" description="Escalate to an AI phone call." />
           <OptionCard selected={after30Days === "escalate"} onClick={() => setField("after30Days", "escalate")} icon={AlertCircle} title="Escalate to human review" description="Assign to a team member for direct follow-up." />
           <OptionCard selected={after30Days === "final"} onClick={() => setField("after30Days", "final")} icon={Mail} title="Final written reminder" description="A firm final email before further action." />
@@ -318,7 +335,7 @@ function StepChannels() {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {CHANNEL_OPTIONS.map(({ key, title, description, Icon }) => {
           const selected = channels.includes(key);
           return (
@@ -555,7 +572,7 @@ function StepComplete() {
       </div>
 
       {/* Generated templates */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="rounded-lg border border-gray-200 bg-white p-3.5">
           <div className="flex items-center gap-2 mb-1.5">
             <Mail className="h-4 w-4 text-blue-500" />
@@ -801,7 +818,7 @@ export default function OnboardingPage() {
         <div className="mx-auto max-w-2xl">
           <ProgressBar current={step} />
 
-          <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm min-h-[480px] flex flex-col">
+          <div className="rounded-xl border border-gray-200 bg-white p-4 sm:p-8 shadow-sm min-h-[480px] flex flex-col">
             <div className="flex-1">
               {step === 1 && <StepXero />}
               {step === 2 && <StepProfile />}

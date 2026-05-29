@@ -239,7 +239,7 @@ export default function InvoicesPage() {
       <div className="p-6">
         <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
           {/* Toolbar */}
-          <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-4">
+          <div className="px-4 sm:px-5 py-4 border-b border-gray-100 flex flex-wrap items-center gap-3">
             <h2 className="text-sm font-semibold text-gray-900 shrink-0">All Invoices</h2>
             {/* In-table search — shares the same store state as the TopBar search */}
             <div className="relative flex-1 max-w-sm">
