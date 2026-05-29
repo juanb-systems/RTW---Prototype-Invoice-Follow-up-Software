@@ -1,9 +1,16 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+export type OnboardingStatus = "not_started" | "in_progress" | "completed" | "skipped";
+
 export interface OnboardingState {
+  status: OnboardingStatus;
   step: number;          // 1–6
   completed: boolean;
+  // Applied flow/template info (persisted after Apply Setup)
+  appliedFlowName: string;
+  appliedFlowId: string;
+  appliedTemplateName: string;
   // Step 1
   xeroConnected: boolean;
   // Step 2
@@ -23,21 +30,26 @@ export interface OnboardingState {
   pauseOnPromise: boolean;
   pauseOnDispute: boolean;
   // Methods
-  setField: <K extends keyof Omit<OnboardingState, "setField" | "nextStep" | "prevStep" | "complete" | "reset">>(
+  setField: <K extends keyof Omit<OnboardingState, "setField" | "nextStep" | "prevStep" | "complete" | "skip" | "reset">>(
     key: K,
     value: OnboardingState[K]
   ) => void;
   nextStep: () => void;
   prevStep: () => void;
   complete: () => void;
+  skip: () => void;
   reset: () => void;
 }
 
 export const useOnboardingStore = create<OnboardingState>()(
   persist(
     (set) => ({
+      status: "not_started",
       step: 1,
       completed: false,
+      appliedFlowName: "",
+      appliedFlowId: "",
+      appliedTemplateName: "",
       xeroConnected: false,
       businessName: "",
       accountsEmail: "",
@@ -52,13 +64,22 @@ export const useOnboardingStore = create<OnboardingState>()(
       pauseOnPromise: true,
       pauseOnDispute: true,
       setField: (key, value) => set((s) => ({ ...s, [key]: value })),
-      nextStep: () => set((s) => ({ step: Math.min(s.step + 1, 6) })),
+      nextStep: () =>
+        set((s) => ({
+          step: Math.min(s.step + 1, 6),
+          status: s.status === "not_started" ? "in_progress" : s.status,
+        })),
       prevStep: () => set((s) => ({ step: Math.max(s.step - 1, 1) })),
-      complete: () => set({ completed: true }),
+      complete: () => set({ completed: true, status: "completed" }),
+      skip: () => set({ status: "skipped" }),
       reset: () =>
         set({
+          status: "not_started",
           step: 1,
           completed: false,
+          appliedFlowName: "",
+          appliedFlowId: "",
+          appliedTemplateName: "",
           xeroConnected: false,
           businessName: "",
           accountsEmail: "",

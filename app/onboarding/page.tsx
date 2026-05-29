@@ -1,10 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import {
   CheckCircle, ChevronRight, ChevronLeft, RefreshCw, Rocket,
-  Building2, Mail, Clock, Radio, Zap, ShieldCheck, Sparkles,
+  Building2, Mail, Clock, Zap, ShieldCheck, Sparkles,
   Phone, MessageSquare, FileText, Check, AlertCircle,
 } from "lucide-react";
 import { TopBar } from "@/components/layout/TopBar";
@@ -407,22 +406,8 @@ function StepComplete() {
   const store = useOnboardingStore();
   const upsertFlow = useFlowStore((s) => s.upsert);
   const upsertTemplate = useCallTemplateStore((s) => s.upsert);
-  const { complete, reset } = store;
+  const { complete, skip } = store;
   const router = useRouter();
-  const [applied, setApplied] = useState(false);
-
-  const after14Label: Record<string, string> = {
-    email: "Email reminder",
-    sms: "SMS reminder",
-    call: "AI call",
-    review: "Human review",
-  };
-  const after30Label: Record<string, string> = {
-    call: "AI call",
-    escalate: "Escalate to human review",
-    final: "Final written reminder",
-    pause: "Pause automation",
-  };
 
   const flowName = `${store.businessName || "My Business"} — ${
     store.followUpStyle === "light" ? "Light Touch" :
@@ -503,10 +488,12 @@ function StepComplete() {
     };
     upsertFlow(flow);
 
+    let templateName = "";
     if (store.channels.includes("call")) {
+      templateName = `${store.businessName || "My Business"} — AI Call Script`;
       upsertTemplate({
         id: `TPL-ONBOARDING-${Date.now()}`,
-        name: `${store.businessName || "My Business"} — AI Call Script`,
+        name: templateName,
         status: "draft",
         category: "Overdue invoice follow-up",
         disclosure: `Hi, I'm an AI accounts receivable assistant calling on behalf of ${store.businessName || "our client"}. This is an automated and recorded business call regarding an outstanding invoice.`,
@@ -518,8 +505,10 @@ function StepComplete() {
       });
     }
 
+    store.setField("appliedFlowName", flowName);
+    store.setField("appliedFlowId", flowId);
+    store.setField("appliedTemplateName", templateName);
     complete();
-    setApplied(true);
   }
 
   return (
@@ -608,46 +597,182 @@ function StepComplete() {
         </div>
       </div>
 
-      {!applied ? (
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handleApply}
-            className="flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition-colors shadow-sm"
-          >
-            <Rocket className="h-4 w-4" />
-            Apply Setup
-          </button>
-          <button onClick={() => router.push("/automations")} className="text-sm text-gray-500 hover:text-gray-700 underline">
-            Skip — I&apos;ll configure manually
-          </button>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3">
-            <CheckCircle className="h-5 w-5 text-green-600 shrink-0" />
-            <div>
-              <p className="text-sm font-semibold text-green-800">Setup applied!</p>
-              <p className="text-xs text-green-600 mt-0.5">Your flow and templates have been created. You can edit them anytime.</p>
+      <div className="flex items-center gap-3">
+        <button
+          onClick={handleApply}
+          className="flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition-colors shadow-sm"
+        >
+          <Rocket className="h-4 w-4" />
+          Apply Setup
+        </button>
+        <button
+          onClick={() => { skip(); router.push("/dashboard"); }}
+          className="text-sm text-gray-500 hover:text-gray-700 underline"
+        >
+          Skip — I&apos;ll configure manually
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Completed view ────────────────────────────────────────────────────────────
+
+function CompletedView() {
+  const store = useOnboardingStore();
+  const router = useRouter();
+
+  function handleRestart() {
+    if (window.confirm("Restart setup? This will clear your current configuration.")) {
+      store.reset();
+    }
+  }
+
+  return (
+    <div>
+      <TopBar title="Setup & Onboarding" subtitle="Your setup is complete" />
+      <div className="p-6">
+        <div className="mx-auto max-w-2xl space-y-6">
+          <div className="rounded-xl border border-green-200 bg-white p-8 shadow-sm space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+                <CheckCircle className="h-6 w-6 text-green-600" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Setup Complete</h2>
+                <p className="text-sm text-gray-500">Your automation flow and templates have been applied.</p>
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-gray-100 bg-gray-50 p-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-blue-500 shrink-0" />
+                <div>
+                  <p className="text-xs font-medium text-gray-500">Applied flow</p>
+                  <p className="text-sm font-semibold text-gray-900">{store.appliedFlowName || "Custom Collection Flow"}</p>
+                </div>
+              </div>
+              {store.appliedTemplateName && (
+                <div className="flex items-center gap-2">
+                  <Phone className="h-4 w-4 text-green-500 shrink-0" />
+                  <div>
+                    <p className="text-xs font-medium text-gray-500">Applied call template</p>
+                    <p className="text-sm font-semibold text-gray-900">{store.appliedTemplateName}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => router.push(`/automations/${store.appliedFlowId}/builder`)}
+                className="flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              >
+                <Zap className="h-3.5 w-3.5" />
+                View Your Flow
+                <ChevronRight className="h-3.5 w-3.5" />
+              </button>
+              <button
+                onClick={() => router.push("/dashboard")}
+                className="flex items-center gap-1.5 rounded-md border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+              >
+                Go to Dashboard
+              </button>
+              {store.appliedTemplateName && (
+                <button
+                  onClick={() => router.push("/call-templates")}
+                  className="flex items-center gap-1.5 rounded-md border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+                >
+                  Edit Call Template
+                </button>
+              )}
+              <button
+                onClick={handleRestart}
+                className="ml-auto text-xs text-gray-400 hover:text-gray-600 underline"
+              >
+                Restart Setup
+              </button>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button onClick={() => router.push("/automations")} className="flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-xs font-medium text-white hover:bg-blue-700">
-              <Zap className="h-3.5 w-3.5" /> View in Automations
-            </button>
-            <button onClick={() => router.push("/dashboard")} className="flex items-center gap-1.5 rounded-md border border-gray-200 px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50">
-              Go to Dashboard
-            </button>
-            {store.channels.includes("call") && (
-              <button onClick={() => router.push("/call-templates")} className="flex items-center gap-1.5 rounded-md border border-gray-200 px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50">
-                Edit Call Template
-              </button>
-            )}
-            <button onClick={() => { reset(); }} className="ml-auto text-xs text-gray-400 hover:text-gray-600 underline">
-              Restart setup
-            </button>
+
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 flex items-start gap-3">
+            <AlertCircle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-amber-700 leading-relaxed">
+              <strong>Prototype:</strong> No real Xero integration, email, SMS, or calls are configured. All data resets on server restart.
+            </p>
           </div>
         </div>
-      )}
+      </div>
+    </div>
+  );
+}
+
+// ── Skipped view ──────────────────────────────────────────────────────────────
+
+function SkippedView() {
+  const store = useOnboardingStore();
+  const router = useRouter();
+
+  function handleStartWizard() {
+    if (window.confirm("Start the setup wizard? This will reset any saved configuration.")) {
+      store.reset();
+    }
+  }
+
+  return (
+    <div>
+      <TopBar title="Setup & Onboarding" subtitle="Manual setup selected" />
+      <div className="p-6">
+        <div className="mx-auto max-w-2xl space-y-6">
+          <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
+                <ShieldCheck className="h-6 w-6 text-gray-500" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Manual Setup Selected</h2>
+                <p className="text-sm text-gray-500">You can configure automations manually at any time.</p>
+              </div>
+            </div>
+
+            <p className="text-sm text-gray-600 leading-relaxed">
+              Your automation flows and call templates are available to configure directly in the
+              Automations and Call Templates sections. The setup wizard is available whenever
+              you&apos;re ready to use it.
+            </p>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => router.push("/automations")}
+                className="flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              >
+                <Zap className="h-3.5 w-3.5" />
+                Configure Automations
+                <ChevronRight className="h-3.5 w-3.5" />
+              </button>
+              <button
+                onClick={() => router.push("/dashboard")}
+                className="flex items-center gap-1.5 rounded-md border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+              >
+                Go to Dashboard
+              </button>
+              <button
+                onClick={handleStartWizard}
+                className="ml-auto text-xs text-gray-400 hover:text-gray-600 underline"
+              >
+                Start Setup Wizard
+              </button>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 flex items-start gap-3">
+            <AlertCircle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-amber-700 leading-relaxed">
+              <strong>Prototype:</strong> No real Xero integration, email, SMS, or calls are configured. All data resets on server restart.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -655,7 +780,10 @@ function StepComplete() {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function OnboardingPage() {
-  const { step, xeroConnected, channels, nextStep, prevStep } = useOnboardingStore();
+  const { status, step, xeroConnected, channels, nextStep, prevStep } = useOnboardingStore();
+
+  if (status === "completed") return <CompletedView />;
+  if (status === "skipped") return <SkippedView />;
 
   function canProceed() {
     if (step === 1) return xeroConnected;

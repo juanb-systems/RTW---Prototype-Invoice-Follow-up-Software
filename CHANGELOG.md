@@ -2,6 +2,27 @@
 
 ---
 
+## v2.14.0 — Onboarding State Persistence: CompletedView & SkippedView (29 May 2026)
+
+**Date:** 29 May 2026
+**package.json version:** 2.14.0
+
+### Fixed
+
+- **Onboarding page no longer re-renders the wizard after "Apply Setup" or "Skip"** on refresh or back-navigation. Previously `applied` was local React state (`useState(false)`) in `StepComplete`, which reset to `false` on every remount — causing the page to always render the wizard at Step 6.
+- `OnboardingPage` now reads `status` from the persisted Zustand store and routes to `CompletedView` or `SkippedView` before rendering any wizard step.
+
+### Added
+
+- **`status` discriminated union** (`"not_started" | "in_progress" | "completed" | "skipped"`) added to `useOnboardingStore` and persisted to localStorage under `collectpilot-onboarding`.
+- **`appliedFlowName`, `appliedFlowId`, `appliedTemplateName`** fields persisted to store on "Apply Setup" — displayed in `CompletedView`.
+- **`skip()` action** on `useOnboardingStore` — sets `status: "skipped"`.
+- **`CompletedView`** — shown after "Apply Setup" on return; displays applied flow name, optional call template name, link to Automation Builder, link to Dashboard, and "Restart Setup" (confirm dialog → `reset()`).
+- **`SkippedView`** — shown after "Skip" on return; links to Automations, Dashboard, and "Start Setup Wizard" (confirm dialog → `reset()`).
+- **`nextStep()` now sets `status: "in_progress"`** if transitioning from `"not_started"`.
+
+---
+
 ## v2.13.0 — Docs Consolidation: Navigation, Onboarding & Invoice-First Workflow (29 May 2026)
 
 **Date:** 29 May 2026
