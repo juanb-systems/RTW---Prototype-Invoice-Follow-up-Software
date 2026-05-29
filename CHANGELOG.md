@@ -2,6 +2,31 @@
 
 ---
 
+## v2.12.0 — Navigation Refinement (Confirmed IA) (28 May 2026)
+
+**Date:** 28 May 2026
+**package.json version:** 2.12.0
+
+### Summary
+
+Refines the sidebar grouping from v2.11.0 to match James' confirmed information architecture. No features are removed or hidden — everything is still directly accessible from the sidebar. Only the grouping and section labels change.
+
+### Changes
+
+#### Sidebar — 3 groups (replaces 2-group layout from v2.11.0)
+
+| Group | Items |
+|-------|-------|
+| **Daily Work** | Dashboard, Invoices, Inbox |
+| **Automation Setup** | Automations, Scheduled Actions, Call Templates |
+| **Admin** | Contacts, Setup & Onboarding |
+
+- Settings remains pinned at the bottom (unchanged).
+- All features from v2.11.0 are retained: Scheduled Actions is in Automation Setup (previously in Daily Work), Call Templates moved from Setup to Automation Setup, Contacts moved from Daily Work to Admin.
+- Visual dividers between sections remain.
+
+---
+
 ## v2.11.0 — Streamlined UX, Needs Attention Dashboard, Onboarding Wizard (28 May 2026)
 
 **Date:** 28 May 2026

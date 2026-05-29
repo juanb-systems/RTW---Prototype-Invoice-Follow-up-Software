@@ -13,24 +13,34 @@ import {
   Rocket,
 } from "lucide-react";
 import { NavItem } from "./NavItem";
+import type { LucideIcon } from "lucide-react";
+
+// ── Nav groups — matching James' confirmed IA ─────────────────────────────────
 
 const dailyWorkItems = [
-  { href: "/dashboard",  icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/invoices",   icon: FileText,         label: "Invoices" },
-  { href: "/inbox",      icon: Inbox,            label: "Inbox" },
-  { href: "/automations",icon: Zap,              label: "Automations" },
-  { href: "/scheduled",  icon: Calendar,         label: "Scheduled Actions" },
-  { href: "/contacts",   icon: Users,            label: "Contacts" },
+  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/invoices",  icon: FileText,         label: "Invoices" },
+  { href: "/inbox",     icon: Inbox,            label: "Inbox" },
 ];
 
-const setupItems = [
-  { href: "/call-templates", icon: Phone,   label: "Call Templates" },
-  { href: "/onboarding",     icon: Rocket,  label: "Setup & Onboarding" },
+const automationItems = [
+  { href: "/automations", icon: Zap,      label: "Automations" },
+  { href: "/scheduled",   icon: Calendar, label: "Scheduled Actions" },
+  { href: "/call-templates", icon: Phone, label: "Call Templates" },
 ];
 
-function NavSection({ label, items }: { label: string; items: typeof dailyWorkItems }) {
+const adminItems = [
+  { href: "/contacts",   icon: Users,   label: "Contacts" },
+  { href: "/onboarding", icon: Rocket,  label: "Setup & Onboarding" },
+];
+
+// ── NavSection ────────────────────────────────────────────────────────────────
+
+type NavItemDef = { href: string; icon: LucideIcon; label: string };
+
+function NavSection({ label, items }: { label: string; items: NavItemDef[] }) {
   return (
-    <div className="mb-1">
+    <div>
       <p className="px-3 pt-4 pb-1 text-[10px] font-semibold text-zinc-600 uppercase tracking-widest">
         {label}
       </p>
@@ -43,9 +53,12 @@ function NavSection({ label, items }: { label: string; items: typeof dailyWorkIt
   );
 }
 
+// ── Sidebar ───────────────────────────────────────────────────────────────────
+
 export function Sidebar() {
   return (
     <aside className="flex h-screen w-64 flex-col bg-zinc-900 border-r border-zinc-800">
+
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-4 py-5 border-b border-zinc-800">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
@@ -58,13 +71,15 @@ export function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto px-3 py-2">
+      <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-0">
         <NavSection label="Daily Work" items={dailyWorkItems} />
-        <div className="my-2 border-t border-zinc-800" />
-        <NavSection label="Setup" items={setupItems} />
+        <div className="mx-3 my-2 border-t border-zinc-800/80" />
+        <NavSection label="Automation Setup" items={automationItems} />
+        <div className="mx-3 my-2 border-t border-zinc-800/80" />
+        <NavSection label="Admin" items={adminItems} />
       </nav>
 
-      {/* Bottom */}
+      {/* Bottom — Settings + user */}
       <div className="border-t border-zinc-800 px-3 py-3">
         <NavItem href="/settings" icon={Settings} label="Settings" />
         <div className="mt-3 px-3 py-2">
@@ -79,6 +94,7 @@ export function Sidebar() {
           </div>
         </div>
       </div>
+
     </aside>
   );
 }
