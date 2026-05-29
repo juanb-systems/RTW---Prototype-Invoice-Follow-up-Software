@@ -1,4 +1,4 @@
-# CollectPilot — AI Receivables Assistant · v2.12
+# CollectPilot — AI Receivables Assistant · v2.13
 
 A Next.js 15 prototype for an AI-powered B2B receivables follow-up platform. Demonstrates automated invoice collection workflows with "Fresh Xero Check" safety gates before every customer contact.
 
@@ -20,7 +20,7 @@ A Next.js 15 prototype for an AI-powered B2B receivables follow-up platform. Dem
 | **Inbox** | Unified feed for email replies and AI call transcripts; filter tabs: All / Emails / AI Calls / Unread / by classification; AI-classified replies (Promise to Pay / Dispute / Out of Office / Payment Query); call records with status (Completed / Voicemail / No Answer / Needs Review) and full transcript; messages expand in-place with no page reload; automation pause control; deep-link from invoice detail |
 | **Call Templates** | 7 built-in AI calling script templates (Active and Draft); each includes opening disclosure, AI prompt, fully editable outcome classifications (add/remove chips), voicemail behavior, escalation rules, and clickable merge tag insertion; new templates auto-open in edit mode; unsaved-changes protection on collapse; Automation Builder Call block dropdown lists all templates; create/edit/manage custom templates; prototype only — no real calls |
 | **Settings** | Manual approval mode toggle, blocked keywords, sender name/email config |
-| **Setup & Onboarding** | 6-step wizard: dummy Xero connection, business profile, reminder timing, channel selection, safety rules, generated flow/template output. Applies a personalised automation flow and call template to the Zustand store on completion. |
+| **Setup & Onboarding** | 6-step wizard: dummy Xero connection step (simulated OAuth), business profile (name, sender, tone, follow-up style), reminder timing (first reminder day, actions at 14/30 days), channel selection (Email / SMS / AI Call / Manual), safety rules (pause on reply / promise / dispute; locked Xero check), generated setup summary with a prebuilt automation flow and call template applied to the Zustand store on completion. All existing features retained. |
 
 ---
 
@@ -115,6 +115,7 @@ No environment variables are required for the current prototype. All data is see
 
 | Version | Date | Summary |
 |---------|------|---------|
+| v2.13.0 | 29 May 2026 | Version and docs consolidation: streamlined navigation (3-group sidebar), invoice-first daily workflow, dummy onboarding wizard with Xero connect, reminder timing, channel and safety-rule setup questions, generated prebuilt flow/template from onboarding answers |
 | v2.12.0 | 28 May 2026 | Navigation refinement per confirmed IA: 3-group sidebar (Daily Work / Automation Setup / Admin), all features retained and accessible |
 | v2.11.0 | 28 May 2026 | Streamlined UX: sidebar groups (Daily Work / Setup), Needs Attention dashboard section, invoice automation status badges, Status Overview panel on invoice detail, 6-step onboarding wizard with Xero placeholder and flow generation |
 | v2.10.1 | 28 May 2026 | Hotfix: Invoice Reply column now sortable (was static/non-clickable) |

@@ -2,6 +2,46 @@
 
 ---
 
+## v2.13.0 — Docs Consolidation: Navigation, Onboarding & Invoice-First Workflow (29 May 2026)
+
+**Date:** 29 May 2026
+**package.json version:** 2.13.0
+
+### Summary
+
+Version and documentation consolidation for the streamlined navigation and onboarding features delivered across v2.11.0–v2.12.0. No new code changes — this release ensures all features are accurately described and the version is consistent across package.json, README, and CHANGELOG.
+
+### Features documented in this release
+
+#### Streamlined navigation / clearer sidebar grouping
+- Sidebar restructured into 3 labelled groups: **Daily Work** (Dashboard, Invoices, Inbox), **Automation Setup** (Automations, Scheduled Actions, Call Templates), **Admin** (Contacts, Setup & Onboarding).
+- Settings pinned at the bottom, outside groups.
+- All features retained and directly accessible from the sidebar — nothing hidden or removed.
+
+#### Invoice-first daily workflow
+- Dashboard shows a **Needs Attention** command centre with clickable cards for disputes, blocked actions, awaiting approval, paused automations, unread replies, and promises to pay.
+- Invoice list Flow column shows live automation status badge (Active / Paused / Blocked / Needs Approval) and next scheduled action date.
+- Invoice list Reply column shows classification badge and received date.
+- Invoice detail page opens with a **Status Overview** panel showing all key indicators (status, days overdue, flow, automation state, reply, next action) and a recommended next step.
+
+#### Dummy onboarding / setup wizard (`/onboarding`)
+- 6-step wizard persisted to localStorage via Zustand.
+- **Step 1 — Dummy Xero connect:** Simulated "Connect Xero" button with connected state. No real OAuth — prototype only.
+- **Step 2 — Business profile:** Business name, accounts email, sender name, communication tone, follow-up style.
+- **Step 3 — Reminder timing:** First reminder day, action at 14 days, action at 30 days.
+- **Step 4 — Channel selection:** Email, SMS, AI Call, Manual review (multi-select).
+- **Step 5 — Safety rules:** Pause on reply, pause on promise, pause on dispute; always check Xero (locked, required).
+- **Step 6 — Generated setup:** Displays the generated flow timeline and template cards based on answers. "Apply Setup" creates a named `AutomationFlow` in `useFlowStore` and optionally a `CallTemplate` in `useCallTemplateStore`.
+
+#### Generated / pre-setup flows and templates from onboarding answers
+- `buildSteps()` generates `FlowStep[]` from wizard configuration (reminder days, channel choices, follow-up style).
+- Applied directly to Zustand stores on wizard completion — immediately visible in Automations and Call Templates.
+
+#### All existing features retained
+- Invoices, Inbox, Automations, Scheduled Actions, Call Templates, Contacts, Settings, global search, notification bell all remain fully accessible.
+
+---
+
 ## v2.12.0 — Navigation Refinement (Confirmed IA) (28 May 2026)
 
 **Date:** 28 May 2026
