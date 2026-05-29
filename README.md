@@ -1,4 +1,4 @@
-# CollectPilot — AI Receivables Assistant · v2.21
+# CollectPilot — AI Receivables Assistant · v2.22
 
 A Next.js 15 prototype for an AI-powered B2B receivables follow-up platform. Demonstrates automated invoice collection workflows with "Fresh Xero Check" safety gates before every customer contact.
 
@@ -115,6 +115,7 @@ No environment variables are required for the current prototype. All data is see
 
 | Version | Date | Summary |
 |---------|------|---------|
+| v2.22.0 | 29 May 2026 | Enable Preferences — new /preferences page (appearance/theme via next-themes, compact mode, notification toggles persisted to localStorage via Zustand); ThemeProvider wired up in root layout; Preferences activated as clickable link in sidebar account menu |
 | v2.21.0 | 29 May 2026 | Polish sidebar account menu — disabled items (Account, Preferences, Sign out) use static divs with no hover, clearer labels ("Coming soon", "Disabled in demo"); Demo mode is an informational status row; Settings remains the only interactive item |
 | v2.20.0 | 29 May 2026 | Fix sidebar profile block — removed direct /settings navigation from profile block; profile block now opens a prototype-safe account popover menu (Account, Preferences, Settings, Demo mode, Sign out) above the block; Settings nav item remains separate; menu closes on outside click; works in desktop sidebar and mobile drawer |
 | v2.19.0 | 29 May 2026 | Notifications feature — dedicated /notifications page with 7 filter tabs (All/Unread/Invoices/Replies/Automations/Calls/System), read/unread status, category badges, detail text, timestamps, action links; bell dropdown shows top 3 with unread count badge and "See all notifications" link; Notifications added to sidebar nav |

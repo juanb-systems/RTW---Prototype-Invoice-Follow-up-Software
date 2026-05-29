@@ -82,11 +82,15 @@ function ProfileMenu({ onClose }: { onClose: () => void }) {
           <span className="ml-auto text-[10px] text-zinc-700">Coming soon</span>
         </div>
 
-        <div className="flex items-center gap-3 px-4 py-2 cursor-default select-none">
-          <SlidersHorizontal className="h-3.5 w-3.5 flex-shrink-0 text-zinc-600" />
-          <span className="text-xs text-zinc-600">Preferences</span>
-          <span className="ml-auto text-[10px] text-zinc-700">Coming soon</span>
-        </div>
+        {/* Active — Preferences */}
+        <Link
+          href="/preferences"
+          onClick={onClose}
+          className="flex w-full items-center gap-3 px-4 py-2 text-xs text-zinc-200 hover:bg-zinc-700/60 transition-colors rounded-sm"
+        >
+          <SlidersHorizontal className="h-3.5 w-3.5 flex-shrink-0 text-zinc-400" />
+          <span>Preferences</span>
+        </Link>
 
         {/* Active — Settings */}
         <Link

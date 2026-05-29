@@ -2,6 +2,27 @@
 
 ---
 
+## v2.22.0 — Preferences Page (29 May 2026)
+
+**Date:** 29 May 2026
+**package.json version:** 2.22.0
+
+### Added
+
+- **`/preferences` page** — new page accessible from the sidebar account menu. Sections:
+  - **Appearance** — Light / System / Dark theme selector using `next-themes`. Selection is persisted. Includes an amber notice that dark mode component theming is in progress and Light mode is the current supported theme.
+  - **Layout** — Compact mode toggle (persisted to `localStorage` via Zustand).
+  - **Notifications** — Notification sounds toggle and Email digest toggle (both persisted).
+- **`lib/preferences-store.ts`** — new Zustand `persist` store for non-theme preferences (`compactMode`, `notificationSounds`, `emailDigest`). Persists to `localStorage` under key `collectpilot-preferences`.
+- **`app/providers.tsx`** — `ThemeProvider` client wrapper from `next-themes`. Wired into root layout. Attribute `class`, default theme `light`, system detection enabled.
+
+### Changed
+
+- **`app/layout.tsx`** — wrapped with `<Providers>` to enable `next-themes` ThemeProvider. Added `suppressHydrationWarning` to `<html>` to prevent hydration mismatch on theme class.
+- **Sidebar account menu** — Preferences changed from a disabled "Coming soon" div to an active `<Link href="/preferences">` with hover state. Account remains disabled. Settings remains active.
+
+---
+
 ## v2.21.0 — Sidebar Account Menu Polish (29 May 2026)
 
 **Date:** 29 May 2026
