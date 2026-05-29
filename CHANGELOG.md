@@ -2,6 +2,20 @@
 
 ---
 
+## v2.23.0 — Fix Preferences Appearance Options (29 May 2026)
+
+**Date:** 29 May 2026
+**package.json version:** 2.23.0
+
+### Fixed
+
+- **Preferences appearance selector** — Dark and System options were selectable but had no effect, creating a broken/misleading UX. Both are now rendered as non-interactive `div` elements with `cursor-not-allowed`, `select-none`, greyed-out icons and text, and a "Coming soon" label. Clicking them does nothing.
+- **Light mode tile** — rendered as a `cursor-default` active tile (blue border/background). Not a button since there is nothing else to switch to.
+- **Copy updated** — removed misleading "your preference is saved" amber notice. Replaced with plain grey text: *"Dark mode and system theme are coming soon. Light mode is currently the only supported theme in this prototype."*
+- **Removed unused imports** — `useEffect`, `useState`, and `useTheme` from next-themes are no longer imported in the preferences page (no longer needed since the theme selector is now static).
+
+---
+
 ## v2.22.0 — Preferences Page (29 May 2026)
 
 **Date:** 29 May 2026
