@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useRef, useEffect } from "react";
 import {
   LayoutDashboard,
   FileText,
@@ -12,12 +13,17 @@ import {
   TrendingUp,
   Phone,
   Rocket,
+  User,
+  SlidersHorizontal,
+  Monitor,
+  LogOut,
+  ChevronUp,
 } from "lucide-react";
 import Link from "next/link";
 import { NavItem } from "./NavItem";
 import type { LucideIcon } from "lucide-react";
 
-// ── Nav groups — matching James' confirmed IA ─────────────────────────────────
+// ── Nav groups ────────────────────────────────────────────────────────────────
 
 const dailyWorkItems = [
   { href: "/dashboard",     icon: LayoutDashboard, label: "Dashboard" },
@@ -27,9 +33,9 @@ const dailyWorkItems = [
 ];
 
 const automationItems = [
-  { href: "/automations", icon: Zap,      label: "Automations" },
-  { href: "/scheduled",   icon: Calendar, label: "Scheduled Actions" },
-  { href: "/call-templates", icon: Phone, label: "Call Templates" },
+  { href: "/automations",    icon: Zap,      label: "Automations" },
+  { href: "/scheduled",      icon: Calendar, label: "Scheduled Actions" },
+  { href: "/call-templates", icon: Phone,    label: "Call Templates" },
 ];
 
 const adminItems = [
@@ -56,9 +62,94 @@ function NavSection({ label, items }: { label: string; items: NavItemDef[] }) {
   );
 }
 
+// ── ProfileMenu ───────────────────────────────────────────────────────────────
+
+function ProfileMenu({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="rounded-xl border border-zinc-700 bg-zinc-800 shadow-2xl overflow-hidden">
+      {/* Header */}
+      <div className="px-4 py-3 border-b border-zinc-700/60">
+        <p className="text-xs font-semibold text-zinc-200">James Cooper</p>
+        <p className="text-xs text-zinc-500 mt-0.5">accounts@collectpilot.demo</p>
+      </div>
+
+      {/* Menu items */}
+      <div className="py-1">
+        <button
+          onClick={onClose}
+          className="flex w-full items-center gap-3 px-4 py-2 text-xs text-zinc-300 hover:bg-zinc-700/60 transition-colors cursor-not-allowed opacity-50"
+          disabled
+        >
+          <User className="h-3.5 w-3.5 flex-shrink-0" />
+          <span>Account</span>
+          <span className="ml-auto text-[10px] text-zinc-600">Soon</span>
+        </button>
+
+        <button
+          onClick={onClose}
+          className="flex w-full items-center gap-3 px-4 py-2 text-xs text-zinc-300 hover:bg-zinc-700/60 transition-colors cursor-not-allowed opacity-50"
+          disabled
+        >
+          <SlidersHorizontal className="h-3.5 w-3.5 flex-shrink-0" />
+          <span>Preferences</span>
+          <span className="ml-auto text-[10px] text-zinc-600">Soon</span>
+        </button>
+
+        <Link
+          href="/settings"
+          onClick={onClose}
+          className="flex w-full items-center gap-3 px-4 py-2 text-xs text-zinc-300 hover:bg-zinc-700/60 transition-colors"
+        >
+          <Settings className="h-3.5 w-3.5 flex-shrink-0" />
+          <span>Settings</span>
+        </Link>
+      </div>
+
+      <div className="border-t border-zinc-700/60 py-1">
+        <button
+          onClick={onClose}
+          className="flex w-full items-center gap-3 px-4 py-2 text-xs text-zinc-400 cursor-not-allowed opacity-50"
+          disabled
+        >
+          <Monitor className="h-3.5 w-3.5 flex-shrink-0" />
+          <span>Demo mode</span>
+          <span className="ml-auto inline-flex items-center rounded-full bg-blue-900/60 px-1.5 py-0.5 text-[10px] font-medium text-blue-400">
+            Active
+          </span>
+        </button>
+
+        <button
+          onClick={onClose}
+          className="flex w-full items-center gap-3 px-4 py-2 text-xs text-zinc-400 cursor-not-allowed opacity-50"
+          disabled
+        >
+          <LogOut className="h-3.5 w-3.5 flex-shrink-0" />
+          <span>Sign out</span>
+          <span className="ml-auto text-[10px] text-zinc-600">Demo only</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── Sidebar ───────────────────────────────────────────────────────────────────
 
 export function Sidebar() {
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setProfileOpen(false);
+      }
+    }
+    if (profileOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [profileOpen]);
+
   return (
     <aside className="flex h-screen w-64 flex-col bg-zinc-900 border-r border-zinc-800">
 
@@ -82,21 +173,36 @@ export function Sidebar() {
         <NavSection label="Admin" items={adminItems} />
       </nav>
 
-      {/* Bottom — Settings + user */}
+      {/* Bottom — Settings + user profile */}
       <div className="border-t border-zinc-800 px-3 py-3">
         <NavItem href="/settings" icon={Settings} label="Settings" />
-        <Link
-          href="/settings"
-          className="mt-3 flex items-center gap-2.5 rounded-lg px-3 py-2 cursor-pointer hover:bg-zinc-800/60 transition-colors group"
-        >
-          <div className="h-7 w-7 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
-            <span className="text-xs font-semibold text-white">JC</span>
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-zinc-300 truncate group-hover:text-zinc-100">James Cooper</p>
-            <p className="text-xs text-zinc-600 truncate">accounts@collectpilot.demo</p>
-          </div>
-        </Link>
+
+        {/* Profile block with popover */}
+        <div ref={profileRef} className="relative mt-3">
+          {profileOpen && (
+            <div className="absolute bottom-full left-0 right-0 mb-1.5 z-50">
+              <ProfileMenu onClose={() => setProfileOpen(false)} />
+            </div>
+          )}
+          <button
+            onClick={() => setProfileOpen((v) => !v)}
+            className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 cursor-pointer hover:bg-zinc-800/60 transition-colors group"
+            aria-label="Account menu"
+          >
+            <div className="h-7 w-7 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
+              <span className="text-xs font-semibold text-white">JC</span>
+            </div>
+            <div className="flex-1 min-w-0 text-left">
+              <p className="text-xs font-medium text-zinc-300 truncate group-hover:text-zinc-100">James Cooper</p>
+              <p className="text-xs text-zinc-600 truncate">accounts@collectpilot.demo</p>
+            </div>
+            <ChevronUp
+              className={`h-3.5 w-3.5 flex-shrink-0 text-zinc-600 transition-transform group-hover:text-zinc-400 ${
+                profileOpen ? "rotate-0" : "rotate-180"
+              }`}
+            />
+          </button>
+        </div>
       </div>
 
     </aside>
