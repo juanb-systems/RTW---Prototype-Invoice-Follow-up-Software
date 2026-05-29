@@ -12,6 +12,7 @@ import {
   Phone,
   Rocket,
 } from "lucide-react";
+import Link from "next/link";
 import { NavItem } from "./NavItem";
 import type { LucideIcon } from "lucide-react";
 
@@ -82,17 +83,18 @@ export function Sidebar() {
       {/* Bottom — Settings + user */}
       <div className="border-t border-zinc-800 px-3 py-3">
         <NavItem href="/settings" icon={Settings} label="Settings" />
-        <div className="mt-3 px-3 py-2">
-          <div className="flex items-center gap-2.5">
-            <div className="h-7 w-7 rounded-full bg-blue-600 flex items-center justify-center">
-              <span className="text-xs font-semibold text-white">JC</span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-zinc-300 truncate">James Cooper</p>
-              <p className="text-xs text-zinc-600 truncate">accounts@collectpilot.demo</p>
-            </div>
+        <Link
+          href="/settings"
+          className="mt-3 flex items-center gap-2.5 rounded-lg px-3 py-2 cursor-pointer hover:bg-zinc-800/60 transition-colors group"
+        >
+          <div className="h-7 w-7 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
+            <span className="text-xs font-semibold text-white">JC</span>
           </div>
-        </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium text-zinc-300 truncate group-hover:text-zinc-100">James Cooper</p>
+            <p className="text-xs text-zinc-600 truncate">accounts@collectpilot.demo</p>
+          </div>
+        </Link>
       </div>
 
     </aside>
