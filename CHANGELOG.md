@@ -2,6 +2,34 @@
 
 ---
 
+## v2.20.0 — Sidebar Profile Account Menu (29 May 2026)
+
+**Date:** 29 May 2026
+**package.json version:** 2.20.0
+
+### Fixed
+
+- **Sidebar profile block behavior** — removed direct navigation to `/settings` when clicking the "James Cooper" profile block at the bottom of the sidebar. The profile block now opens an account popover menu instead of navigating immediately.
+
+### Added
+
+- **Account popover menu** — clicking the profile block opens a small card/popover above the block containing prototype-safe menu items:
+  - **Account** — disabled with "Soon" label (placeholder for future profile page)
+  - **Preferences** — disabled with "Soon" label (placeholder for future preferences)
+  - **Settings** — active link, navigates to `/settings` and closes the menu
+  - **Demo mode** — disabled, shows "Active" badge indicating prototype context
+  - **Sign out** — disabled with "Demo only" label
+- **ChevronUp indicator** — rotates to show open/closed state of the popover.
+- **Click-outside to close** — `mousedown` listener closes the menu when clicking anywhere outside the profile block.
+
+### Notes
+
+- The **Settings nav item** in the sidebar remains separate and fully functional — it is not affected by this change.
+- The account menu works identically in both the desktop sidebar and the mobile drawer (both use the same `Sidebar` component).
+- Popover uses `bottom-full` positioning so it always appears above the profile block, `z-50` to float above page content, and is not clipped by any `overflow-hidden` ancestor.
+
+---
+
 ## v2.19.0 — Notifications Page & Dropdown (29 May 2026)
 
 **Date:** 29 May 2026
