@@ -2,6 +2,45 @@
 
 ---
 
+## v2.24.0 — Functional Dark Mode (29 May 2026)
+
+**Date:** 29 May 2026
+**package.json version:** 2.24.0
+
+### Added
+
+- **Dark mode** — app-wide dark theme applied via a global CSS override strategy in `globals.css`. Non-`@layer` CSS rules beat `@layer utilities` in the cascade, meaning `.dark .bg-white { ... }` overrides Tailwind's `.bg-white` without modifying any component files.
+- **System mode** — follows `prefers-color-scheme` via `next-themes` `ThemeProvider` (already wired). Stored as `"system"` in localStorage.
+- **Preferences restored** — Light / System / Dark all clickable. `useTheme()` from `next-themes` manages selection. Preference persists in localStorage and survives refresh.
+
+### Dark mode coverage
+
+**Neutral surfaces:** `bg-white` → slate-800, `bg-gray-50` → slate-900, `bg-gray-100/200/300` scaled accordingly.
+
+**Colored tints (badges, alerts, status chips):** All `bg-*-50` and `bg-*-100` variants for blue, green, red, orange, amber, purple, teal, indigo, yellow converted to low-opacity dark equivalents (e.g. `bg-blue-50` → `rgba(29,78,216,0.15)`). Corresponding text and border colors updated to their lighter counterparts (`text-blue-700` → blue-300, etc.).
+
+**Text:** `text-gray-900/800/700/600/500/400` all remapped to readable slate equivalents.
+
+**Borders + dividers:** `border-gray-100/200/300` → dark slate. `divide-gray-50/100` → dark.
+
+**Hover states:** All `hover:bg-gray-50/100` and key colored hover variants converted.
+
+**Form elements:** Input, textarea, select get dark backgrounds/text/borders via element selector.
+
+**Shadows:** Deepened in dark mode for better surface separation.
+
+**Toggle thumb:** `[role="switch"] > span` gets a targeted override (higher specificity than the broad `bg-white` rule) to keep toggle thumbs light against colored or dark tracks.
+
+### Pages checked in dark mode
+Dashboard, Invoices, Invoice Detail, Contacts, Contact Detail, Inbox, Notifications, Automations, Automation Builder, Scheduled Actions, Call Templates, Settings, Preferences, Setup & Onboarding, mobile 390px.
+
+### Known limitations
+- **Recharts charts** (Dashboard aging bar chart + collections trend line chart): SVG fill/stroke colors are set as Recharts props, not CSS classes, so they do not adapt to dark mode. Chart containers go dark but chart elements (bars, lines, axis labels, tooltips) retain their original colors.
+- **Solid action buttons** (`bg-blue-600`, `bg-green-600` etc.) are intentionally unchanged — they look correct on dark backgrounds without modification.
+- The sidebar (zinc-900) is already dark and unchanged.
+
+---
+
 ## v2.23.0 — Fix Preferences Appearance Options (29 May 2026)
 
 **Date:** 29 May 2026

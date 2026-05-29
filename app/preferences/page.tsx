@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
 import { TopBar } from "@/components/layout/TopBar";
 import { usePreferencesStore } from "@/lib/preferences-store";
 import { Sun, Moon, Monitor, LayoutList, Bell, Volume2, Mail } from "lucide-react";
@@ -7,7 +9,17 @@ import { cn } from "@/lib/utils";
 
 // ── Appearance ─────────────────────────────────────────────────────────────────
 
+const THEME_OPTIONS = [
+  { value: "light",  label: "Light",  Icon: Sun },
+  { value: "system", label: "System", Icon: Monitor },
+  { value: "dark",   label: "Dark",   Icon: Moon },
+] as const;
+
 function AppearanceSection() {
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   return (
     <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
       <div className="px-5 py-4 border-b border-gray-100">
@@ -16,35 +28,27 @@ function AppearanceSection() {
       </div>
       <div className="px-5 py-4 space-y-4">
         <div className="flex gap-3 flex-wrap">
-          {/* Light — active and selectable */}
-          <div
-            className="flex flex-col items-center gap-2 rounded-xl border-2 border-blue-600 bg-blue-50 px-5 py-4 text-xs font-medium text-blue-700 cursor-default"
-          >
-            <Sun className="h-5 w-5 text-blue-600" />
-            Light
-          </div>
-
-          {/* System — disabled */}
-          <div
-            className="flex flex-col items-center gap-2 rounded-xl border-2 border-gray-100 bg-gray-50 px-5 py-4 cursor-not-allowed select-none"
-          >
-            <Monitor className="h-5 w-5 text-gray-300" />
-            <span className="text-xs font-medium text-gray-300">System</span>
-            <span className="text-[10px] text-gray-400">Coming soon</span>
-          </div>
-
-          {/* Dark — disabled */}
-          <div
-            className="flex flex-col items-center gap-2 rounded-xl border-2 border-gray-100 bg-gray-50 px-5 py-4 cursor-not-allowed select-none"
-          >
-            <Moon className="h-5 w-5 text-gray-300" />
-            <span className="text-xs font-medium text-gray-300">Dark</span>
-            <span className="text-[10px] text-gray-400">Coming soon</span>
-          </div>
+          {THEME_OPTIONS.map(({ value, label, Icon }) => {
+            const active = mounted && theme === value;
+            return (
+              <button
+                key={value}
+                onClick={() => setTheme(value)}
+                className={cn(
+                  "flex flex-col items-center gap-2 rounded-xl border-2 px-5 py-4 text-xs font-medium transition-colors",
+                  active
+                    ? "border-blue-600 bg-blue-50 text-blue-700"
+                    : "border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+                )}
+              >
+                <Icon className={cn("h-5 w-5", active ? "text-blue-600" : "text-gray-400")} />
+                {label}
+              </button>
+            );
+          })}
         </div>
-
-        <p className="text-xs text-gray-400">
-          Dark mode and system theme are coming soon. Light mode is currently the only supported theme in this prototype.
+        <p className="text-xs text-gray-500">
+          Theme preference is saved to localStorage on this device. System follows your OS setting.
         </p>
       </div>
     </div>
