@@ -534,7 +534,7 @@ export default function CallTemplatesPage() {
         }
       />
 
-      <div className="p-6 space-y-4">
+      <div className="p-4 sm:p-6 space-y-4">
 
         {/* Info banners */}
         <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 flex items-start gap-3">

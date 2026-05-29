@@ -143,7 +143,7 @@ export default async function InvoiceDetailPage({
         title={invoice.invoiceNumber}
         subtitle={`${invoice.contact?.company ?? ""} · ${formatCurrency(invoice.amount)}`}
       />
-      <div className="p-6 space-y-6">
+      <div className="p-4 sm:p-6 space-y-6">
 
         {/* Status Overview */}
         <div className="rounded-xl border border-gray-200 bg-white px-5 py-4 shadow-sm">

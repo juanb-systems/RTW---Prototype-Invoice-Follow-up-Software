@@ -27,7 +27,7 @@ export default async function ContactDetailPage({
   return (
     <div>
       <TopBar title={contact.name} subtitle={contact.company} />
-      <div className="p-6 space-y-6">
+      <div className="p-4 sm:p-6 space-y-6">
         {contact.status === "excluded" && (
           <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 flex items-start gap-3">
             <ShieldX className="h-4 w-4 text-red-600 flex-shrink-0 mt-0.5" />

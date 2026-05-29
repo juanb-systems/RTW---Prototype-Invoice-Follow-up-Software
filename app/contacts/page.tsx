@@ -119,7 +119,7 @@ export default function ContactsPage() {
         title="Contacts"
         subtitle={`${contacts.length} total · ${excluded} excluded · ${onHold} on hold`}
       />
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         {excluded > 0 && (
           <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3">
             <p className="text-sm font-medium text-red-700">

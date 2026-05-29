@@ -62,11 +62,11 @@ export function RecentActivityFeed({ items }: { items: ActivityItem[] }) {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-gray-700 leading-relaxed">{item.message}</p>
-                <div className="mt-0.5 flex items-center gap-2 text-xs text-gray-400">
+                <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-gray-400">
                   {item.invoice && (
                     <Link
                       href={`/invoices/${item.invoiceId}`}
-                      className="font-medium text-blue-500 hover:underline"
+                      className="whitespace-nowrap font-medium text-blue-500 hover:underline"
                     >
                       {item.invoice.invoiceNumber}
                     </Link>
@@ -74,7 +74,7 @@ export function RecentActivityFeed({ items }: { items: ActivityItem[] }) {
                   {item.contact && (
                     <span className="truncate">{item.contact.name}</span>
                   )}
-                  <span className="ml-auto flex-shrink-0">{formatActivityTimestamp(item.timestamp)}</span>
+                  <span className="sm:ml-auto flex-shrink-0">{formatActivityTimestamp(item.timestamp)}</span>
                 </div>
               </div>
             </li>

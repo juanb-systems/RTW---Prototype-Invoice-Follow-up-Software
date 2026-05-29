@@ -177,7 +177,7 @@ export default function AutomationsPage() {
         title="Automations"
         subtitle={`${flows.length} flows configured`}
       />
-      <div className="p-6 space-y-4">
+      <div className="p-4 sm:p-6 space-y-4">
         <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
           <p className="text-sm text-blue-700">
             <strong>Fresh lookup required before sending.</strong> All automation flows include a lookup
@@ -188,14 +188,14 @@ export default function AutomationsPage() {
 
         {/* Search + count bar */}
         <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-4">
+          <div className="px-4 sm:px-5 py-4 border-b border-gray-100 flex flex-wrap items-center gap-3">
             <h2 className="text-sm font-semibold text-gray-900 shrink-0">All Flows</h2>
-            <div className="relative flex-1 max-w-sm">
+            <div className="relative flex-1 min-w-0">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
               <input
                 ref={searchRef}
                 type="text"
-                placeholder="Search flow name, status, trigger, step type…"
+                placeholder="Search flow name, status…"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 className="w-full rounded-md border border-gray-200 pl-8 pr-8 py-1.5 text-xs focus:border-blue-400 focus:outline-none"
@@ -210,16 +210,18 @@ export default function AutomationsPage() {
                 </button>
               )}
             </div>
-            <span className="text-xs text-gray-400 shrink-0 ml-auto">
-              {loading ? "Loading…" : `Showing ${filtered.length} of ${flows.length} flows`}
-            </span>
-            <button
-              onClick={() => setModalOpen(true)}
-              className="flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors shrink-0"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              New Automation Flow
-            </button>
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <span className="text-xs text-gray-400 flex-1 sm:flex-none">
+                {loading ? "Loading…" : `${filtered.length} of ${flows.length} flows`}
+              </span>
+              <button
+                onClick={() => setModalOpen(true)}
+                className="flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors shrink-0"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                New Flow
+              </button>
+            </div>
           </div>
 
           {loading ? (
@@ -242,44 +244,48 @@ export default function AutomationsPage() {
                 const actionSteps = flow.steps.filter((s: FlowStep) => ["email", "sms", "call"].includes(s.type));
                 const lookupSteps = flow.steps.filter((s: FlowStep) => s.type === "lookup_check");
 
+                const stepSummary = flow.steps
+                  .filter((s: FlowStep) => !["trigger", "end"].includes(s.type))
+                  .map((s: FlowStep) => {
+                    if (s.type === "lookup_check") return "Lookup";
+                    if (s.type === "wait") return `Wait ${(s.config as { days?: number }).days ?? "?"}d`;
+                    return s.type.charAt(0).toUpperCase() + s.type.slice(1);
+                  })
+                  .join(" → ");
+
                 return (
-                  <div key={flow.id} className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2.5 mb-1">
-                          <Zap className="h-4 w-4 text-blue-500" />
-                          <h3 className="text-sm font-semibold text-gray-900">{flow.name}</h3>
-                          <span className={cn("inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium", cfg.className)}>
+                  <div key={flow.id} className="rounded-xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm">
+                    {/* Header row — name + badge, Edit button inline on sm+ */}
+                    <div className="flex items-start gap-2 mb-2">
+                      <Zap className="h-4 w-4 text-blue-500 mt-0.5 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                          <h3 className="text-sm font-semibold text-gray-900 leading-tight">{flow.name}</h3>
+                          <span className={cn("inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium shrink-0", cfg.className)}>
                             {cfg.label}
                           </span>
                         </div>
-                        <p className="text-xs text-gray-500 ml-6">{flow.description}</p>
+                        <p className="text-xs text-gray-500">{flow.description}</p>
                       </div>
+                      {/* Edit button — visible on sm+ only in header */}
                       <Link
                         href={`/automations/${flow.id}/builder`}
-                        className="flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors"
+                        className="hidden sm:flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors shrink-0"
                       >
                         <GitBranch className="h-3.5 w-3.5" />
                         Edit Flow
                       </Link>
                     </div>
 
-                    <div className="flex items-center gap-6 mb-3 ml-6">
-                      <div className="text-xs text-gray-500">
-                        <span className="text-gray-400">Triggers at: </span>
-                        <span className="font-medium text-gray-700">{flow.trigger?.value} days overdue</span>
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        <span className="text-gray-400">Steps: </span>
-                        <span className="font-medium text-gray-700">{flow.steps.length}</span>
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        <span className="text-gray-400">Lookup checkpoints: </span>
-                        <span className="font-medium text-green-700">{lookupSteps.length}</span>
-                      </div>
+                    {/* Metrics row */}
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-3 ml-6 text-xs text-gray-500">
+                      <span><span className="text-gray-400">Triggers at: </span><span className="font-medium text-gray-700">{flow.trigger?.value} days overdue</span></span>
+                      <span><span className="text-gray-400">Steps: </span><span className="font-medium text-gray-700">{flow.steps.length}</span></span>
+                      <span><span className="text-gray-400">Lookups: </span><span className="font-medium text-green-700">{lookupSteps.length}</span></span>
                     </div>
 
-                    <div className="ml-6 flex items-center gap-1 flex-wrap">
+                    {/* Step chips — desktop only */}
+                    <div className="ml-6 hidden sm:flex items-center gap-1 flex-wrap">
                       {flow.steps.map((step: FlowStep, idx: number) => (
                         <div key={step.id} className="flex items-center gap-1">
                           <div
@@ -307,14 +313,28 @@ export default function AutomationsPage() {
                       ))}
                     </div>
 
-                    <div className="mt-3 ml-6 flex items-center gap-4 text-xs text-gray-400">
+                    {/* Step summary — mobile only */}
+                    {stepSummary && (
+                      <p className="ml-6 sm:hidden text-xs text-gray-500 leading-snug">{stepSummary}</p>
+                    )}
+
+                    <div className="mt-2 ml-6 flex items-center gap-4 text-xs text-gray-400">
                       <span>{actionSteps.length} send action{actionSteps.length !== 1 ? "s" : ""}</span>
                       {lookupSteps.length > 0 && (
                         <span className="text-amber-600 font-medium">
-                          ✓ Fresh lookup before each send action
+                          ✓ Fresh lookup before each send
                         </span>
                       )}
                     </div>
+
+                    {/* Edit button — full-width on mobile only */}
+                    <Link
+                      href={`/automations/${flow.id}/builder`}
+                      className="sm:hidden mt-3 flex items-center justify-center gap-1.5 rounded-md bg-blue-600 px-3 py-2 text-xs font-medium text-white hover:bg-blue-700 transition-colors w-full"
+                    >
+                      <GitBranch className="h-3.5 w-3.5" />
+                      Edit Flow
+                    </Link>
                   </div>
                 );
               })}

@@ -87,7 +87,7 @@ export default function SettingsPage() {
           ) : undefined
         }
       />
-      <div className="p-6 max-w-2xl space-y-6">
+      <div className="p-4 sm:p-6 max-w-2xl space-y-6">
         {/* Manual Approval Mode */}
         <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
           <div className="flex items-start justify-between mb-3">

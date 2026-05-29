@@ -236,7 +236,7 @@ export default function InvoicesPage() {
   return (
     <div>
       <TopBar title="Invoices" subtitle={`${overdueCount} overdue · ${invoices.length} total`} />
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
           {/* Toolbar */}
           <div className="px-4 sm:px-5 py-4 border-b border-gray-100 flex flex-wrap items-center gap-3">

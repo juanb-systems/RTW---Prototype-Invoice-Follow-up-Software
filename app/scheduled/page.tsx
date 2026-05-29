@@ -86,7 +86,7 @@ export default function ScheduledPage() {
           </button>
         }
       />
-      <div className="p-6 space-y-5">
+      <div className="p-4 sm:p-6 space-y-5">
         {/* Key reminder */}
         <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
           <p className="text-sm text-amber-700">
@@ -126,7 +126,7 @@ export default function ScheduledPage() {
         </div>
 
         {/* Filter tabs */}
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {[
             { value: "all", label: "All" },
             { value: "pending", label: "Pending" },

@@ -2,6 +2,24 @@
 
 ---
 
+## v2.16.0 — Mobile UX Pass 2 (29 May 2026)
+
+**Date:** 29 May 2026
+**package.json version:** 2.16.0
+
+### Improved
+
+- **Automations page cards** — mobile-first card redesign: name + badge flex-wrap cleanly, Edit Flow button hidden in header on mobile and shown as a full-width button at the bottom of the card (`sm:hidden`); step chip chain hidden on mobile (`hidden sm:flex`) replaced by a compact plain-text step summary (`sm:hidden`); metrics row uses `flex flex-wrap gap-x-4 gap-y-1` instead of fixed `flex gap-6`; card padding `p-4 sm:p-5`.
+- **Dashboard Recent Activity** — invoice number link gains `whitespace-nowrap` (prevents "INV-" / "2026-" / "025" line-break); meta row uses `flex flex-wrap` + `gap-x-2 gap-y-0.5`; timestamp uses `sm:ml-auto` so it wraps below on very narrow screens.
+- **Global padding sweep** — all main content wrapper divs updated from `p-6` to `p-4 sm:p-6`: Dashboard, Invoices list, Invoice Detail, Contacts list, Contact Detail, Inbox, Scheduled Actions, Call Templates, Settings.
+- **Scheduled Actions filter tabs** — `flex gap-2` → `flex flex-wrap gap-2` so all 6 tabs wrap gracefully on narrow screens instead of overflowing.
+
+### Notes
+
+- All desktop layouts unchanged; only `sm:` prefix and below affected.
+
+---
+
 ## v2.15.0 — Mobile Responsiveness (29 May 2026)
 
 **Date:** 29 May 2026
