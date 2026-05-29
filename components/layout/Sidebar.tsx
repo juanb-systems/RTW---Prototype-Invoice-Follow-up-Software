@@ -7,6 +7,7 @@ import {
   Zap,
   Calendar,
   Inbox,
+  Bell,
   Settings,
   TrendingUp,
   Phone,
@@ -19,9 +20,10 @@ import type { LucideIcon } from "lucide-react";
 // ── Nav groups — matching James' confirmed IA ─────────────────────────────────
 
 const dailyWorkItems = [
-  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/invoices",  icon: FileText,         label: "Invoices" },
-  { href: "/inbox",     icon: Inbox,            label: "Inbox" },
+  { href: "/dashboard",     icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/invoices",      icon: FileText,         label: "Invoices" },
+  { href: "/inbox",         icon: Inbox,            label: "Inbox" },
+  { href: "/notifications", icon: Bell,             label: "Notifications" },
 ];
 
 const automationItems = [

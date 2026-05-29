@@ -17,6 +17,9 @@ import {
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { useMobileMenuStore } from "@/lib/mobile-menu-store";
+import { NOTIFICATIONS, UNREAD_COUNT } from "@/lib/notifications-data";
+
+const PREVIEW_NOTIFICATIONS = NOTIFICATIONS.slice(0, 3);
 
 interface TopBarProps {
   title: string;
@@ -24,30 +27,6 @@ interface TopBarProps {
   actions?: React.ReactNode;
 }
 
-// ── Demo notifications ────────────────────────────────────────────────────────
-const NOTIFICATIONS = [
-  {
-    id: "n1",
-    text: "INV-2026-017 has an active dispute — review recommended",
-    time: "2 min ago",
-    dotColor: "bg-red-500",
-    href: "/invoices",
-  },
-  {
-    id: "n2",
-    text: "2 scheduled actions require manual approval",
-    time: "14 min ago",
-    dotColor: "bg-amber-500",
-    href: "/scheduled",
-  },
-  {
-    id: "n3",
-    text: "3 invoices are now 60+ days overdue",
-    time: "1 hr ago",
-    dotColor: "bg-orange-400",
-    href: "/invoices",
-  },
-];
 
 // ── Global search types ───────────────────────────────────────────────────────
 interface SearchResult {
@@ -392,7 +371,7 @@ export function TopBar({ title, subtitle, actions }: TopBarProps) {
             className="relative flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
           >
             <Bell className="h-4 w-4" />
-            {NOTIFICATIONS.length > 0 && (
+            {UNREAD_COUNT > 0 && (
               <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-blue-500" />
             )}
           </button>
@@ -401,21 +380,21 @@ export function TopBar({ title, subtitle, actions }: TopBarProps) {
             <div className="absolute right-0 top-full mt-1.5 w-[calc(100vw-2rem)] sm:w-80 rounded-xl border border-gray-200 bg-white shadow-xl z-50 overflow-hidden">
               <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                 <p className="text-xs font-semibold text-gray-900">Notifications</p>
-                {NOTIFICATIONS.length > 0 && (
+                {UNREAD_COUNT > 0 && (
                   <span className="inline-flex items-center rounded-full bg-blue-100 px-1.5 py-0.5 text-xs font-medium text-blue-700">
-                    {NOTIFICATIONS.length} new
+                    {UNREAD_COUNT} new
                   </span>
                 )}
               </div>
 
-              {NOTIFICATIONS.length === 0 ? (
+              {PREVIEW_NOTIFICATIONS.length === 0 ? (
                 <div className="py-10 text-center">
                   <Bell className="h-5 w-5 text-gray-200 mx-auto mb-2" />
                   <p className="text-sm text-gray-400">No new notifications</p>
                 </div>
               ) : (
                 <div className="divide-y divide-gray-50">
-                  {NOTIFICATIONS.map((n) => (
+                  {PREVIEW_NOTIFICATIONS.map((n) => (
                     <Link
                       key={n.id}
                       href={n.href}
@@ -425,7 +404,7 @@ export function TopBar({ title, subtitle, actions }: TopBarProps) {
                       <span className={`mt-1.5 h-2 w-2 rounded-full flex-shrink-0 ${n.dotColor}`} />
                       <div className="flex-1 min-w-0">
                         <p className="text-xs text-gray-700 leading-snug">{n.text}</p>
-                        <p className="text-xs text-gray-400 mt-0.5">{n.time}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{n.timeLabel}</p>
                       </div>
                       <ChevronRight className="h-3.5 w-3.5 text-gray-300 flex-shrink-0 mt-0.5" />
                     </Link>
@@ -434,7 +413,13 @@ export function TopBar({ title, subtitle, actions }: TopBarProps) {
               )}
 
               <div className="border-t border-gray-100 px-4 py-2.5 bg-gray-50">
-                <p className="text-xs text-gray-400">Demo notifications — prototype only</p>
+                <Link
+                  href="/notifications"
+                  onClick={() => setNotifOpen(false)}
+                  className="text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors"
+                >
+                  See all notifications →
+                </Link>
               </div>
             </div>
           )}

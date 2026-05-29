@@ -2,6 +2,20 @@
 
 ---
 
+## v2.19.0 — Notifications Page & Dropdown (29 May 2026)
+
+**Date:** 29 May 2026
+**package.json version:** 2.19.0
+
+### Added
+
+- **`/notifications` page** — dedicated notifications page with 15 seeded notifications, 7 filter tabs (All / Unread / Invoices / Replies / Automations / Calls / System), per-category icon badges (ShieldX, CheckCircle2, AlertTriangle, MessageSquare, Phone, PauseCircle, Settings), read/unread status (blue dot indicator + bold text + blue background for unread), detail text beneath each item, timestamp labels, and action links to relevant pages. Includes prototype info banner.
+- **Sidebar nav entry** — "Notifications" (Bell icon) added to the Daily Work group in the sidebar.
+- **TopBar bell dropdown** — now shows top 3 notifications (PREVIEW_NOTIFICATIONS) with unread count badge (UNREAD_COUNT), uses `timeLabel` for timestamps, and "See all notifications →" link at the bottom navigating to `/notifications`.
+- **`lib/notifications-data.ts`** — shared notification data module (15 items, `NotifCategory` type, `AppNotification` interface, `UNREAD_COUNT` export) used by both the TopBar dropdown and the notifications page.
+
+---
+
 ## v2.18.0 — Mobile Responsiveness Overhaul (29 May 2026)
 
 **Date:** 29 May 2026
