@@ -526,10 +526,11 @@ export default function CallTemplatesPage() {
         actions={
           <button
             onClick={() => setModalOpen(true)}
-            className="flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
+            title="Create Call Template"
+            className="flex items-center gap-1.5 rounded-md bg-blue-600 px-2 sm:px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
           >
-            <Plus className="h-3.5 w-3.5" />
-            Create Call Template
+            <Plus className="h-3.5 w-3.5 shrink-0" />
+            <span className="hidden sm:inline">Create Call Template</span>
           </button>
         }
       />

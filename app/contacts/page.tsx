@@ -160,42 +160,41 @@ export default function ContactsPage() {
 
           {loading ? (
             <div className="py-16 text-center text-xs text-gray-400">Loading contacts…</div>
+          ) : sorted.length === 0 ? (
+            <div className="py-12 text-center">
+              <p className="text-sm text-gray-400">
+                {query ? `No contacts match "${query}".` : "No contacts found."}
+              </p>
+              {query && (
+                <button onClick={clear} className="mt-2 text-xs text-blue-500 hover:underline">
+                  Clear search
+                </button>
+              )}
+            </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-gray-100 bg-gray-50/50">
-                    {columns.map(({ col, label, align }) => (
-                      <th
-                        key={col}
-                        className={`px-5 py-3 text-${align} text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-900 select-none whitespace-nowrap`}
-                        onClick={() => handleSort(col)}
-                      >
-                        <span className={`inline-flex items-center gap-1 ${align === "right" ? "flex-row-reverse" : ""}`}>
-                          {label}
-                          <SortIcon active={sortCol === col} dir={sortDir} />
-                        </span>
-                      </th>
-                    ))}
-                    <th className="px-5 py-3" />
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {sorted.length === 0 ? (
-                    <tr>
-                      <td colSpan={8} className="py-12 text-center">
-                        <p className="text-sm text-gray-400">
-                          {query ? `No contacts match "${query}".` : "No contacts found."}
-                        </p>
-                        {query && (
-                          <button onClick={clear} className="mt-2 text-xs text-blue-500 hover:underline">
-                            Clear search
-                          </button>
-                        )}
-                      </td>
+            <>
+              {/* ── Desktop table (sm+) ────────────────────────────────── */}
+              <div className="hidden sm:block overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-100 bg-gray-50/50">
+                      {columns.map(({ col, label, align }) => (
+                        <th
+                          key={col}
+                          className={`px-5 py-3 text-${align} text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-900 select-none whitespace-nowrap`}
+                          onClick={() => handleSort(col)}
+                        >
+                          <span className={`inline-flex items-center gap-1 ${align === "right" ? "flex-row-reverse" : ""}`}>
+                            {label}
+                            <SortIcon active={sortCol === col} dir={sortDir} />
+                          </span>
+                        </th>
+                      ))}
+                      <th className="px-5 py-3" />
                     </tr>
-                  ) : (
-                    sorted.map((contact) => (
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {sorted.map((contact) => (
                       <tr
                         key={contact.id}
                         className={`hover:bg-gray-50/60 transition-colors ${contact.status === "excluded" ? "bg-red-50/30" : ""}`}
@@ -249,11 +248,62 @@ export default function ContactsPage() {
                           </Link>
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* ── Mobile card list (< sm) ────────────────────────────── */}
+              <div className="sm:hidden divide-y divide-gray-100">
+                {sorted.map((contact) => (
+                  <div
+                    key={contact.id}
+                    className={`px-4 py-3.5 ${contact.status === "excluded" ? "bg-red-50/30" : ""}`}
+                  >
+                    {/* Name + company + status */}
+                    <div className="flex items-start gap-3 mb-2">
+                      <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Building2 className="h-4 w-4 text-gray-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                          <p className="text-sm font-medium text-gray-900 truncate">{contact.name}</p>
+                          <ContactStatusBadge status={contact.status as ContactStatus} />
+                        </div>
+                        <p className="text-xs text-gray-400">{contact.company}</p>
+                      </div>
+                    </div>
+
+                    {/* Email + phone */}
+                    <div className="space-y-1 mb-2">
+                      <div className="flex items-start gap-1.5 text-xs text-gray-500">
+                        <Mail className="h-3 w-3 text-gray-300 flex-shrink-0 mt-0.5" />
+                        <span className="break-all">{contact.email}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                        <Phone className="h-3 w-3 text-gray-300 flex-shrink-0" />
+                        <span>{contact.phone}</span>
+                      </div>
+                    </div>
+
+                    {/* Invoice stats */}
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500 mb-2.5">
+                      <span>{contact.invoiceCount} invoice{contact.invoiceCount !== 1 ? "s" : ""}</span>
+                      {contact.overdueCount > 0 && (
+                        <span className="font-semibold text-red-500">{contact.overdueCount} overdue</span>
+                      )}
+                      {contact.totalOwed > 0 && (
+                        <span className="font-semibold text-red-600">{formatCurrency(contact.totalOwed)}</span>
+                      )}
+                    </div>
+
+                    <Link href={`/contacts/${contact.id}`} className="text-xs font-medium text-blue-600 hover:underline">
+                      View contact →
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
       </div>

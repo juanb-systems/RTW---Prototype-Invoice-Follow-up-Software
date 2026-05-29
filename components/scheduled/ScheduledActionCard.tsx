@@ -169,7 +169,7 @@ export function ScheduledActionCard({ action, onRefresh }: { action: FullAction;
 
           {/* Action buttons */}
           {(action.status === "pending" || action.status === "awaiting_approval") && (
-            <div className="flex gap-2 mt-2">
+            <div className="flex flex-wrap gap-2 mt-2">
               <button
                 onClick={handleFire}
                 disabled={firing}

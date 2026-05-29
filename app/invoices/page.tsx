@@ -326,53 +326,52 @@ export default function InvoicesPage() {
 
           {loading ? (
             <div className="py-16 text-center text-xs text-gray-400">Loading invoices…</div>
+          ) : sorted.length === 0 ? (
+            <div className="py-12 text-center">
+              <p className="text-sm text-gray-400">
+                {query || hasActiveFilters
+                  ? "No invoices match the current search and filters."
+                  : "No invoices found."}
+              </p>
+              {(query || hasActiveFilters) && (
+                <div className="flex items-center justify-center gap-3 mt-2">
+                  {query && (
+                    <button onClick={clear} className="text-xs text-blue-500 hover:underline">
+                      Clear search
+                    </button>
+                  )}
+                  {hasActiveFilters && (
+                    <button onClick={resetFilters} className="text-xs text-blue-500 hover:underline">
+                      Reset filters
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-gray-100 bg-gray-50/50">
-                    {columns.map(({ col, label, align }) => (
-                      <th
-                        key={col}
-                        className={`px-5 py-3 text-${align} text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-900 select-none whitespace-nowrap`}
-                        onClick={() => handleSort(col)}
-                      >
-                        <span className={`inline-flex items-center gap-1 ${align === "right" ? "flex-row-reverse" : ""}`}>
-                          {label}
-                          <SortIcon active={sortCol === col} dir={sortDir} />
-                        </span>
-                      </th>
-                    ))}
-                    <th className="px-5 py-3" />
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {sorted.length === 0 ? (
-                    <tr>
-                      <td colSpan={9} className="py-12 text-center">
-                        <p className="text-sm text-gray-400">
-                          {query || hasActiveFilters
-                            ? "No invoices match the current search and filters."
-                            : "No invoices found."}
-                        </p>
-                        {(query || hasActiveFilters) && (
-                          <div className="flex items-center justify-center gap-3 mt-2">
-                            {query && (
-                              <button onClick={clear} className="text-xs text-blue-500 hover:underline">
-                                Clear search
-                              </button>
-                            )}
-                            {hasActiveFilters && (
-                              <button onClick={resetFilters} className="text-xs text-blue-500 hover:underline">
-                                Reset filters
-                              </button>
-                            )}
-                          </div>
-                        )}
-                      </td>
+            <>
+              {/* ── Desktop table (sm+) ────────────────────────────────── */}
+              <div className="hidden sm:block overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-100 bg-gray-50/50">
+                      {columns.map(({ col, label, align }) => (
+                        <th
+                          key={col}
+                          className={`px-5 py-3 text-${align} text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-900 select-none whitespace-nowrap`}
+                          onClick={() => handleSort(col)}
+                        >
+                          <span className={`inline-flex items-center gap-1 ${align === "right" ? "flex-row-reverse" : ""}`}>
+                            {label}
+                            <SortIcon active={sortCol === col} dir={sortDir} />
+                          </span>
+                        </th>
+                      ))}
+                      <th className="px-5 py-3" />
                     </tr>
-                  ) : (
-                    sorted.map((invoice) => {
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {sorted.map((invoice) => {
                       const reply = replyMap[invoice.id];
                       return (
                         <tr key={invoice.id} className="hover:bg-gray-50/60 transition-colors">
@@ -469,11 +468,84 @@ export default function InvoicesPage() {
                           </td>
                         </tr>
                       );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* ── Mobile card list (< sm) ────────────────────────────── */}
+              <div className="sm:hidden divide-y divide-gray-100">
+                {sorted.map((invoice) => {
+                  const reply = replyMap[invoice.id];
+                  const actions = scheduledMap[invoice.id] ?? [];
+                  let autoKey: keyof typeof AUTO_STATUS_CONFIG = "no_actions";
+                  if (reply?.automationPaused) autoKey = "paused";
+                  else if (actions.some(a => a.status === "blocked")) autoKey = "blocked";
+                  else if (actions.some(a => a.status === "awaiting_approval")) autoKey = "awaiting_approval";
+                  else if (actions.some(a => a.status === "pending")) autoKey = "active";
+                  const autoCfg = AUTO_STATUS_CONFIG[autoKey];
+
+                  return (
+                    <div key={invoice.id} className="px-4 py-3.5">
+                      {/* Invoice # + amount */}
+                      <div className="flex items-baseline justify-between gap-2 mb-1.5">
+                        <span className="font-mono text-xs font-semibold text-gray-700 whitespace-nowrap">
+                          {invoice.invoiceNumber}
+                        </span>
+                        <span className="text-sm font-bold text-gray-900 shrink-0">
+                          {formatCurrency(invoice.amount)}
+                        </span>
+                      </div>
+
+                      {/* Contact */}
+                      <p className="text-xs font-medium text-gray-900 leading-tight">{invoice.contact?.name ?? "—"}</p>
+                      <p className="text-xs text-gray-400 mb-2">{invoice.contact?.company ?? "—"}</p>
+
+                      {/* Status + overdue + reply badges */}
+                      <div className="flex flex-wrap items-center gap-1.5 mb-2">
+                        <InvoiceStatusBadge status={invoice.status as never} />
+                        {invoice.daysPastDue > 0 && (
+                          <span className={`text-xs font-semibold ${agingColor(invoice.daysPastDue)}`}>
+                            {invoice.daysPastDue}d overdue
+                          </span>
+                        )}
+                        {reply && (
+                          <span className={`inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-xs font-medium ${REPLY_COLORS[reply.classification]}`}>
+                            {REPLY_LABELS[reply.classification]}
+                            {reply.automationPaused && <PauseCircle className="h-2.5 w-2.5" />}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Due date + flow */}
+                      <div className="flex items-center justify-between text-xs text-gray-400 mb-2.5">
+                        <span>Due {formatDate(invoice.dueDate)}</span>
+                        {invoice.assignedFlowId ? (
+                          <span className="flex items-center gap-1">
+                            <Zap className="h-2.5 w-2.5 text-blue-400" />
+                            <span className="text-blue-600 truncate max-w-[140px]">
+                              {flowMap[invoice.assignedFlowId] ?? "—"}
+                            </span>
+                            <span className={`ml-1 inline-flex items-center rounded border px-1 py-0.5 text-[10px] font-medium ${autoCfg.cls}`}>
+                              {autoCfg.label}
+                            </span>
+                          </span>
+                        ) : (
+                          <span className="text-gray-300">No flow</span>
+                        )}
+                      </div>
+
+                      <Link
+                        href={`/invoices/${invoice.id}`}
+                        className="text-xs font-medium text-blue-600 hover:underline"
+                      >
+                        View invoice →
+                      </Link>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
           )}
         </div>
       </div>

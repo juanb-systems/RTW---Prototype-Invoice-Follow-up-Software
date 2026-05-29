@@ -79,10 +79,11 @@ export default function ScheduledPage() {
         actions={
           <button
             onClick={load}
-            className="flex items-center gap-1.5 rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
+            title="Refresh"
+            className="flex items-center gap-1.5 rounded-md border border-gray-200 px-2 sm:px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
           >
-            <RefreshCw className="h-3.5 w-3.5" />
-            Refresh
+            <RefreshCw className="h-3.5 w-3.5 shrink-0" />
+            <span className="hidden sm:inline">Refresh</span>
           </button>
         }
       />

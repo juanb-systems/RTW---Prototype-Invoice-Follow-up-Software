@@ -2,6 +2,31 @@
 
 ---
 
+## v2.18.0 — Mobile Responsiveness Overhaul (29 May 2026)
+
+**Date:** 29 May 2026
+**package.json version:** 2.18.0
+
+### Added
+
+- **Invoices page — mobile card layout** — at viewport widths < 640px (`sm` breakpoint) the desktop table is hidden and replaced with a stacked card list. Each card shows: invoice number + amount on one row, contact name/company, status badge + days overdue + reply classification badge, due date + flow name + automation status badge, and a "View invoice →" link. The desktop table (`hidden sm:block`) is unchanged.
+- **Contacts page — mobile card layout** — same pattern. Mobile cards show: avatar + name + status badge + company, email with `break-all` wrapping, phone number, invoice count + overdue count + total owed, and a "View contact →" link. Desktop table unchanged.
+
+### Fixed
+
+- **Scheduled Actions TopBar "Refresh" button** — icon-only on mobile (`hidden sm:inline` text, `title` tooltip). Prevents "Scheduled Actions" title from truncating on 360–390px screens.
+- **Inbox TopBar "Refresh" button** — same fix; prevents "Inbox" title from being crowded.
+- **Call Templates TopBar "Create Call Template" button** — icon-only on mobile. Prevents "Call Templates" title truncation and the button overflowing the header.
+- **ScheduledActionCard action buttons** — `flex-wrap` added to the buttons row so "Approve & Run Lookup" + "Skip" can stack on 320px screens instead of overflowing.
+
+### Notes
+
+- All desktop layouts (sm+) are fully preserved — `hidden sm:block` for tables, `sm:hidden` for cards.
+- Widths audited: 320px, 360px, 375px, 390px, 414px, 768px.
+- Empty states are now pulled out of `<tbody>` to shared `<div>` elements above both layouts.
+
+---
+
 ## v2.17.0 — Mobile Dashboard Fix (29 May 2026)
 
 **Date:** 29 May 2026
