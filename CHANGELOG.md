@@ -2,6 +2,37 @@
 
 ---
 
+## v2.34.0 — Simplify Automations Page (29 May 2026)
+
+**Date:** 29 May 2026
+**package.json version:** 2.34.0
+
+### Changed
+
+**Automations flow cards (`app/automations/page.tsx`):**
+
+- **Removed step chip chains.** The desktop chip-by-chip step breakdown (`Lookup → Email → Wait 3d → SMS → ...`) has been removed from the default card view. It was visually noisy and added technical detail that belongs in the builder, not the list view.
+- **Replaced with a plain-English channel summary.** Each card now shows a `Sends via: Email · SMS · AI Call` line (deduplicated, computed from actual step types) plus `✓ Safety check before every send` when lookup steps are present.
+- **Simplified metrics row.** Now shows just `Starts: N days overdue` and `N steps` — removed the "Lookups: N" count.
+- **Mobile text summary also removed.** The mobile-only `Lookup → Email → Wait Nd` text string has been replaced with the same channel summary as desktop.
+
+**Language cleanup:**
+
+| Before | After |
+|--------|-------|
+| Edit Flow | Edit Automation |
+| New Flow | New Automation |
+| All Flows | All Automations |
+| Flow name | Automation name |
+| Create Flow | Create Automation |
+| Untitled Flow | Untitled Automation |
+| N flows configured (subtitle) | N automations configured |
+| Fresh lookup required before sending (banner) | Safety check required before sending |
+
+**Context note:** Most other simplification items from this batch were already implemented in earlier versions: sidebar structure (v2.28.0), Dashboard Needs Attention (v2.25.0), Inbox two-panel layout (v2.29.0), Actions page title and tabs (v2.28.0), plain-English invoice status (v2.25.0), clickable cards (v2.32.0-v2.33.0). This release addresses the remaining visual complexity on the Automations page.
+
+---
+
 ## v2.33.0 — Refined Clickable Card Interactions (29 May 2026)
 
 **Date:** 29 May 2026

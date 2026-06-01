@@ -53,7 +53,7 @@ function NewFlowModal({ onClose, onCreate }: {
     >
       <div className="w-full max-w-md rounded-xl border border-gray-200 bg-white shadow-xl p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold text-gray-900">New Automation Flow</h2>
+          <h2 className="text-sm font-semibold text-gray-900">New Automation</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <X className="h-4 w-4" />
           </button>
@@ -65,7 +65,7 @@ function NewFlowModal({ onClose, onCreate }: {
         </p>
 
         <div className="mb-4">
-          <label className="block text-xs font-medium text-gray-600 mb-1">Flow name</label>
+          <label className="block text-xs font-medium text-gray-600 mb-1">Automation name</label>
           <input
             ref={inputRef}
             type="text"
@@ -90,7 +90,7 @@ function NewFlowModal({ onClose, onCreate }: {
             className="flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
           >
             <Plus className="h-3.5 w-3.5" />
-            {creating ? "Creating…" : "Create Flow"}
+            {creating ? "Creating…" : "Create Automation"}
           </button>
         </div>
       </div>
@@ -121,7 +121,7 @@ export default function AutomationsPage() {
 
   async function handleCreate(name: string) {
     const id = `FLOW-${Date.now()}`;
-    const trimmedName = name.trim() || "Untitled Flow";
+    const trimmedName = name.trim() || "Untitled Automation";
     const newFlow: AutomationFlow = {
       id,
       name: trimmedName,
@@ -175,14 +175,14 @@ export default function AutomationsPage() {
       )}
       <TopBar
         title="Automations"
-        subtitle={`${flows.length} flows configured`}
-        description="Set up and manage the reminder flows that send emails, SMS messages, and AI calls."
+        subtitle={`${flows.length} automation${flows.length !== 1 ? "s" : ""} configured`}
+        description="Set up and manage the reminder automations that send emails, SMS messages, and AI calls."
       />
       <div className="p-4 sm:p-6 space-y-4">
         <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
           <p className="text-sm text-blue-700">
-            <strong>Fresh lookup required before sending.</strong> All automation flows include a lookup
-            checkpoint before any email, SMS, or call is sent. Actions are skipped or blocked if the
+            <strong>Safety check required before sending.</strong> Every automation runs a safety check
+            before any email, SMS, or call is sent. Actions are skipped or blocked if the
             invoice is paid, disputed, or the contact is excluded.
           </p>
         </div>
@@ -190,7 +190,7 @@ export default function AutomationsPage() {
         {/* Search + count bar */}
         <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
           <div className="px-4 sm:px-5 py-4 border-b border-gray-100 flex flex-wrap items-center gap-3">
-            <h2 className="text-sm font-semibold text-gray-900 shrink-0">All Flows</h2>
+            <h2 className="text-sm font-semibold text-gray-900 shrink-0">All Automations</h2>
             <div className="relative flex-1 min-w-0">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
               <input
@@ -220,7 +220,7 @@ export default function AutomationsPage() {
                 className="flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors shrink-0"
               >
                 <Plus className="h-3.5 w-3.5" />
-                New Flow
+                New Automation
               </button>
             </div>
           </div>
@@ -245,14 +245,10 @@ export default function AutomationsPage() {
                 const actionSteps = flow.steps.filter((s: FlowStep) => ["email", "sms", "call"].includes(s.type));
                 const lookupSteps = flow.steps.filter((s: FlowStep) => s.type === "lookup_check");
 
-                const stepSummary = flow.steps
-                  .filter((s: FlowStep) => !["trigger", "end"].includes(s.type))
-                  .map((s: FlowStep) => {
-                    if (s.type === "lookup_check") return "Lookup";
-                    if (s.type === "wait") return `Wait ${(s.config as { days?: number }).days ?? "?"}d`;
-                    return s.type.charAt(0).toUpperCase() + s.type.slice(1);
-                  })
-                  .join(" → ");
+                // Deduplicated channel labels for the summary line
+                const channelLabels = [...new Set(actionSteps.map((s: FlowStep) =>
+                  s.type === "email" ? "Email" : s.type === "sms" ? "SMS" : "AI Call"
+                ))];
 
                 return (
                   <div
@@ -279,57 +275,31 @@ export default function AutomationsPage() {
                         onClick={(e) => e.stopPropagation()}
                       >
                         <GitBranch className="h-3.5 w-3.5" />
-                        Edit Flow
+                        Edit Automation
                       </Link>
                     </div>
 
-                    {/* Metrics row */}
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-3 ml-6 text-xs text-gray-500">
-                      <span><span className="text-gray-400">Triggers at: </span><span className="font-medium text-gray-700">{flow.trigger?.value} days overdue</span></span>
-                      <span><span className="text-gray-400">Steps: </span><span className="font-medium text-gray-700">{flow.steps.length}</span></span>
-                      <span><span className="text-gray-400">Lookups: </span><span className="font-medium text-green-700">{lookupSteps.length}</span></span>
+                    {/* Summary row */}
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-2 ml-6 text-xs text-gray-500">
+                      <span>
+                        <span className="text-gray-400">Starts: </span>
+                        <span className="font-medium text-gray-700">{flow.trigger?.value} days overdue</span>
+                      </span>
+                      <span>
+                        <span className="text-gray-400">{flow.steps.length} steps</span>
+                      </span>
                     </div>
 
-                    {/* Step chips — desktop only */}
-                    <div className="ml-6 hidden sm:flex items-center gap-1 flex-wrap">
-                      {flow.steps.map((step: FlowStep, idx: number) => (
-                        <div key={step.id} className="flex items-center gap-1">
-                          <div
-                            className={cn(
-                              "flex items-center gap-1 rounded-md border px-2 py-1 text-xs",
-                              step.type === "lookup_check" ? "border-amber-200 bg-amber-50 text-amber-700" :
-                              step.type === "email" ? "border-blue-200 bg-blue-50 text-blue-700" :
-                              step.type === "sms" ? "border-purple-200 bg-purple-50 text-purple-700" :
-                              step.type === "call" ? "border-green-200 bg-green-50 text-green-700" :
-                              step.type === "wait" ? "border-gray-200 bg-gray-100 text-gray-500" :
-                              "border-gray-200 bg-gray-50 text-gray-500"
-                            )}
-                          >
-                            <StepTypeIcon type={step.type} />
-                            <span className="capitalize">
-                              {step.type === "lookup_check" ? "Lookup" :
-                               step.type === "wait" ? `Wait ${(step.config as { days?: number }).days ?? "?"}d` :
-                               step.type}
-                            </span>
-                          </div>
-                          {idx < flow.steps.length - 1 && (
-                            <span className="text-gray-300 text-xs">→</span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Step summary — mobile only */}
-                    {stepSummary && (
-                      <p className="ml-6 sm:hidden text-xs text-gray-500 leading-snug">{stepSummary}</p>
-                    )}
-
-                    <div className="mt-2 ml-6 flex items-center gap-4 text-xs text-gray-400">
-                      <span>{actionSteps.length} send action{actionSteps.length !== 1 ? "s" : ""}</span>
-                      {lookupSteps.length > 0 && (
-                        <span className="text-amber-600 font-medium">
-                          ✓ Fresh lookup before each send
+                    {/* Channels + safety check — replaces chip chain */}
+                    <div className="ml-6 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+                      {channelLabels.length > 0 && (
+                        <span className="text-gray-500">
+                          <span className="text-gray-400">Sends via: </span>
+                          <span className="font-medium text-gray-700">{channelLabels.join(" · ")}</span>
                         </span>
+                      )}
+                      {lookupSteps.length > 0 && (
+                        <span className="text-amber-600 font-medium">✓ Safety check before every send</span>
                       )}
                     </div>
 
@@ -340,7 +310,7 @@ export default function AutomationsPage() {
                       onClick={(e) => e.stopPropagation()}
                     >
                       <GitBranch className="h-3.5 w-3.5" />
-                      Edit Flow
+                      Edit Automation
                     </Link>
                   </div>
                 );
