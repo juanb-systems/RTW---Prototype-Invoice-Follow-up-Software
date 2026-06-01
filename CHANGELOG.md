@@ -2,6 +2,17 @@
 
 ---
 
+## v2.31.0 — Page Descriptions (29 May 2026)
+
+**Date:** 29 May 2026
+**package.json version:** 2.31.0
+
+### Added
+
+Added description prop to TopBar component. Each main page now shows a short plain-English helper sentence below its title bar: Dashboard, Invoices, Inbox, Notifications, Actions, Automations, Templates, Contacts, Settings, Preferences, Onboarding, Invoice Detail. Description bar is subtle (text-xs text-gray-400) rendered in a slim bar between the header and page content. Existing subtitles preserved.
+
+---
+
 ## v2.30.0 — Add Contact Flow (29 May 2026)
 
 **Date:** 29 May 2026
