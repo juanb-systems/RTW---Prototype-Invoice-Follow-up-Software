@@ -1,4 +1,4 @@
-# CollectPilot — AI Receivables Assistant · v2.36
+# CollectPilot — AI Receivables Assistant · v2.37
 
 A Next.js 15 prototype for an AI-powered B2B receivables follow-up platform. Demonstrates automated invoice collection workflows with "Fresh Xero Check" safety gates before every customer contact.
 
@@ -115,6 +115,7 @@ No environment variables are required for the current prototype. All data is see
 
 | Version | Date | Summary |
 |---------|------|---------|
+| v2.37.0 | 29 May 2026 | Expandable Needs Attention cards — each card collapses to count+label+description, expands on click to show up to 3 related items (invoice#/contact/amount for overdue+disputes; action type/invoice/reason for blocked+approval; contact/invoice/subject for inbox items) with "View all N →" overflow link; accordion behavior keeps only one card open; server data function getAttentionDetails() provides flat serializable item lists |
 | v2.36.0 | 29 May 2026 | Fix mobile Contact detail layout — responsive single-column stacked layout on mobile, email/phone stack vertically, Total Owed uses break-all + smaller text, Automation Status appears inline between stats and invoices on mobile, invoice table replaced by mobile cards (< sm) |
 | v2.35.0 | 29 May 2026 | Fix sidebar navigation — NavItem converted from button+router.push to Next.js Link component; sidebar aside gets z-10 and desktop wrapper gets z-20 to ensure navigation is never covered by page-level overlays |
 | v2.34.0 | 29 May 2026 | Simplify Automations page — removed step chip chains from flow cards, replaced with "Sends via: Email · SMS · AI Call" + "Safety check before every send" summary line; renamed all user-facing "Flow" labels to "Automation" (New Automation, Edit Automation, All Automations, Automation name); safety-check language replaces "Fresh lookup" in the page banner |

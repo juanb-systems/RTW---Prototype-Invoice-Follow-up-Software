@@ -2,6 +2,43 @@
 
 ---
 
+## v2.37.0 — Expandable Needs Attention Cards (29 May 2026)
+
+**Date:** 29 May 2026
+**package.json version:** 2.37.0
+
+### Changed
+
+**Dashboard Needs Attention section — expandable accordion:**
+
+The static grid of "click-to-navigate" attention cards has been replaced with an accordion of expandable cards. Each card:
+- **Collapsed (default):** icon + count + label + plain-English description + `ChevronDown` indicator. Compact, easy to scan.
+- **Expanded (on click):** shows up to 3 related items with direct links; a "View all N →" link appears if there are more than 3 items.
+- **Accordion behavior:** only one card can be open at a time, keeping the section concise.
+
+**Item detail format per category:**
+
+| Category | Expanded item shows |
+|----------|-------------------|
+| Disputes | Invoice# · Contact · Amount · Days overdue → "Review dispute" link to `/invoices/[id]` |
+| Blocked actions | Action type · Invoice# · Contact · Safety check reason → `/scheduled` |
+| Overdue 60+/30-60 | Invoice# · Contact · Amount · Days overdue → "View invoice" link to `/invoices/[id]` |
+| Needs approval | Action type · Invoice# · Contact → `/scheduled` |
+| Automations paused | Contact · Invoice# · Subject → `/inbox` |
+| Unread replies | Contact · Invoice# · Subject → `/inbox` |
+| Promises to pay | Contact · Invoice# · Subject → `/inbox` |
+
+**Architecture:**
+- `lib/server-data.ts` — new `getAttentionDetails()` function and exported types (`AttentionInvItem`, `AttentionActionItem`, `AttentionMsgItem`, `AttentionDetails`). Returns flat serializable item lists with contact/invoice details joined.
+- `components/dashboard/NeedsAttentionSection.tsx` — new `"use client"` component. Manages accordion state (`openKey: CardKey | null`), renders `AttentionCard` components, and item-row renderers (`InvItemRow`, `ActionItemRow`, `MsgItemRow`).
+- `app/dashboard/page.tsx` — removed the old `AttentionCard` server component and grid. Now calls `getAttentionDetails()` and passes the result to `<NeedsAttentionSection details={attentionDetails} />`.
+
+**Mobile behavior:** Single-column accordion (same on mobile and desktop). Cards are full-width, easy to tap. Expanded items stack cleanly with generous tap targets. No horizontal overflow.
+
+**Recent Activity section:** No changes — it already shows a compact feed of 8 items. Left as-is.
+
+---
+
 ## v2.36.0 — Fix Mobile Contact Detail Layout (29 May 2026)
 
 **Date:** 29 May 2026

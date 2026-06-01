@@ -89,6 +89,121 @@ export function getLatestInboxMessageForInvoice(invoiceId: string): InboxMessage
   return messages[0] ?? null;
 }
 
+// ── Attention detail items (passed to NeedsAttentionSection client component) ─
+
+export type AttentionInvItem = {
+  id: string;
+  invoiceNumber: string;
+  amount: number;
+  daysPastDue: number;
+  status: string;
+  contactName: string;
+  contactCompany: string;
+};
+
+export type AttentionActionItem = {
+  id: string;
+  stepType: string;
+  invoiceId: string;
+  invoiceNumber: string;
+  contactName: string;
+  lookupReason: string | null;
+  skipReason: string | null;
+};
+
+export type AttentionMsgItem = {
+  id: string;
+  invoiceId: string;
+  invoiceNumber: string;
+  subject: string;
+  classification: string;
+  contactName: string;
+};
+
+export type AttentionDetails = {
+  disputes: AttentionInvItem[];
+  blocked: AttentionActionItem[];
+  overdue60plus: AttentionInvItem[];
+  overdue30to60: AttentionInvItem[];
+  awaitingApproval: AttentionActionItem[];
+  pausedAutomations: AttentionMsgItem[];
+  unreadReplies: AttentionMsgItem[];
+  promisesToPay: AttentionMsgItem[];
+};
+
+export function getAttentionDetails(): AttentionDetails {
+  const db = getDb();
+  const overdueInvoices = db.invoices.filter(
+    (i) => i.status === "overdue" || i.status === "partial"
+  );
+
+  const toInvItem = (inv: Invoice): AttentionInvItem => {
+    const contact = db.contacts.find((c) => c.id === inv.contactId);
+    return {
+      id: inv.id,
+      invoiceNumber: inv.invoiceNumber,
+      amount: inv.amount,
+      daysPastDue: inv.daysPastDue,
+      status: inv.status,
+      contactName: contact?.name ?? "Unknown",
+      contactCompany: contact?.company ?? "",
+    };
+  };
+
+  const toActionItem = (a: ScheduledAction): AttentionActionItem => {
+    const inv = db.invoices.find((i) => i.id === a.invoiceId);
+    const contact = db.contacts.find((c) => c.id === a.contactId);
+    return {
+      id: a.id,
+      stepType: a.stepType,
+      invoiceId: a.invoiceId,
+      invoiceNumber: inv?.invoiceNumber ?? "—",
+      contactName: contact?.name ?? "Unknown",
+      lookupReason: a.lookupResult?.reason ?? null,
+      skipReason: a.skipReason,
+    };
+  };
+
+  const toMsgItem = (m: InboxMessage): AttentionMsgItem => {
+    const inv = db.invoices.find((i) => i.id === m.invoiceId);
+    const contact = db.contacts.find((c) => c.id === m.contactId);
+    return {
+      id: m.id,
+      invoiceId: m.invoiceId,
+      invoiceNumber: inv?.invoiceNumber ?? "—",
+      subject: m.subject,
+      classification: m.classification,
+      contactName: contact?.name ?? (m.from ? m.from.split("@")[0] : "Unknown"),
+    };
+  };
+
+  return {
+    disputes: db.invoices.filter((i) => i.status === "disputed").map(toInvItem),
+    blocked: db.scheduledActions.filter((a) => a.status === "blocked").map(toActionItem),
+    overdue60plus: overdueInvoices
+      .filter((i) => i.daysPastDue >= 60)
+      .sort((a, b) => b.daysPastDue - a.daysPastDue)
+      .map(toInvItem),
+    overdue30to60: overdueInvoices
+      .filter((i) => i.daysPastDue >= 30 && i.daysPastDue < 60)
+      .sort((a, b) => b.daysPastDue - a.daysPastDue)
+      .map(toInvItem),
+    awaitingApproval: db.scheduledActions
+      .filter((a) => a.status === "awaiting_approval")
+      .map(toActionItem),
+    pausedAutomations: db.inboxMessages
+      .filter((m) => m.automationPaused)
+      .map(toMsgItem),
+    unreadReplies: db.inboxMessages
+      .filter((m) => !m.isRead)
+      .sort((a, b) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime())
+      .map(toMsgItem),
+    promisesToPay: db.inboxMessages
+      .filter((m) => m.classification === "promise_to_pay")
+      .map(toMsgItem),
+  };
+}
+
 export function getDashboardData() {
   const db = getDb();
 
