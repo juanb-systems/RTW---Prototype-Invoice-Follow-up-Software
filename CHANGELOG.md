@@ -2,6 +2,38 @@
 
 ---
 
+## v2.32.0 — Clickable List Cards (29 May 2026)
+
+**Date:** 29 May 2026
+**package.json version:** 2.32.0
+
+### Changed
+
+**Automations page (`app/automations/page.tsx`):**
+- Each automation flow card now navigates to the flow builder on click (`onClick → router.push`).
+- Added `cursor-pointer hover:border-blue-200 hover:shadow-md transition-all` to card container.
+- Both Edit Flow link buttons (desktop header + mobile full-width) have `onClick={(e) => e.stopPropagation()}` to prevent double-navigation when clicking the button directly.
+
+**Invoices page (`app/invoices/page.tsx`):**
+- Desktop table rows (`<tr>`) now have `cursor-pointer` + `onClick → router.push('/invoices/${id}')`.
+- Mobile invoice cards have the same `cursor-pointer hover:bg-gray-50/60` + `onClick → router.push`.
+- "View →" and "View invoice →" links have `e.stopPropagation()` to prevent bubbling.
+- Added `useRouter` import.
+
+**Contacts page (`app/contacts/page.tsx`):**
+- Desktop table rows (`<tr>`) now have `cursor-pointer` + `onClick → router.push('/contacts/${id}')`.
+- Mobile contact cards have `cursor-pointer hover:bg-gray-50/60` + `onClick → router.push`.
+- "View →" and "View contact →" links have `e.stopPropagation()`.
+- Added `useRouter` import.
+
+**Already clickable (no changes needed):**
+- **Inbox** rows: already had `onClick` handling for the detail panel.
+- **Notifications** rows: already used `<Link href={notif.href}>` wrappers.
+- **Actions (Scheduled)**: no detail navigation target — action buttons (Run, Skip, Approve) are the intended interaction; left unchanged.
+- **Call Templates**: in-place expand/edit interaction — no page-level navigation; left unchanged.
+
+---
+
 ## v2.31.0 — Page Descriptions (29 May 2026)
 
 **Date:** 29 May 2026

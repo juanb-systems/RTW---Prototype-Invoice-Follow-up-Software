@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { TopBar } from "@/components/layout/TopBar";
 import { InvoiceStatusBadge } from "@/components/invoices/InvoiceStatusBadge";
 import { formatCurrency, formatDate, agingColor } from "@/lib/utils";
@@ -71,6 +72,7 @@ const AUTO_STATUS_CONFIG = {
 } as const;
 
 export default function InvoicesPage() {
+  const router = useRouter();
   const [invoices, setInvoices] = useState<InvoiceRow[]>([]);
   const [flowMap, setFlowMap] = useState<Record<string, string>>({});
   const [replyMap, setReplyMap] = useState<Record<string, ReplyInfo>>({});
@@ -229,13 +231,13 @@ export default function InvoicesPage() {
     { col: "dueDate",       label: "Due Date",     align: "left" },
     { col: "daysPastDue",   label: "Days Overdue", align: "center" },
     { col: "status",        label: "Status",       align: "left" },
-    { col: "flow",          label: "Flow",         align: "left" },
+    { col: "flow",          label: "Automation",   align: "left" },
     { col: "reply",         label: "Reply",        align: "left" },
   ];
 
   return (
     <div>
-      <TopBar title="Invoices" subtitle={`${overdueCount} overdue · ${invoices.length} total`} />
+      <TopBar title="Invoices" subtitle={`${overdueCount} overdue · ${invoices.length} total`} description="Track unpaid invoices, customer response status, automation status, and next actions." />
       <div className="p-4 sm:p-6">
         <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
           {/* Toolbar */}
@@ -374,7 +376,11 @@ export default function InvoicesPage() {
                     {sorted.map((invoice) => {
                       const reply = replyMap[invoice.id];
                       return (
-                        <tr key={invoice.id} className="hover:bg-gray-50/60 transition-colors">
+                        <tr
+                        key={invoice.id}
+                        className="hover:bg-gray-50/60 transition-colors cursor-pointer"
+                        onClick={() => router.push(`/invoices/${invoice.id}`)}
+                      >
                           <td className="px-5 py-3.5">
                             <span className="font-mono text-xs font-medium text-gray-700">
                               {invoice.invoiceNumber}
@@ -473,6 +479,7 @@ export default function InvoicesPage() {
                             <Link
                               href={`/invoices/${invoice.id}`}
                               className="text-xs font-medium text-blue-600 hover:text-blue-800 hover:underline whitespace-nowrap"
+                              onClick={(e) => e.stopPropagation()}
                             >
                               View →
                             </Link>
@@ -495,57 +502,59 @@ export default function InvoicesPage() {
                   else if (actions.some(a => a.status === "awaiting_approval")) autoKey = "awaiting_approval";
                   else if (actions.some(a => a.status === "pending")) autoKey = "active";
 
-                  const pendingAction = actions.find(a => a.status === "pending");
+                  const pending = actions.find(a => a.status === "pending");
 
-                  // Determine attention banner (CHANGE 1)
-                  let attentionBanner: { text: string; cls: string } | null = null;
+                  // Derive primary status line text + className (priority order)
+                  let primaryStatus: { text: string; cls: string } | null = null;
                   if (invoice.status === "disputed") {
-                    attentionBanner = {
-                      text: "Dispute raised - review required",
-                      cls: "bg-red-50 border border-red-200 text-red-700",
-                    };
+                    primaryStatus = { text: "Dispute raised — review needed", cls: "text-xs font-medium text-red-600 mt-1" };
+                  } else if (reply?.classification === "promise_to_pay") {
+                    primaryStatus = { text: "Customer promised to pay", cls: "text-xs font-medium text-green-600 mt-1" };
                   } else if (autoKey === "blocked") {
-                    attentionBanner = {
-                      text: "Action blocked - check scheduled actions",
-                      cls: "bg-red-50 border border-red-200 text-red-700",
-                    };
+                    primaryStatus = { text: "Action blocked", cls: "text-xs font-medium text-red-600 mt-1" };
                   } else if (autoKey === "awaiting_approval") {
-                    attentionBanner = {
-                      text: "Waiting for your approval",
-                      cls: "bg-purple-50 border border-purple-200 text-purple-700",
-                    };
+                    primaryStatus = { text: "Needs your approval", cls: "text-xs font-medium text-purple-600 mt-1" };
+                  } else if (reply?.classification === "payment_query") {
+                    primaryStatus = { text: "Customer has a question", cls: "text-xs font-medium text-blue-600 mt-1" };
+                  } else if (reply?.classification === "out_of_office") {
+                    primaryStatus = { text: "Customer out of office", cls: "text-xs font-medium text-gray-500 mt-1" };
                   } else if (autoKey === "paused") {
-                    attentionBanner = {
-                      text: "Automation paused - customer replied",
-                      cls: "bg-amber-50 border border-amber-200 text-amber-700",
-                    };
+                    primaryStatus = { text: "Automation paused", cls: "text-xs font-medium text-amber-600 mt-1" };
+                  } else if (invoice.status === "paid") {
+                    primaryStatus = { text: "Paid", cls: "text-xs font-medium text-green-600 mt-1" };
                   }
+                  // pending action line and no-automation line are rendered separately below
 
                   return (
-                    <div key={invoice.id} className="px-4 py-3.5">
-                      {/* Invoice # row */}
+                    <div
+                      key={invoice.id}
+                      className="px-4 py-3.5 cursor-pointer hover:bg-gray-50/60 transition-colors"
+                      onClick={() => router.push(`/invoices/${invoice.id}`)}
+                    >
+                      {/* Invoice # row — no status badge */}
                       <div className="flex items-baseline justify-between gap-2 mb-2">
                         <span className="font-mono text-xs font-semibold text-gray-700 whitespace-nowrap">
                           {invoice.invoiceNumber}
                         </span>
-                        <InvoiceStatusBadge status={invoice.status as never} />
                       </div>
 
-                      {/* CHANGE 1 — Attention banner (shown before contact name) */}
-                      {attentionBanner && (
-                        <div className={`flex items-center gap-1.5 mb-2 px-2.5 py-1.5 rounded-md text-xs font-medium ${attentionBanner.cls}`}>
-                          <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" />
-                          {attentionBanner.text}
-                        </div>
-                      )}
-
-                      {/* CHANGE 2 — Richer status section */}
                       {/* Contact name + company */}
                       <p className="text-xs font-medium text-gray-900 leading-tight">{invoice.contact?.name ?? "—"}</p>
-                      <p className="text-xs text-gray-400 mb-1.5">{invoice.contact?.company ?? "—"}</p>
+                      <p className="text-xs text-gray-400">{invoice.contact?.company ?? "—"}</p>
 
-                      {/* Amount + days overdue as one prominent line */}
-                      <div className="flex items-baseline gap-2 mb-1.5">
+                      {/* Primary status line */}
+                      {primaryStatus ? (
+                        <p className={primaryStatus.cls}>{primaryStatus.text}</p>
+                      ) : autoKey === "active" && pending ? (
+                        <p className="text-xs text-blue-600 mt-1">
+                          Next: {pending.stepType} scheduled {formatDate(pending.scheduledAt)}
+                        </p>
+                      ) : (
+                        <p className="text-xs text-gray-400 mt-1">No automation assigned</p>
+                      )}
+
+                      {/* Amount + days overdue inline */}
+                      <div className="flex items-baseline gap-2 mt-2 mb-1.5">
                         <span className="text-sm font-bold text-gray-900">
                           {formatCurrency(invoice.amount)}
                         </span>
@@ -556,34 +565,7 @@ export default function InvoicesPage() {
                         )}
                       </div>
 
-                      {/* Customer reply classification */}
-                      {reply && (
-                        <div className="mb-1.5">
-                          <span className={`inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-xs font-medium ${REPLY_COLORS[reply.classification]}`}>
-                            Customer replied: {REPLY_LABELS[reply.classification]}
-                            {reply.automationPaused && <PauseCircle className="h-2.5 w-2.5" />}
-                          </span>
-                        </div>
-                      )}
-
-                      {/* Flow name + next pending action */}
-                      {invoice.assignedFlowId && (
-                        <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
-                          <span className="inline-flex items-center gap-1 text-xs text-blue-600">
-                            <Zap className="h-2.5 w-2.5 text-blue-400" />
-                            {flowMap[invoice.assignedFlowId] ?? "—"}
-                          </span>
-                        </div>
-                      )}
-
-                      {/* Pending next action */}
-                      {pendingAction && autoKey === "active" && (
-                        <p className="text-xs text-gray-500 mb-1.5 capitalize">
-                          Next: {pendingAction.stepType} — {formatDate(pendingAction.scheduledAt)}
-                        </p>
-                      )}
-
-                      {/* Due date as secondary footer text */}
+                      {/* Due date */}
                       <p className="text-xs text-gray-400 mb-2.5">
                         Due {formatDate(invoice.dueDate)}
                       </p>
@@ -591,6 +573,7 @@ export default function InvoicesPage() {
                       <Link
                         href={`/invoices/${invoice.id}`}
                         className="text-xs font-medium text-blue-600 hover:underline"
+                        onClick={(e) => e.stopPropagation()}
                       >
                         View invoice →
                       </Link>

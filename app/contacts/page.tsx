@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { TopBar } from "@/components/layout/TopBar";
 import { ContactStatusBadge } from "@/components/contacts/ContactStatusBadge";
 import { formatCurrency } from "@/lib/utils";
@@ -246,6 +247,7 @@ function AddContactModal({
 // ── Contacts page ─────────────────────────────────────────────────────────────
 
 export default function ContactsPage() {
+  const router = useRouter();
   const [contacts, setContacts] = useState<ContactRow[]>([]);
   const [sortCol, setSortCol]   = useState<SortCol>("name");
   const [sortDir, setSortDir]   = useState<SortDir>("asc");
@@ -335,6 +337,7 @@ export default function ContactsPage() {
       <TopBar
         title="Contacts"
         subtitle={`${contacts.length} total · ${excluded} excluded · ${onHold} on hold`}
+        description="Manage customer contacts, automation exclusions, and contact status."
         actions={
           <button
             onClick={() => setShowAdd(true)}
@@ -424,7 +427,8 @@ export default function ContactsPage() {
                     {sorted.map((contact) => (
                       <tr
                         key={contact.id}
-                        className={`hover:bg-gray-50/60 transition-colors ${contact.status === "excluded" ? "bg-red-50/30" : ""}`}
+                        className={`hover:bg-gray-50/60 transition-colors cursor-pointer ${contact.status === "excluded" ? "bg-red-50/30" : ""}`}
+                        onClick={() => router.push(`/contacts/${contact.id}`)}
                       >
                         <td className="px-5 py-3.5">
                           <div className="flex items-center gap-2.5">
@@ -470,7 +474,7 @@ export default function ContactsPage() {
                           <ContactStatusBadge status={contact.status as ContactStatus} />
                         </td>
                         <td className="px-5 py-3.5">
-                          <Link href={`/contacts/${contact.id}`} className="text-xs font-medium text-blue-600 hover:text-blue-800 hover:underline">
+                          <Link href={`/contacts/${contact.id}`} className="text-xs font-medium text-blue-600 hover:text-blue-800 hover:underline" onClick={(e) => e.stopPropagation()}>
                             View →
                           </Link>
                         </td>
@@ -485,7 +489,8 @@ export default function ContactsPage() {
                 {sorted.map((contact) => (
                   <div
                     key={contact.id}
-                    className={`px-4 py-3.5 ${contact.status === "excluded" ? "bg-red-50/30" : ""}`}
+                    className={`px-4 py-3.5 cursor-pointer hover:bg-gray-50/60 transition-colors ${contact.status === "excluded" ? "bg-red-50/30" : ""}`}
+                    onClick={() => router.push(`/contacts/${contact.id}`)}
                   >
                     {/* Name + company + status */}
                     <div className="flex items-start gap-3 mb-2">
@@ -524,7 +529,7 @@ export default function ContactsPage() {
                       )}
                     </div>
 
-                    <Link href={`/contacts/${contact.id}`} className="text-xs font-medium text-blue-600 hover:underline">
+                    <Link href={`/contacts/${contact.id}`} className="text-xs font-medium text-blue-600 hover:underline" onClick={(e) => e.stopPropagation()}>
                       View contact →
                     </Link>
                   </div>

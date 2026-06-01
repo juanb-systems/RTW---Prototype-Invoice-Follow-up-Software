@@ -176,6 +176,7 @@ export default function AutomationsPage() {
       <TopBar
         title="Automations"
         subtitle={`${flows.length} flows configured`}
+        description="Set up and manage the reminder flows that send emails, SMS messages, and AI calls."
       />
       <div className="p-4 sm:p-6 space-y-4">
         <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
@@ -254,7 +255,11 @@ export default function AutomationsPage() {
                   .join(" → ");
 
                 return (
-                  <div key={flow.id} className="rounded-xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm">
+                  <div
+                    key={flow.id}
+                    className="rounded-xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm cursor-pointer hover:border-blue-200 hover:shadow-md transition-all"
+                    onClick={() => router.push(`/automations/${flow.id}/builder`)}
+                  >
                     {/* Header row — name + badge, Edit button inline on sm+ */}
                     <div className="flex items-start gap-2 mb-2">
                       <Zap className="h-4 w-4 text-blue-500 mt-0.5 shrink-0" />
@@ -271,6 +276,7 @@ export default function AutomationsPage() {
                       <Link
                         href={`/automations/${flow.id}/builder`}
                         className="hidden sm:flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors shrink-0"
+                        onClick={(e) => e.stopPropagation()}
                       >
                         <GitBranch className="h-3.5 w-3.5" />
                         Edit Flow
@@ -331,6 +337,7 @@ export default function AutomationsPage() {
                     <Link
                       href={`/automations/${flow.id}/builder`}
                       className="sm:hidden mt-3 flex items-center justify-center gap-1.5 rounded-md bg-blue-600 px-3 py-2 text-xs font-medium text-white hover:bg-blue-700 transition-colors w-full"
+                      onClick={(e) => e.stopPropagation()}
                     >
                       <GitBranch className="h-3.5 w-3.5" />
                       Edit Flow
