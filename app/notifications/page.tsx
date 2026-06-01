@@ -74,6 +74,7 @@ export default function NotificationsPage() {
       <TopBar
         title="Notifications"
         subtitle={UNREAD_COUNT > 0 ? `${UNREAD_COUNT} unread` : "All caught up"}
+        description="See important alerts about overdue invoices, customer replies, blocked actions, and approvals."
       />
       <div className="p-4 sm:p-6 space-y-4">
 

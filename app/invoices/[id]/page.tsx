@@ -142,6 +142,7 @@ export default async function InvoiceDetailPage({
       <TopBar
         title={invoice.invoiceNumber}
         subtitle={`${invoice.contact?.company ?? ""} · ${formatCurrency(invoice.amount)}`}
+        description="Review invoice status, customer activity, automation progress, and next recommended action."
       />
       <div className="p-4 sm:p-6 space-y-6">
 

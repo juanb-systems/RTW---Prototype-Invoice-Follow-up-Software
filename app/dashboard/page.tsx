@@ -77,6 +77,7 @@ export default function DashboardPage() {
       <TopBar
         title="Dashboard"
         subtitle="Overview of your receivables"
+        description="See what needs attention today — overdue invoices, customer replies, and blocked actions."
         actions={<DemoScenarioButton />}
       />
       <div className="p-4 sm:p-6 space-y-6">
@@ -86,7 +87,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-sm font-semibold text-gray-900">Needs Attention</h2>
-              <p className="text-xs text-gray-400 mt-0.5">Items requiring your review or action</p>
+              <p className="text-xs text-gray-400 mt-0.5">Act on these before anything else today.</p>
             </div>
             {totalAttentionItems > 0 && (
               <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-red-100 px-2 text-xs font-bold text-red-600">
@@ -107,7 +108,7 @@ export default function DashboardPage() {
               <AttentionCard
                 count={needsAttention.disputes}
                 label="dispute(s) raised"
-                description="Automation paused - review before sending more."
+                description="Automation paused — review before sending more."
                 href="/invoices?status=disputed"
                 icon={ShieldX}
                 color="bg-red-500"
@@ -142,7 +143,7 @@ export default function DashboardPage() {
               <AttentionCard
                 count={needsAttention.awaitingApproval}
                 label="action(s) need approval"
-                description="Manual approval mode is on. Review queued actions."
+                description="Actions waiting for your approval."
                 href="/scheduled"
                 icon={CheckCircle2}
                 color="bg-purple-500"
@@ -150,7 +151,7 @@ export default function DashboardPage() {
               <AttentionCard
                 count={needsAttention.pausedAutomations}
                 label="automation(s) paused"
-                description="Customer replied - automation is on hold."
+                description="Customer replied, automation on hold."
                 href="/inbox"
                 icon={PauseCircle}
                 color="bg-amber-500"
@@ -158,7 +159,7 @@ export default function DashboardPage() {
               <AttentionCard
                 count={needsAttention.unreadReplies}
                 label="unread reply or call"
-                description="New customer message or AI call outcome waiting."
+                description="New customer messages waiting."
                 href="/inbox"
                 icon={MessageSquare}
                 color="bg-blue-500"
@@ -166,7 +167,7 @@ export default function DashboardPage() {
               <AttentionCard
                 count={needsAttention.promisesToPay}
                 label="promise(s) to pay"
-                description="Customer confirmed payment. Monitor and follow up."
+                description="Customer confirmed payment — monitor and follow up."
                 href="/inbox?filter=promise_to_pay"
                 icon={ThumbsUp}
                 color="bg-green-500"
@@ -186,7 +187,7 @@ export default function DashboardPage() {
             iconBg="bg-red-50"
           />
           <KpiCard
-            title="Total at Risk"
+            title="Outstanding Balance"
             value={formatCurrency(kpis.totalOverdueAmount)}
             subtitle="Across all overdue invoices"
             icon={DollarSign}
@@ -218,7 +219,11 @@ export default function DashboardPage() {
         </div>
 
         {/* Activity Feed */}
-        <RecentActivityFeed items={recentActivity} />
+        <div>
+          <h2 className="text-sm font-semibold text-gray-900">System Activity</h2>
+          <p className="text-xs text-gray-400 mt-0.5">What CollectPilot has done recently</p>
+          <RecentActivityFeed items={recentActivity} />
+        </div>
       </div>
     </div>
   );

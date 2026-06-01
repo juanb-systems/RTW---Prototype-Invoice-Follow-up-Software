@@ -24,6 +24,7 @@ const PREVIEW_NOTIFICATIONS = NOTIFICATIONS.slice(0, 3);
 interface TopBarProps {
   title: string;
   subtitle?: string;
+  description?: string;
   actions?: React.ReactNode;
 }
 
@@ -188,7 +189,7 @@ function buildResults(data: AllData, rawQuery: string): Record<string, SearchRes
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
-export function TopBar({ title, subtitle, actions }: TopBarProps) {
+export function TopBar({ title, subtitle, description, actions }: TopBarProps) {
   const pathname = usePathname();
 
   // Global search — completely independent of page-level search bars
@@ -259,6 +260,7 @@ export function TopBar({ title, subtitle, actions }: TopBarProps) {
   const toggleMobileMenu = useMobileMenuStore((s) => s.toggle);
 
   return (
+    <>
     <header className="flex h-14 items-center justify-between border-b border-gray-200 bg-white px-4 md:px-6 gap-3">
       {/* Mobile hamburger */}
       <button
@@ -426,5 +428,11 @@ export function TopBar({ title, subtitle, actions }: TopBarProps) {
         </div>
       </div>
     </header>
+    {description && (
+      <div className="border-b border-gray-100 bg-white px-4 md:px-6 py-2">
+        <p className="text-xs text-gray-400 leading-relaxed">{description}</p>
+      </div>
+    )}
+    </>
   );
 }

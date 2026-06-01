@@ -560,6 +560,7 @@ function InboxPageContent() {
       <TopBar
         title="Inbox"
         subtitle={`Customer replies & call transcripts${unread > 0 ? ` · ${unread} unread` : ""}`}
+        description="Review actual customer replies, payment questions, disputes, and AI call transcripts."
         actions={
           <button
             onClick={load}

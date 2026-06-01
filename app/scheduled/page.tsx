@@ -74,8 +74,9 @@ export default function ScheduledPage() {
   return (
     <div>
       <TopBar
-        title="Scheduled Actions"
-        subtitle={`${pending} pending · ${awaiting} awaiting approval`}
+        title="Actions"
+        subtitle={pending > 0 || awaiting > 0 ? `${pending} upcoming · ${awaiting} need approval` : "All caught up"}
+        description="Review what CollectPilot has sent, what is scheduled next, and what needs approval."
         actions={
           <button
             onClick={load}
@@ -91,9 +92,7 @@ export default function ScheduledPage() {
         {/* Key reminder */}
         <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
           <p className="text-sm text-amber-700">
-            <strong>Fresh lookup required before sending.</strong> Clicking &ldquo;Run Lookup & Fire&rdquo; will
-            check the invoice status, contact exclusion, disputes, and manual approval settings before
-            any action is sent.
+            <strong>Safety check required.</strong> Before any action fires, CollectPilot runs a safety check — verifying the invoice is still unpaid, the contact is not excluded, and no disputes or promises are active.
           </p>
         </div>
 
@@ -130,11 +129,11 @@ export default function ScheduledPage() {
         <div className="flex flex-wrap gap-2">
           {[
             { value: "all", label: "All" },
-            { value: "pending", label: "Pending" },
-            { value: "awaiting_approval", label: "Awaiting Approval" },
+            { value: "pending", label: "Upcoming" },
+            { value: "awaiting_approval", label: "Needs Approval" },
             { value: "sent", label: "Sent" },
-            { value: "skipped", label: "Skipped" },
             { value: "blocked", label: "Blocked" },
+            { value: "skipped", label: "Skipped" },
           ].map((tab) => (
             <button
               key={tab.value}

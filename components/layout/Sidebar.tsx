@@ -26,21 +26,17 @@ import type { LucideIcon } from "lucide-react";
 // ── Nav groups ────────────────────────────────────────────────────────────────
 
 const dailyWorkItems = [
-  { href: "/dashboard",     icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/invoices",      icon: FileText,         label: "Invoices" },
-  { href: "/inbox",         icon: Inbox,            label: "Inbox" },
-  { href: "/notifications", icon: Bell,             label: "Notifications" },
+  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/invoices",  icon: FileText,         label: "Invoices" },
+  { href: "/inbox",     icon: Inbox,            label: "Inbox" },
+  { href: "/scheduled", icon: Calendar,         label: "Actions" },
 ];
 
-const automationItems = [
-  { href: "/automations",    icon: Zap,      label: "Automations" },
-  { href: "/scheduled",      icon: Calendar, label: "Scheduled Actions" },
-  { href: "/call-templates", icon: Phone,    label: "Call Templates" },
-];
-
-const adminItems = [
-  { href: "/contacts",   icon: Users,   label: "Contacts" },
-  { href: "/onboarding", icon: Rocket,  label: "Setup & Onboarding" },
+const setupItems = [
+  { href: "/automations",    icon: Zap,    label: "Automations" },
+  { href: "/call-templates", icon: Phone,  label: "Templates" },
+  { href: "/contacts",       icon: Users,  label: "Contacts" },
+  { href: "/onboarding",     icon: Rocket, label: "Onboarding" },
 ];
 
 // ── NavSection ────────────────────────────────────────────────────────────────
@@ -160,9 +156,7 @@ export function Sidebar() {
       <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-0">
         <NavSection label="Daily Work" items={dailyWorkItems} />
         <div className="mx-3 my-2 border-t border-zinc-800/80" />
-        <NavSection label="Automation Setup" items={automationItems} />
-        <div className="mx-3 my-2 border-t border-zinc-800/80" />
-        <NavSection label="Admin" items={adminItems} />
+        <NavSection label="Setup" items={setupItems} />
       </nav>
 
       {/* Bottom — Settings + user profile */}

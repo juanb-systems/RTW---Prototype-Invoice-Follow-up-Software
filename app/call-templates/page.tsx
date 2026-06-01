@@ -523,6 +523,7 @@ export default function CallTemplatesPage() {
       <TopBar
         title="Call Templates"
         subtitle={`${sorted.length} template${sorted.length !== 1 ? "s" : ""}`}
+        description="Manage AI call scripts, disclosures, outcomes, and follow-up instructions."
         actions={
           <button
             onClick={() => setModalOpen(true)}

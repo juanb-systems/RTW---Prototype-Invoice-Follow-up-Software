@@ -647,7 +647,7 @@ function CompletedView() {
 
   return (
     <div>
-      <TopBar title="Setup & Onboarding" subtitle="Your setup is complete" />
+      <TopBar title="Setup & Onboarding" subtitle="Your setup is complete" description="Connect your tools and answer setup questions to generate starter automation flows and templates." />
       <div className="p-6">
         <div className="mx-auto max-w-2xl space-y-6">
           <div className="rounded-xl border border-green-200 bg-white p-8 shadow-sm space-y-6">
@@ -738,7 +738,7 @@ function SkippedView() {
 
   return (
     <div>
-      <TopBar title="Setup & Onboarding" subtitle="Manual setup selected" />
+      <TopBar title="Setup & Onboarding" subtitle="Manual setup selected" description="Connect your tools and answer setup questions to generate starter automation flows and templates." />
       <div className="p-6">
         <div className="mx-auto max-w-2xl space-y-6">
           <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm space-y-6">
@@ -813,6 +813,7 @@ export default function OnboardingPage() {
       <TopBar
         title="Setup & Onboarding"
         subtitle="Get CollectPilot ready for your business in a few steps"
+        description="Connect your tools and answer setup questions to generate starter automation flows and templates."
       />
       <div className="p-6">
         <div className="mx-auto max-w-2xl">

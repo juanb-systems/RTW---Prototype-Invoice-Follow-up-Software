@@ -39,12 +39,12 @@ const outcomeConfig: Record<LookupOutcome, { label: string; color: string; icon:
 };
 
 const statusConfig = {
-  pending: { label: "Pending", className: "bg-gray-100 text-gray-600 border-gray-200" },
+  pending: { label: "Upcoming", className: "bg-gray-100 text-gray-600 border-gray-200" },
   sent: { label: "Sent", className: "bg-green-100 text-green-700 border-green-200" },
   skipped: { label: "Skipped", className: "bg-yellow-100 text-yellow-700 border-yellow-200" },
-  blocked: { label: "Blocked", className: "bg-red-100 text-red-700 border-red-200" },
+  blocked: { label: "Action blocked", className: "bg-red-100 text-red-700 border-red-200" },
   approved: { label: "Approved", className: "bg-green-100 text-green-700 border-green-200" },
-  awaiting_approval: { label: "Awaiting Approval", className: "bg-blue-100 text-blue-700 border-blue-200" },
+  awaiting_approval: { label: "Needs Approval", className: "bg-blue-100 text-blue-700 border-blue-200" },
 };
 
 export function ScheduledActionCard({ action, onRefresh }: { action: FullAction; onRefresh: () => void }) {

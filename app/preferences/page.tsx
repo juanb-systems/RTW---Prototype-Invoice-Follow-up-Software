@@ -109,7 +109,7 @@ export default function PreferencesPage() {
 
   return (
     <div>
-      <TopBar title="Preferences" subtitle="UI and notification settings" />
+      <TopBar title="Preferences" description="Adjust appearance, layout, and notification preferences for this device." />
       <div className="p-4 sm:p-6 space-y-4 max-w-xl">
 
         {/* Prototype banner */}

@@ -77,7 +77,7 @@ export default function SettingsPage() {
     <div>
       <TopBar
         title="Settings"
-        subtitle="Configure CollectPilot automation behaviour"
+        description="Configure safety rules, sender details, lookup checks, and blocked keywords."
         actions={
           saved ? (
             <div className="flex items-center gap-1.5 text-xs text-green-600 font-medium">
