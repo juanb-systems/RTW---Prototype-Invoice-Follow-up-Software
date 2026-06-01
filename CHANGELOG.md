@@ -2,6 +2,49 @@
 
 ---
 
+## v2.28.0 — Simplified Daily Workflow (29 May 2026)
+
+**Date:** 29 May 2026
+**package.json version:** 2.28.0
+
+### Navigation
+
+**Sidebar restructured into 2 groups:**
+- **Daily Work:** Dashboard, Invoices, Inbox, Actions
+- **Setup:** Automations, Templates, Contacts, Onboarding
+
+**Renamed nav items:**
+- "Scheduled Actions" → "Actions" (shorter, task-focused label)
+- "Call Templates" → "Templates" (broader scope, less jargon)
+
+### Dashboard
+
+**Simplified language throughout:**
+- KPI label updated to "Outstanding Balance" for plain-English clarity
+- Activity feed section labelled "System Activity" for unambiguous context
+- Needs Attention copy rewritten in plain English — no automation/lookup jargon; each card reads as a direct action prompt
+
+### Invoices
+
+**Plain-English primary status on mobile cards:**
+- Mobile invoice cards show one single plain-English status label (e.g. "Overdue 23 days", "Disputed", "Awaiting approval") instead of multiple competing badges
+- Status is derived from the most actionable signal on the invoice, not the raw data field name
+
+**Automation column renamed:**
+- "Flow" column header renamed to "Automation" on the desktop invoice table for clarity
+
+### Actions page (formerly Scheduled Actions)
+
+**Renamed from Scheduled Actions to Actions.**
+
+**Plain-English tab labels:**
+- Tab labels rewritten to plain English (e.g. "Pending", "Sent", "Skipped", "Blocked") — removed internal status code language
+
+**Safety check language:**
+- "Run Lookup & Fire" button and related copy updated to "Run Safety Check & Send" — replaces lookup jargon with language that reflects what the check actually does
+
+---
+
 ## v2.27.0 — Inbox Layout Refinement (29 May 2026)
 
 **Date:** 29 May 2026
