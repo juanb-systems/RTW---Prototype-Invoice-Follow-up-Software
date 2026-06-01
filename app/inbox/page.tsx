@@ -153,140 +153,118 @@ function InboxRow({
   const company    = message.contact?.company;
   const preview    = (message.transcript || message.body || "").replace(/\n/g, " ").trim();
 
-  // Type label — makes email vs call vs voicemail immediately clear
+  // Source icon communicates type without needing a text label
   const TypeIcon  = isVoicemail ? Voicemail : isCall ? Phone : Mail;
-  const typeLabel = isVoicemail ? "Voicemail" : isCall ? "AI Call Transcript" : "Email Reply";
-  const typeColor = isCall ? "text-green-600" : "text-blue-500";
+  const typeColor = isCall ? "text-green-500" : "text-blue-400";
 
-  // Primary classification badge — one only, highest priority first
-  function PrimaryBadge() {
-    if (message.automationPaused)
-      return <span className="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-amber-100 text-amber-700">Paused</span>;
-    if (message.callStatus === "needs_review")
-      return <span className="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-red-100 text-red-700">Needs Review</span>;
-    if (message.classification === "dispute")
-      return <span className="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-red-100 text-red-700">Dispute</span>;
-    if (message.classification === "promise_to_pay")
-      return <span className="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-green-100 text-green-700">Promise to Pay</span>;
-    if (message.classification === "payment_query")
-      return <span className="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-700">Payment Query</span>;
-    if (message.callStatus === "voicemail")
-      return <span className="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-700">Voicemail</span>;
+  // Single most-important badge — only notable states, no badge for routine
+  const badge = (() => {
+    if (message.classification === "dispute")        return { label: "Dispute",        cls: "bg-red-100 text-red-700" };
+    if (message.automationPaused)                    return { label: "Paused",          cls: "bg-amber-100 text-amber-700" };
+    if (message.callStatus === "needs_review")       return { label: "Needs Review",    cls: "bg-red-100 text-red-700" };
+    if (message.classification === "promise_to_pay") return { label: "Promise to Pay",  cls: "bg-green-100 text-green-700" };
+    if (message.callStatus === "voicemail")          return { label: "Voicemail",       cls: "bg-blue-100 text-blue-600" };
+    if (message.classification === "payment_query")  return { label: "Payment Query",   cls: "bg-blue-100 text-blue-600" };
     return null;
-  }
+  })();
 
-  // Recommended action for expanded section
-  function recommendedAction(): string | null {
-    if (message.classification === "dispute")      return "Contact customer directly — automation is paused pending your review.";
-    if (message.classification === "promise_to_pay") return "Monitor payment. Automation is on hold for 7 days.";
-    if (message.callStatus === "needs_review")     return "Review the transcript and decide on next steps manually.";
-    if (message.classification === "payment_query") return "Reply to the customer's question before continuing.";
-    if (message.classification === "out_of_office") return "Automation will resume when the out-of-office period ends.";
-    if (message.callStatus === "voicemail")         return "Wait for a callback. Follow up manually if no response within 2 days.";
+  // Contextual recommended action for expanded section
+  const recommendedAction = (() => {
+    if (message.classification === "dispute")           return "Contact customer directly — automation is paused pending your review.";
+    if (message.classification === "promise_to_pay")    return "Monitor payment. Automation is on hold for 7 days.";
+    if (message.callStatus === "needs_review")          return "Review the transcript and decide on next steps manually.";
+    if (message.classification === "payment_query")     return "Reply to the customer's question before continuing.";
+    if (message.classification === "out_of_office")     return "Automation will resume when the out-of-office period ends.";
+    if (message.callStatus === "voicemail")             return "Wait for a callback. Follow up manually if no response within 2 days.";
     return null;
-  }
-
-  // Row background — clear visual hierarchy between unread, read, and selected
-  const rowHeaderClass = isSelected
-    ? "bg-blue-50/40"
-    : !message.isRead
-    ? "bg-white hover:bg-gray-50 cursor-pointer"
-    : "bg-gray-50/30 hover:bg-gray-100/40 cursor-pointer";
+  })();
 
   return (
     <div
       id={`msg-${message.id}`}
-      className={`transition-colors${isSelected ? " border-l-2 border-l-blue-500" : ""}`}
+      className={isSelected ? "border-l-2 border-l-blue-500" : ""}
     >
-      {/* ── Clickable row header ── */}
+      {/* ── Clickable row ── */}
       <div
-        className={`flex gap-3 px-4 py-3.5 select-none ${rowHeaderClass}`}
+        className={`flex items-start gap-2.5 px-4 py-3 select-none cursor-pointer transition-colors ${
+          isSelected ? "bg-blue-50/30" : "hover:bg-gray-50"
+        }`}
         onClick={handleClick}
       >
-        {/* Unread dot — fixed-width so content aligns */}
-        <div className="w-2.5 flex-shrink-0 pt-2">
+        {/* Unread dot */}
+        <div className="w-3 flex-shrink-0 flex items-center justify-center pt-2">
           {!message.isRead && <div className="h-2 w-2 rounded-full bg-blue-500" />}
         </div>
 
-        {/* Four-line content area */}
+        {/* Source type icon */}
+        <div className="flex-shrink-0 pt-0.5">
+          <TypeIcon className={`h-4 w-4 ${typeColor}`} />
+        </div>
+
+        {/* Content — 3 lines */}
         <div className="flex-1 min-w-0">
 
-          {/* Line 1: Sender (left) · Date (right) */}
-          <div className="flex items-baseline justify-between gap-3 mb-0.5">
-            <div className="flex items-baseline gap-2 min-w-0">
-              <span className={`text-sm truncate ${
-                !message.isRead ? "font-semibold text-gray-900" : "font-normal text-gray-700"
-              }`}>
-                {senderName}
-              </span>
-              {company && (
-                <span className="hidden sm:inline text-xs text-gray-400 truncate">{company}</span>
-              )}
-            </div>
-            {/* Date — desktop right-aligned; also shown below on mobile */}
-            <span className={`hidden sm:inline text-xs flex-shrink-0 whitespace-nowrap ${
-              !message.isRead ? "font-medium text-gray-600" : "text-gray-500"
+          {/* Line 1: Sender · Company (left) | Badge [desktop] + Date (right) */}
+          <div className="flex items-baseline justify-between gap-3">
+            <p className={`text-sm truncate ${
+              !message.isRead ? "font-semibold text-gray-900" : "font-medium text-gray-600"
             }`}>
-              {formatDateTime(message.receivedAt)}
-            </span>
+              {senderName}
+              {company && (
+                <span className="ml-1.5 font-normal text-xs text-gray-400">· {company}</span>
+              )}
+            </p>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {badge && (
+                <span className={`hidden sm:inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium ${badge.cls}`}>
+                  {badge.label}
+                </span>
+              )}
+              <span className={`text-xs whitespace-nowrap ${
+                !message.isRead ? "font-medium text-gray-700" : "text-gray-400"
+              }`}>
+                {formatDateTime(message.receivedAt)}
+              </span>
+            </div>
           </div>
 
           {/* Line 2: Subject */}
-          <p className={`text-xs mb-1 ${
-            !message.isRead ? "font-semibold text-gray-800" : "font-normal text-gray-600"
+          <p className={`text-xs mt-0.5 truncate ${
+            !message.isRead ? "font-semibold text-gray-800" : "text-gray-500"
           }`}>
             {message.subject}
           </p>
 
-          {/* Line 3: Type · Invoice# · Badge */}
-          <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-            <span className={`inline-flex items-center gap-1 text-xs font-medium ${typeColor}`}>
-              <TypeIcon className="h-3 w-3 flex-shrink-0" />
-              {typeLabel}
-            </span>
-            {message.invoice && (
-              <>
-                <span className="text-gray-300 text-xs">·</span>
-                <Link
-                  href={`/invoices/${message.invoiceId}`}
-                  className="text-xs font-medium text-blue-500 hover:underline flex-shrink-0"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {message.invoice.invoiceNumber}
-                </Link>
-              </>
-            )}
-            <PrimaryBadge />
-          </div>
-
-          {/* Line 4: Preview — desktop only */}
+          {/* Line 3: Preview (desktop only) */}
           {preview && (
-            <p className="hidden sm:block text-xs text-gray-400 truncate leading-relaxed">
+            <p className="hidden sm:block text-xs text-gray-400 mt-0.5 truncate">
               {preview.slice(0, 160)}
             </p>
           )}
 
-          {/* Mobile: date shown below content */}
-          <p className="sm:hidden text-[11px] text-gray-400 mt-1">
-            {formatDateTime(message.receivedAt)}
-          </p>
+          {/* Mobile badge — shown below subject on small screens */}
+          {badge && (
+            <span className={`sm:hidden mt-1 inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium ${badge.cls}`}>
+              {badge.label}
+            </span>
+          )}
         </div>
 
         {/* Chevron */}
-        <div className="pt-1.5 flex-shrink-0 text-gray-400">
+        <div className="flex-shrink-0 pt-1 text-gray-300">
           {isSelected ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
         </div>
       </div>
 
       {/* ── Expanded detail ── */}
       {isSelected && (
-        <div className="border-t border-gray-100 bg-white px-4 sm:px-5 py-4 space-y-3">
+        <div className="border-t border-gray-100 bg-white px-4 py-4 space-y-3">
 
           {/* Recommended action */}
-          {recommendedAction() && (
+          {recommendedAction && (
             <div className="flex items-start gap-2 rounded-md border border-blue-100 bg-blue-50 px-3 py-2.5">
               <AlertTriangle className="h-3.5 w-3.5 text-blue-500 flex-shrink-0 mt-0.5" />
-              <p className="text-xs font-medium text-blue-700">{recommendedAction()}</p>
+              <p className="text-xs font-medium text-blue-700">{recommendedAction}</p>
             </div>
           )}
 

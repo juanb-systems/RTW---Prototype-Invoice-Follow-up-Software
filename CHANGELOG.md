@@ -2,6 +2,40 @@
 
 ---
 
+## v2.27.0 — Inbox Layout Refinement (29 May 2026)
+
+**Date:** 29 May 2026
+**package.json version:** 2.27.0
+
+### Changed
+
+**Row structure simplified to 3 clean lines:**
+- **Line 1:** `Sender · Company` on the left; `[Badge — desktop only]` + `Date` on the right. Badge and date are right-aligned as a unit, never buried in the content area.
+- **Line 2:** Subject line only — no metadata competing on this line.
+- **Line 3:** Preview text (desktop only, muted, truncated).
+- **Mobile:** Badge shown below subject (hidden on desktop). Date always right-aligned on Line 1 on both mobile and desktop — it doesn't move to a separate line.
+
+**Badge moved to right column:**
+Removed the separate "Line 3: Type · Invoice# · Badge" row that was cluttering every row. Badge now sits alongside the date on the right, which is where Gmail puts secondary metadata. This frees up the content area to show only sender → subject → preview.
+
+**Type label row removed:**
+The explicit "Email Reply" / "AI Call Transcript" / "Voicemail" text row has been removed. The left-side icon (Mail / Phone / Voicemail) communicates the type visually. The subject line itself already says "AI Call Transcript — Invoice INV-2026-013" or "RE: Friendly reminder — ...". The separate text label was redundant and added a line of noise.
+
+**Company inline on Line 1:**
+`message.contact?.company` is now rendered inline after the sender name as `· Company` text in `text-gray-400`. Previously it was a separate flex item that could wrap or compete with other line-1 elements.
+
+**Uniform row backgrounds:**
+All rows now use `hover:bg-gray-50` on mouse-over. Selected row: `bg-blue-50/30` + left accent. No more different background tints per read/unread state — unread is communicated entirely by text weight (bold vs normal) and the blue dot.
+
+**Unread/read contrast:**
+- Unread: sender `font-semibold text-gray-900`, subject `font-semibold text-gray-800`, date `font-medium text-gray-700`
+- Read: sender `font-medium text-gray-600`, subject `text-gray-500`, date `text-gray-400`
+
+**Mobile badge placement:**
+On mobile screens the badge is hidden from Line 1's right column (to keep date visible without crowding). The badge instead appears below the subject line as a small compact chip. This ensures the date is always prominent on mobile.
+
+---
+
 ## v2.26.0 — Gmail-style Inbox Clarity Pass (29 May 2026)
 
 **Date:** 29 May 2026
