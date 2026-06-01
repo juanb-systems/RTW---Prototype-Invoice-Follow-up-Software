@@ -2,6 +2,43 @@
 
 ---
 
+## v2.26.0 — Gmail-style Inbox Clarity Pass (29 May 2026)
+
+**Date:** 29 May 2026
+**package.json version:** 2.26.0
+
+### Changed
+
+**Row structure — 4 clear lines instead of one crowded line:**
+- **Line 1:** Sender name (left, bold if unread) + date/time (right, `text-gray-600` if unread / `text-gray-500` if read — no longer the too-faint gray-400)
+- **Line 2:** Subject (bold/semibold if unread, normal if read)
+- **Line 3:** Type label (`Email Reply` / `AI Call Transcript` / `Voicemail` with source icon) + invoice number link + single primary badge
+- **Line 4:** Preview text, truncated, muted — desktop only
+
+**Visual hierarchy — read vs unread:**
+- Unread rows: `bg-white`, semibold sender, semibold subject, date `text-gray-600`
+- Read rows: `bg-gray-50/30` (subtle tint so "seen" items visually recede), normal weight, date `text-gray-500`
+- Selected/open rows: `bg-blue-50/40` + blue left-border accent (`border-l-2 border-l-blue-500`) spanning both header and expanded section
+
+**Row separation:** Changed `divide-y divide-gray-50` to `divide-y divide-gray-100` for clearer row boundaries.
+
+**Type labels:** Replaced the generic source icon (Mail/Phone) with an explicit labelled tag on Line 3 — "Email Reply", "AI Call Transcript", or "Voicemail" — so the content type is unambiguous at a glance.
+
+**Expanded section improvements:**
+- Added **Recommended action** banner at the top (blue info box) — contextual guidance per classification (dispute, promise, needs review, OOO, voicemail, payment query).
+- Added **Invoice summary** card showing invoice#, amount, and company with a direct link — replaces the bare "View Invoice →" button.
+- Body/transcript section now has an explicit section label ("Message" or "Call Transcript") in small caps.
+- Removed the separate "View Invoice →" link button from action row (invoice is now surfaced in the summary card above).
+
+**Mobile layout:**
+- Date is hidden from the right-column on mobile (would compete with sender name on small screens).
+- Date is shown instead on a dedicated line below Line 3 content at `text-[11px] text-gray-400`.
+- Company name hidden on mobile (`hidden sm:inline`) to reduce line-1 crowding.
+
+**TopBar subtitle:** Changed from "N unread · N emails · N AI calls" to "Customer replies & call transcripts" (shows unread count only when non-zero) — reinforces that Inbox is for customer communications, not system activity.
+
+---
+
 ## v2.25.0 — Simplified Daily Workflow UX (29 May 2026)
 
 **Date:** 29 May 2026

@@ -98,55 +98,7 @@ const callStatusConfig: Record<
   needs_review: { label: "Needs Human Review", color: "bg-red-100 text-red-700 border-red-200",       icon: UserCheck },
 };
 
-// ── Primary badge helper ──────────────────────────────────────────────────────
-
-function PrimaryBadge({ message }: { message: Message }) {
-  if (message.automationPaused) {
-    return (
-      <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
-        Paused
-      </span>
-    );
-  }
-  if (message.callStatus === "needs_review") {
-    return (
-      <span className="inline-flex items-center rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700">
-        Needs Review
-      </span>
-    );
-  }
-  if (message.callStatus === "voicemail") {
-    return (
-      <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">
-        Voicemail
-      </span>
-    );
-  }
-  if (message.classification === "promise_to_pay") {
-    return (
-      <span className="inline-flex items-center rounded-full border border-green-200 bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700">
-        Promise to Pay
-      </span>
-    );
-  }
-  if (message.classification === "dispute") {
-    return (
-      <span className="inline-flex items-center rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700">
-        Dispute
-      </span>
-    );
-  }
-  if (message.classification === "payment_query") {
-    return (
-      <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">
-        Payment Query
-      </span>
-    );
-  }
-  return null;
-}
-
-// ── Unified inbox row ─────────────────────────────────────────────────────────
+// ── Inbox row ─────────────────────────────────────────────────────────────────
 
 function InboxRow({
   message,
@@ -165,6 +117,7 @@ function InboxRow({
   const [replying, setReplying] = useState(false);
 
   const isCall = message.type === "call";
+  const isVoicemail = message.callStatus === "voicemail";
 
   function handleClick() {
     onSelect();
@@ -197,93 +150,187 @@ function InboxRow({
   }
 
   const senderName = message.contact?.name || message.from;
-  const company = message.contact?.company;
-  const preview = (message.transcript || message.body || "").slice(0, 120);
+  const company    = message.contact?.company;
+  const preview    = (message.transcript || message.body || "").replace(/\n/g, " ").trim();
 
-  let rowBg = "bg-white hover:bg-gray-50/50";
-  if (isSelected) {
-    rowBg = "bg-blue-50/30";
-  } else if (!message.isRead) {
-    rowBg = "bg-blue-50/20 hover:bg-blue-50/30";
+  // Type label — makes email vs call vs voicemail immediately clear
+  const TypeIcon  = isVoicemail ? Voicemail : isCall ? Phone : Mail;
+  const typeLabel = isVoicemail ? "Voicemail" : isCall ? "AI Call Transcript" : "Email Reply";
+  const typeColor = isCall ? "text-green-600" : "text-blue-500";
+
+  // Primary classification badge — one only, highest priority first
+  function PrimaryBadge() {
+    if (message.automationPaused)
+      return <span className="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-amber-100 text-amber-700">Paused</span>;
+    if (message.callStatus === "needs_review")
+      return <span className="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-red-100 text-red-700">Needs Review</span>;
+    if (message.classification === "dispute")
+      return <span className="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-red-100 text-red-700">Dispute</span>;
+    if (message.classification === "promise_to_pay")
+      return <span className="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-green-100 text-green-700">Promise to Pay</span>;
+    if (message.classification === "payment_query")
+      return <span className="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-700">Payment Query</span>;
+    if (message.callStatus === "voicemail")
+      return <span className="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-700">Voicemail</span>;
+    return null;
   }
 
+  // Recommended action for expanded section
+  function recommendedAction(): string | null {
+    if (message.classification === "dispute")      return "Contact customer directly — automation is paused pending your review.";
+    if (message.classification === "promise_to_pay") return "Monitor payment. Automation is on hold for 7 days.";
+    if (message.callStatus === "needs_review")     return "Review the transcript and decide on next steps manually.";
+    if (message.classification === "payment_query") return "Reply to the customer's question before continuing.";
+    if (message.classification === "out_of_office") return "Automation will resume when the out-of-office period ends.";
+    if (message.callStatus === "voicemail")         return "Wait for a callback. Follow up manually if no response within 2 days.";
+    return null;
+  }
+
+  // Row background — clear visual hierarchy between unread, read, and selected
+  const rowHeaderClass = isSelected
+    ? "bg-blue-50/40"
+    : !message.isRead
+    ? "bg-white hover:bg-gray-50 cursor-pointer"
+    : "bg-gray-50/30 hover:bg-gray-100/40 cursor-pointer";
+
   return (
-    <div id={`msg-${message.id}`}>
-      {/* Row header */}
+    <div
+      id={`msg-${message.id}`}
+      className={`transition-colors${isSelected ? " border-l-2 border-l-blue-500" : ""}`}
+    >
+      {/* ── Clickable row header ── */}
       <div
-        className={`flex items-center gap-3 px-4 py-3 cursor-pointer select-none transition-colors ${rowBg}`}
+        className={`flex gap-3 px-4 py-3.5 select-none ${rowHeaderClass}`}
         onClick={handleClick}
       >
-        {/* Unread dot */}
-        <div className="w-4 flex-shrink-0 flex items-center justify-center">
-          {!message.isRead ? (
-            <div className="h-2 w-2 rounded-full bg-blue-500" />
-          ) : null}
+        {/* Unread dot — fixed-width so content aligns */}
+        <div className="w-2.5 flex-shrink-0 pt-2">
+          {!message.isRead && <div className="h-2 w-2 rounded-full bg-blue-500" />}
         </div>
 
-        {/* Source icon */}
-        <div className="flex-shrink-0">
-          {isCall ? (
-            <Phone className="h-4 w-4 text-green-500" />
-          ) : (
-            <Mail className="h-4 w-4 text-blue-400" />
-          )}
-        </div>
-
-        {/* Content area */}
+        {/* Four-line content area */}
         <div className="flex-1 min-w-0">
-          {/* Line 1: sender, company, invoice, badge */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className={`text-sm ${!message.isRead ? "font-semibold text-gray-900" : "font-medium text-gray-700"}`}>
-              {senderName}
+
+          {/* Line 1: Sender (left) · Date (right) */}
+          <div className="flex items-baseline justify-between gap-3 mb-0.5">
+            <div className="flex items-baseline gap-2 min-w-0">
+              <span className={`text-sm truncate ${
+                !message.isRead ? "font-semibold text-gray-900" : "font-normal text-gray-700"
+              }`}>
+                {senderName}
+              </span>
+              {company && (
+                <span className="hidden sm:inline text-xs text-gray-400 truncate">{company}</span>
+              )}
+            </div>
+            {/* Date — desktop right-aligned; also shown below on mobile */}
+            <span className={`hidden sm:inline text-xs flex-shrink-0 whitespace-nowrap ${
+              !message.isRead ? "font-medium text-gray-600" : "text-gray-500"
+            }`}>
+              {formatDateTime(message.receivedAt)}
             </span>
-            {company && (
-              <span className="text-xs text-gray-400 truncate">{company}</span>
-            )}
-            {message.invoice && (
-              <Link
-                href={`/invoices/${message.invoiceId}`}
-                className="text-xs font-medium text-blue-500 hover:underline flex-shrink-0"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {message.invoice.invoiceNumber}
-              </Link>
-            )}
-            <PrimaryBadge message={message} />
           </div>
 
-          {/* Line 2: subject */}
-          <p className={`text-xs truncate mt-0.5 ${!message.isRead ? "font-medium text-gray-800" : "text-gray-600"}`}>
+          {/* Line 2: Subject */}
+          <p className={`text-xs mb-1 ${
+            !message.isRead ? "font-semibold text-gray-800" : "font-normal text-gray-600"
+          }`}>
             {message.subject}
           </p>
 
-          {/* Line 3: body/transcript preview — hidden on mobile */}
+          {/* Line 3: Type · Invoice# · Badge */}
+          <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+            <span className={`inline-flex items-center gap-1 text-xs font-medium ${typeColor}`}>
+              <TypeIcon className="h-3 w-3 flex-shrink-0" />
+              {typeLabel}
+            </span>
+            {message.invoice && (
+              <>
+                <span className="text-gray-300 text-xs">·</span>
+                <Link
+                  href={`/invoices/${message.invoiceId}`}
+                  className="text-xs font-medium text-blue-500 hover:underline flex-shrink-0"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {message.invoice.invoiceNumber}
+                </Link>
+              </>
+            )}
+            <PrimaryBadge />
+          </div>
+
+          {/* Line 4: Preview — desktop only */}
           {preview && (
-            <p className="hidden sm:block text-xs text-gray-400 truncate mt-0.5">
-              {preview}
+            <p className="hidden sm:block text-xs text-gray-400 truncate leading-relaxed">
+              {preview.slice(0, 160)}
             </p>
           )}
+
+          {/* Mobile: date shown below content */}
+          <p className="sm:hidden text-[11px] text-gray-400 mt-1">
+            {formatDateTime(message.receivedAt)}
+          </p>
         </div>
 
-        {/* Right column: date + chevron */}
-        <div className="flex flex-col items-end gap-1 flex-shrink-0">
-          <span className="text-xs text-gray-400 whitespace-nowrap">
-            {formatDateTime(message.receivedAt)}
-          </span>
-          <span className="text-gray-300">
-            {isSelected ? (
-              <ChevronUp className="h-4 w-4" />
-            ) : (
-              <ChevronDown className="h-4 w-4" />
-            )}
-          </span>
+        {/* Chevron */}
+        <div className="pt-1.5 flex-shrink-0 text-gray-400">
+          {isSelected ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
         </div>
       </div>
 
-      {/* Expanded content */}
+      {/* ── Expanded detail ── */}
       {isSelected && (
-        <div className="border-t border-gray-100 px-4 py-3 space-y-3 bg-white">
-          {/* Call-specific alerts */}
+        <div className="border-t border-gray-100 bg-white px-4 sm:px-5 py-4 space-y-3">
+
+          {/* Recommended action */}
+          {recommendedAction() && (
+            <div className="flex items-start gap-2 rounded-md border border-blue-100 bg-blue-50 px-3 py-2.5">
+              <AlertTriangle className="h-3.5 w-3.5 text-blue-500 flex-shrink-0 mt-0.5" />
+              <p className="text-xs font-medium text-blue-700">{recommendedAction()}</p>
+            </div>
+          )}
+
+          {/* Invoice summary */}
+          {message.invoice && (
+            <div className="flex items-center justify-between rounded-md border border-gray-100 bg-gray-50 px-3 py-2.5">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="font-mono text-xs font-semibold text-gray-700">{message.invoice.invoiceNumber}</span>
+                <span className="text-xs text-gray-400">{formatCurrency(message.invoice.amount)}</span>
+                {message.contact?.company && (
+                  <span className="hidden sm:inline text-xs text-gray-400">· {message.contact.company}</span>
+                )}
+              </div>
+              <Link
+                href={`/invoices/${message.invoiceId}`}
+                className="text-xs font-medium text-blue-500 hover:underline whitespace-nowrap ml-3 flex-shrink-0"
+                onClick={(e) => e.stopPropagation()}
+              >
+                View invoice →
+              </Link>
+            </div>
+          )}
+
+          {/* Dispute / promise alerts */}
+          {message.classification === "dispute" && (
+            <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 flex items-start gap-2">
+              <AlertTriangle className="h-4 w-4 text-red-500 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-red-700 font-medium">
+                {isCall
+                  ? "Dispute detected on this call. Follow-up paused — this invoice needs human review."
+                  : "Dispute detected, follow-up paused. This invoice needs human review."}
+              </p>
+            </div>
+          )}
+          {message.classification === "promise_to_pay" && (
+            <div className="rounded-md border border-green-200 bg-green-50 px-3 py-2 flex items-start gap-2">
+              <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-green-700 font-medium">
+                {isCall
+                  ? "AI call recorded a promise to pay. Automation is on hold pending payment."
+                  : "AI classified this reply as a promise to pay. Automation will be held."}
+              </p>
+            </div>
+          )}
           {isCall && message.callStatus === "needs_review" && (
             <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 flex items-start gap-2">
               <UserCheck className="h-4 w-4 text-red-500 flex-shrink-0 mt-0.5" />
@@ -292,45 +339,11 @@ function InboxRow({
               </p>
             </div>
           )}
-          {isCall && message.classification === "dispute" && (
-            <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 flex items-start gap-2">
-              <AlertTriangle className="h-4 w-4 text-red-500 flex-shrink-0 mt-0.5" />
-              <p className="text-xs text-red-700 font-medium">
-                Dispute detected on this call. Follow-up paused — this invoice needs human review.
-              </p>
-            </div>
-          )}
-          {isCall && message.classification === "promise_to_pay" && (
-            <div className="rounded-md border border-green-200 bg-green-50 px-3 py-2 flex items-start gap-2">
-              <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0 mt-0.5" />
-              <p className="text-xs text-green-700 font-medium">
-                AI call recorded a promise to pay. Automation is on hold pending payment.
-              </p>
-            </div>
-          )}
-
-          {/* Email-specific alerts */}
-          {!isCall && message.classification === "dispute" && (
-            <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 flex items-start gap-2">
-              <AlertTriangle className="h-4 w-4 text-red-500 flex-shrink-0 mt-0.5" />
-              <p className="text-xs text-red-700 font-medium">
-                Dispute detected, follow-up paused. This invoice needs human review.
-              </p>
-            </div>
-          )}
-          {!isCall && message.classification === "promise_to_pay" && (
-            <div className="rounded-md border border-green-200 bg-green-50 px-3 py-2 flex items-start gap-2">
-              <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0 mt-0.5" />
-              <p className="text-xs text-green-700 font-medium">
-                AI classified this reply as a promise to pay. Automation will be held.
-              </p>
-            </div>
-          )}
 
           {/* Body / transcript */}
           {isCall ? (
             <div>
-              <p className="text-[11px] font-medium text-gray-500 mb-1.5 uppercase tracking-wide">Call Transcript</p>
+              <p className="text-[11px] font-semibold text-gray-400 mb-2 uppercase tracking-wider">Call Transcript</p>
               <div className="rounded-md bg-gray-50 border border-gray-100 p-3 max-h-72 overflow-y-auto">
                 <pre className="whitespace-pre-wrap text-xs text-gray-600 font-sans leading-relaxed">
                   {message.transcript || message.body}
@@ -338,14 +351,17 @@ function InboxRow({
               </div>
             </div>
           ) : (
-            <div className="rounded-md bg-gray-50 p-3">
-              <pre className="whitespace-pre-wrap text-xs text-gray-600 font-sans leading-relaxed">
-                {message.body}
-              </pre>
+            <div>
+              <p className="text-[11px] font-semibold text-gray-400 mb-2 uppercase tracking-wider">Message</p>
+              <div className="rounded-md bg-gray-50 border border-gray-100 p-3">
+                <pre className="whitespace-pre-wrap text-xs text-gray-600 font-sans leading-relaxed">
+                  {message.body}
+                </pre>
+              </div>
             </div>
           )}
 
-          {/* Action buttons */}
+          {/* Actions */}
           <div className="flex gap-2 flex-wrap">
             {!message.automationPaused && (
               <button
@@ -354,7 +370,7 @@ function InboxRow({
                 className="flex items-center gap-1.5 rounded-md border border-orange-200 bg-orange-50 px-3 py-1.5 text-xs font-medium text-orange-700 hover:bg-orange-100 disabled:opacity-50"
               >
                 <PauseCircle className="h-3.5 w-3.5" />
-                {pausing ? "Pausing..." : "Pause Automation"}
+                {pausing ? "Pausing…" : "Pause Automation"}
               </button>
             )}
             {!isCall && (
@@ -366,22 +382,15 @@ function InboxRow({
                 Reply
               </button>
             )}
-            <Link
-              href={`/invoices/${message.invoiceId}`}
-              className="flex items-center gap-1.5 rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
-              onClick={(e) => e.stopPropagation()}
-            >
-              View Invoice →
-            </Link>
           </div>
 
-          {/* Reply textarea (email only) */}
+          {/* Reply textarea */}
           {!isCall && showReply && (
             <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
               <textarea
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
-                placeholder={`Reply to ${message.from}...`}
+                placeholder={`Reply to ${message.from}…`}
                 rows={4}
                 className="w-full rounded-md border border-gray-200 px-3 py-2 text-xs text-gray-700 focus:border-blue-400 focus:outline-none resize-none"
               />
@@ -392,7 +401,7 @@ function InboxRow({
                   className="flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
                 >
                   {replying ? <RefreshCw className="h-3 w-3 animate-spin" /> : <Reply className="h-3.5 w-3.5" />}
-                  {replying ? "Sending..." : "Send Reply (simulated)"}
+                  {replying ? "Sending…" : "Send Reply (simulated)"}
                 </button>
                 <button
                   onClick={() => setShowReply(false)}
@@ -512,7 +521,7 @@ function InboxPageContent() {
     <div>
       <TopBar
         title="Inbox"
-        subtitle={`${unread} unread · ${emailMessages.length} email${emailMessages.length !== 1 ? "s" : ""} · ${callMessages.length} AI call${callMessages.length !== 1 ? "s" : ""}`}
+        subtitle={`Customer replies & call transcripts${unread > 0 ? ` · ${unread} unread` : ""}`}
         actions={
           <button
             onClick={load}
@@ -578,7 +587,7 @@ function InboxPageContent() {
         {/* List */}
         {loading ? (
           <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-            <div className="divide-y divide-gray-50">
+            <div className="divide-y divide-gray-100">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="h-16 animate-pulse bg-gray-50" />
               ))}
@@ -597,7 +606,7 @@ function InboxPageContent() {
           </div>
         ) : (
           <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-            <div className="divide-y divide-gray-50">
+            <div className="divide-y divide-gray-100">
               {filtered.map((message) => (
                 <InboxRow
                   key={message.id}
