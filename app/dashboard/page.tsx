@@ -68,7 +68,9 @@ export default function DashboardPage() {
     needsAttention.awaitingApproval +
     needsAttention.pausedAutomations +
     needsAttention.unreadReplies +
-    needsAttention.promisesToPay;
+    needsAttention.promisesToPay +
+    needsAttention.overdue30to60 +
+    needsAttention.overdue60plus;
 
   return (
     <div>
@@ -78,6 +80,100 @@ export default function DashboardPage() {
         actions={<DemoScenarioButton />}
       />
       <div className="p-4 sm:p-6 space-y-6">
+
+        {/* Needs Attention */}
+        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-sm font-semibold text-gray-900">Needs Attention</h2>
+              <p className="text-xs text-gray-400 mt-0.5">Items requiring your review or action</p>
+            </div>
+            {totalAttentionItems > 0 && (
+              <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-red-100 px-2 text-xs font-bold text-red-600">
+                {totalAttentionItems}
+              </span>
+            )}
+          </div>
+          {totalAttentionItems === 0 ? (
+            <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 flex items-center gap-3">
+              <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-green-800">All clear</p>
+                <p className="text-xs text-green-600 mt-0.5">No items currently need your attention.</p>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              <AttentionCard
+                count={needsAttention.disputes}
+                label="dispute(s) raised"
+                description="Automation paused - review before sending more."
+                href="/invoices?status=disputed"
+                icon={ShieldX}
+                color="bg-red-500"
+                urgent
+              />
+              <AttentionCard
+                count={needsAttention.blocked}
+                label="action(s) blocked"
+                description="A safety check blocked an automated action."
+                href="/scheduled"
+                icon={AlertTriangle}
+                color="bg-red-400"
+                urgent
+              />
+              <AttentionCard
+                count={needsAttention.overdue60plus}
+                label="overdue 60+ days"
+                description="High-risk. Consider escalation or write-off review."
+                href="/invoices"
+                icon={AlertCircle}
+                color="bg-red-500"
+                urgent
+              />
+              <AttentionCard
+                count={needsAttention.overdue30to60}
+                label="overdue 30-60 days"
+                description="May need a personal call or escalation."
+                href="/invoices"
+                icon={Clock}
+                color="bg-orange-400"
+              />
+              <AttentionCard
+                count={needsAttention.awaitingApproval}
+                label="action(s) need approval"
+                description="Manual approval mode is on. Review queued actions."
+                href="/scheduled"
+                icon={CheckCircle2}
+                color="bg-purple-500"
+              />
+              <AttentionCard
+                count={needsAttention.pausedAutomations}
+                label="automation(s) paused"
+                description="Customer replied - automation is on hold."
+                href="/inbox"
+                icon={PauseCircle}
+                color="bg-amber-500"
+              />
+              <AttentionCard
+                count={needsAttention.unreadReplies}
+                label="unread reply or call"
+                description="New customer message or AI call outcome waiting."
+                href="/inbox"
+                icon={MessageSquare}
+                color="bg-blue-500"
+              />
+              <AttentionCard
+                count={needsAttention.promisesToPay}
+                label="promise(s) to pay"
+                description="Customer confirmed payment. Monitor and follow up."
+                href="/inbox?filter=promise_to_pay"
+                icon={ThumbsUp}
+                color="bg-green-500"
+              />
+            </div>
+          )}
+        </div>
 
         {/* KPI Row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -114,83 +210,6 @@ export default function DashboardPage() {
             iconBg="bg-blue-50"
           />
         </div>
-
-        {/* Needs Attention */}
-        {totalAttentionItems > 0 && (
-          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-sm font-semibold text-gray-900">Needs Attention</h2>
-                <p className="text-xs text-gray-400 mt-0.5">Items requiring your review or action</p>
-              </div>
-              <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-red-100 px-2 text-xs font-bold text-red-600">
-                {totalAttentionItems}
-              </span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-              <AttentionCard
-                count={needsAttention.disputes}
-                label="Dispute(s) raised"
-                description="Automation paused. Review before sending more reminders."
-                href="/invoices?status=disputed"
-                icon={ShieldX}
-                color="bg-red-500"
-                urgent
-              />
-              <AttentionCard
-                count={needsAttention.blocked}
-                label="Action(s) blocked"
-                description="Automated actions were blocked by a safety check."
-                href="/scheduled"
-                icon={AlertTriangle}
-                color="bg-red-400"
-                urgent
-              />
-              <AttentionCard
-                count={needsAttention.awaitingApproval}
-                label="Awaiting approval"
-                description="Manual approval mode is on. Actions are queued."
-                href="/scheduled"
-                icon={CheckCircle2}
-                color="bg-purple-500"
-              />
-              <AttentionCard
-                count={needsAttention.pausedAutomations}
-                label="Automation(s) paused"
-                description="Customer replied and automation was paused."
-                href="/inbox"
-                icon={PauseCircle}
-                color="bg-amber-500"
-              />
-              <AttentionCard
-                count={needsAttention.unreadReplies}
-                label="Unread reply/call"
-                description="New customer messages or AI call outcomes waiting."
-                href="/inbox"
-                icon={MessageSquare}
-                color="bg-blue-500"
-              />
-              <AttentionCard
-                count={needsAttention.promisesToPay}
-                label="Promise to pay"
-                description="Customers promised payment. Monitor and follow up."
-                href="/inbox?filter=promise_to_pay"
-                icon={ThumbsUp}
-                color="bg-green-500"
-              />
-            </div>
-          </div>
-        )}
-
-        {totalAttentionItems === 0 && (
-          <div className="rounded-xl border border-green-200 bg-green-50 px-5 py-4 flex items-center gap-3">
-            <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0" />
-            <div>
-              <p className="text-sm font-semibold text-green-800">All clear</p>
-              <p className="text-xs text-green-600 mt-0.5">No items currently need your attention.</p>
-            </div>
-          </div>
-        )}
 
         {/* Charts Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

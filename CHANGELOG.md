@@ -2,6 +2,33 @@
 
 ---
 
+## v2.25.0 — Simplified Daily Workflow UX (29 May 2026)
+
+**Date:** 29 May 2026
+**package.json version:** 2.25.0
+
+### Changed
+
+#### Inbox — Gmail-style redesign
+- Flat list layout replacing the previous card-heavy design; unified `InboxRow` component handles both email replies and AI call records in a single consistent row.
+- Single primary badge per row (classification or call status) — removed secondary indicator clutter.
+- Sender-first layout: sender name is the dominant label, subject line secondary, date right-aligned in the row header.
+- Removed info banners (dispute detected, promise-to-pay) that appeared inline within expanded messages; status context is conveyed by the classification badge and reply detail only.
+- 7 filter tabs retained: All / Emails / AI Calls / Unread / Promise to Pay / Dispute / Out of Office.
+
+#### Dashboard — Needs Attention improvements
+- **Needs Attention section moved above KPIs** — now the first element on the Dashboard so urgent items are seen before headline numbers.
+- Section is always visible (not conditionally hidden when count is zero); shows a clean "All clear" state when nothing needs attention.
+- Two new overdue buckets added: **30–60 days overdue** and **60+ days overdue** — each shows count and total value with plain-language copy ("X invoices 30–60 days overdue, $Y outstanding").
+- Existing attention cards (disputes, blocked, awaiting approval, paused, unread replies, promises to pay) retain their links and counts; copy simplified to be more direct.
+
+#### Invoices — status clarity
+- **Mobile card layout** — needs-attention flag banner added to mobile invoice cards when the invoice has a dispute, blocked action, or awaiting-approval state; renders above the status/flow row.
+- **Richer status context** — status chip in the mobile card and invoice detail now includes a short plain-language descriptor alongside the badge (e.g. "Overdue · 23 days", "Disputed · awaiting review").
+- **Desktop Flow column decluttered** — removed the secondary "Next: {type} · {date}" sub-row from the Flow column on desktop; next action date is still visible on the invoice detail Status Overview panel.
+
+---
+
 ## v2.24.0 — Functional Dark Mode (29 May 2026)
 
 **Date:** 29 May 2026

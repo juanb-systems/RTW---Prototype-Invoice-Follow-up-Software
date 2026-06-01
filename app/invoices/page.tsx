@@ -6,7 +6,7 @@ import { TopBar } from "@/components/layout/TopBar";
 import { InvoiceStatusBadge } from "@/components/invoices/InvoiceStatusBadge";
 import { formatCurrency, formatDate, agingColor } from "@/lib/utils";
 import { useSearchStore } from "@/lib/search-store";
-import { Search, X, ChevronUp, ChevronDown, ChevronsUpDown, PauseCircle, SlidersHorizontal, Zap } from "lucide-react";
+import { Search, X, ChevronUp, ChevronDown, ChevronsUpDown, PauseCircle, SlidersHorizontal, Zap, AlertTriangle } from "lucide-react";
 
 type SortCol = "invoiceNumber" | "contact" | "amount" | "dueDate" | "daysPastDue" | "status" | "flow" | "reply";
 type SortDir = "asc" | "desc";
@@ -404,6 +404,8 @@ export default function InvoicesPage() {
                           <td className="px-5 py-3.5">
                             <InvoiceStatusBadge status={invoice.status as never} />
                           </td>
+
+                          {/* ── Flow column (CHANGE 3) ── */}
                           <td className="px-5 py-3.5">
                             {invoice.assignedFlowId ? (
                               <div className="space-y-1">
@@ -412,33 +414,42 @@ export default function InvoicesPage() {
                                   {flowMap[invoice.assignedFlowId] ?? invoice.assignedFlowId}
                                 </span>
                                 {(() => {
-                                  const reply = replyMap[invoice.id];
+                                  const rowReply = replyMap[invoice.id];
                                   const actions = scheduledMap[invoice.id] ?? [];
                                   let key: keyof typeof AUTO_STATUS_CONFIG = "no_actions";
-                                  if (reply?.automationPaused) key = "paused";
+                                  if (rowReply?.automationPaused) key = "paused";
                                   else if (actions.some(a => a.status === "blocked")) key = "blocked";
                                   else if (actions.some(a => a.status === "awaiting_approval")) key = "awaiting_approval";
                                   else if (actions.some(a => a.status === "pending")) key = "active";
-                                  const cfg = AUTO_STATUS_CONFIG[key];
-                                  const pending = actions.find(a => a.status === "pending");
-                                  return (
-                                    <div>
+
+                                  // Only show badge for notable states; active shows next-step text; no_actions/no_flow show nothing extra
+                                  if (key === "paused" || key === "blocked" || key === "awaiting_approval") {
+                                    const cfg = AUTO_STATUS_CONFIG[key];
+                                    return (
                                       <span className={`inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] font-medium ${cfg.cls}`}>
                                         {cfg.label}
                                       </span>
-                                      {key === "active" && pending && (
-                                        <p className="text-[10px] text-gray-400 mt-0.5 capitalize">
+                                    );
+                                  }
+                                  if (key === "active") {
+                                    const pending = actions.find(a => a.status === "pending");
+                                    if (pending) {
+                                      return (
+                                        <p className="text-[10px] text-gray-400 capitalize">
                                           Next: {pending.stepType} · {formatDate(pending.scheduledAt)}
                                         </p>
-                                      )}
-                                    </div>
-                                  );
+                                      );
+                                    }
+                                  }
+                                  // no_actions or no_flow — no extra element
+                                  return null;
                                 })()}
                               </div>
                             ) : (
                               <span className="text-xs text-gray-300">No flow</span>
                             )}
                           </td>
+
                           <td className="px-5 py-3.5">
                             {reply ? (
                               <div className="space-y-0.5">
@@ -483,57 +494,99 @@ export default function InvoicesPage() {
                   else if (actions.some(a => a.status === "blocked")) autoKey = "blocked";
                   else if (actions.some(a => a.status === "awaiting_approval")) autoKey = "awaiting_approval";
                   else if (actions.some(a => a.status === "pending")) autoKey = "active";
-                  const autoCfg = AUTO_STATUS_CONFIG[autoKey];
+
+                  const pendingAction = actions.find(a => a.status === "pending");
+
+                  // Determine attention banner (CHANGE 1)
+                  let attentionBanner: { text: string; cls: string } | null = null;
+                  if (invoice.status === "disputed") {
+                    attentionBanner = {
+                      text: "Dispute raised - review required",
+                      cls: "bg-red-50 border border-red-200 text-red-700",
+                    };
+                  } else if (autoKey === "blocked") {
+                    attentionBanner = {
+                      text: "Action blocked - check scheduled actions",
+                      cls: "bg-red-50 border border-red-200 text-red-700",
+                    };
+                  } else if (autoKey === "awaiting_approval") {
+                    attentionBanner = {
+                      text: "Waiting for your approval",
+                      cls: "bg-purple-50 border border-purple-200 text-purple-700",
+                    };
+                  } else if (autoKey === "paused") {
+                    attentionBanner = {
+                      text: "Automation paused - customer replied",
+                      cls: "bg-amber-50 border border-amber-200 text-amber-700",
+                    };
+                  }
 
                   return (
                     <div key={invoice.id} className="px-4 py-3.5">
-                      {/* Invoice # + amount */}
-                      <div className="flex items-baseline justify-between gap-2 mb-1.5">
+                      {/* Invoice # row */}
+                      <div className="flex items-baseline justify-between gap-2 mb-2">
                         <span className="font-mono text-xs font-semibold text-gray-700 whitespace-nowrap">
                           {invoice.invoiceNumber}
                         </span>
-                        <span className="text-sm font-bold text-gray-900 shrink-0">
-                          {formatCurrency(invoice.amount)}
-                        </span>
+                        <InvoiceStatusBadge status={invoice.status as never} />
                       </div>
 
-                      {/* Contact */}
-                      <p className="text-xs font-medium text-gray-900 leading-tight">{invoice.contact?.name ?? "—"}</p>
-                      <p className="text-xs text-gray-400 mb-2">{invoice.contact?.company ?? "—"}</p>
+                      {/* CHANGE 1 — Attention banner (shown before contact name) */}
+                      {attentionBanner && (
+                        <div className={`flex items-center gap-1.5 mb-2 px-2.5 py-1.5 rounded-md text-xs font-medium ${attentionBanner.cls}`}>
+                          <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" />
+                          {attentionBanner.text}
+                        </div>
+                      )}
 
-                      {/* Status + overdue + reply badges */}
-                      <div className="flex flex-wrap items-center gap-1.5 mb-2">
-                        <InvoiceStatusBadge status={invoice.status as never} />
+                      {/* CHANGE 2 — Richer status section */}
+                      {/* Contact name + company */}
+                      <p className="text-xs font-medium text-gray-900 leading-tight">{invoice.contact?.name ?? "—"}</p>
+                      <p className="text-xs text-gray-400 mb-1.5">{invoice.contact?.company ?? "—"}</p>
+
+                      {/* Amount + days overdue as one prominent line */}
+                      <div className="flex items-baseline gap-2 mb-1.5">
+                        <span className="text-sm font-bold text-gray-900">
+                          {formatCurrency(invoice.amount)}
+                        </span>
                         {invoice.daysPastDue > 0 && (
                           <span className={`text-xs font-semibold ${agingColor(invoice.daysPastDue)}`}>
                             {invoice.daysPastDue}d overdue
                           </span>
                         )}
-                        {reply && (
-                          <span className={`inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-xs font-medium ${REPLY_COLORS[reply.classification]}`}>
-                            {REPLY_LABELS[reply.classification]}
-                            {reply.automationPaused && <PauseCircle className="h-2.5 w-2.5" />}
-                          </span>
-                        )}
                       </div>
 
-                      {/* Due date + flow */}
-                      <div className="flex items-center justify-between text-xs text-gray-400 mb-2.5">
-                        <span>Due {formatDate(invoice.dueDate)}</span>
-                        {invoice.assignedFlowId ? (
-                          <span className="flex items-center gap-1">
-                            <Zap className="h-2.5 w-2.5 text-blue-400" />
-                            <span className="text-blue-600 truncate max-w-[140px]">
-                              {flowMap[invoice.assignedFlowId] ?? "—"}
-                            </span>
-                            <span className={`ml-1 inline-flex items-center rounded border px-1 py-0.5 text-[10px] font-medium ${autoCfg.cls}`}>
-                              {autoCfg.label}
-                            </span>
+                      {/* Customer reply classification */}
+                      {reply && (
+                        <div className="mb-1.5">
+                          <span className={`inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-xs font-medium ${REPLY_COLORS[reply.classification]}`}>
+                            Customer replied: {REPLY_LABELS[reply.classification]}
+                            {reply.automationPaused && <PauseCircle className="h-2.5 w-2.5" />}
                           </span>
-                        ) : (
-                          <span className="text-gray-300">No flow</span>
-                        )}
-                      </div>
+                        </div>
+                      )}
+
+                      {/* Flow name + next pending action */}
+                      {invoice.assignedFlowId && (
+                        <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
+                          <span className="inline-flex items-center gap-1 text-xs text-blue-600">
+                            <Zap className="h-2.5 w-2.5 text-blue-400" />
+                            {flowMap[invoice.assignedFlowId] ?? "—"}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Pending next action */}
+                      {pendingAction && autoKey === "active" && (
+                        <p className="text-xs text-gray-500 mb-1.5 capitalize">
+                          Next: {pendingAction.stepType} — {formatDate(pendingAction.scheduledAt)}
+                        </p>
+                      )}
+
+                      {/* Due date as secondary footer text */}
+                      <p className="text-xs text-gray-400 mb-2.5">
+                        Due {formatDate(invoice.dueDate)}
+                      </p>
 
                       <Link
                         href={`/invoices/${invoice.id}`}

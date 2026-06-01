@@ -156,6 +156,8 @@ export function getDashboardData() {
     pausedAutomations: db.inboxMessages.filter((m) => m.automationPaused).length,
     awaitingApproval: db.scheduledActions.filter((a) => a.status === "awaiting_approval").length,
     blocked: db.scheduledActions.filter((a) => a.status === "blocked").length,
+    overdue30to60: overdueInvoices.filter((i) => i.daysPastDue >= 30 && i.daysPastDue < 60).length,
+    overdue60plus: overdueInvoices.filter((i) => i.daysPastDue >= 60).length,
   };
 
   return {
