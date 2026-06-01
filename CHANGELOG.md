@@ -2,6 +2,39 @@
 
 ---
 
+## v2.30.0 — Add Contact Flow (29 May 2026)
+
+**Date:** 29 May 2026
+**package.json version:** 2.30.0
+
+### Added
+
+**"Add Contact" button:**
+- Blue `Add Contact` button added to the Contacts page TopBar (icon-only label "Add" on mobile).
+- Clicking it opens an `AddContactModal` overlay.
+
+**Add Contact modal:**
+- **Desktop:** centered card overlay (`sm:max-w-lg`), Escape key closes, backdrop click closes.
+- **Mobile:** bottom-sheet style (`rounded-t-2xl`, `items-end`), scrollable form area (`max-h-[90vh]`).
+- **Fields:** Contact name (required), Company (required), Email (optional, validated), Phone (optional), Status (Active / Excluded / On Hold), Notes (optional textarea).
+- **Validation:** Name and Company required; email format checked if non-empty. Errors appear inline below the relevant field. Fields with errors show a red border.
+- **Auto-focus:** Name field is focused when the modal opens.
+
+**Contact persistence:**
+- Submitting the form POSTs to `POST /api/contacts`, which adds the contact to the in-memory `db.contacts` store.
+- The new contact appears at the top of the contacts list immediately (optimistic prepend to local state).
+- Persists across page refreshes within the same server session (in-memory store survives refreshes; resets only on server restart or Vercel cold start).
+- New contacts are searchable and sortable immediately.
+- Status badge, exclusion styling, and all existing table behaviors apply to new contacts.
+
+**`POST /api/contacts` route (`app/api/contacts/route.ts`):**
+- New handler generates a unique ID (`contact-${Date.now()}-random`).
+- Validates and sanitizes all fields server-side.
+- Defaults `status` to `"active"` if unrecognised value provided.
+- Returns the new contact object with HTTP 201.
+
+---
+
 ## v2.29.0 — Inbox Detail Panel (29 May 2026)
 
 **Date:** 29 May 2026

@@ -6,7 +6,7 @@ import { TopBar } from "@/components/layout/TopBar";
 import { ContactStatusBadge } from "@/components/contacts/ContactStatusBadge";
 import { formatCurrency } from "@/lib/utils";
 import { useSearchStore } from "@/lib/search-store";
-import { Mail, Phone, Building2, Search, X, ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
+import { Mail, Phone, Building2, Search, X, ChevronUp, ChevronDown, ChevronsUpDown, UserPlus } from "lucide-react";
 import type { ContactStatus } from "@/lib/types";
 
 type SortCol = "name" | "email" | "phone" | "invoices" | "totalOwed" | "overdueCount" | "status";
@@ -35,11 +35,222 @@ function normaliseAmount(raw: string): string {
   return raw.replace(/[$,]/g, "");
 }
 
+// ── Add Contact modal ─────────────────────────────────────────────────────────
+
+interface NewContactForm {
+  name: string;
+  company: string;
+  email: string;
+  phone: string;
+  status: ContactStatus;
+  notes: string;
+}
+
+const EMPTY_FORM: NewContactForm = { name: "", company: "", email: "", phone: "", status: "active", notes: "" };
+
+function AddContactModal({
+  onClose,
+  onSaved,
+}: {
+  onClose: () => void;
+  onSaved: (contact: ContactRow) => void;
+}) {
+  const [form, setForm]     = useState<NewContactForm>(EMPTY_FORM);
+  const [errors, setErrors] = useState<Partial<Record<keyof NewContactForm, string>>>({});
+  const [saving, setSaving] = useState(false);
+  const nameRef             = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    nameRef.current?.focus();
+    function handleEsc(e: KeyboardEvent) { if (e.key === "Escape") onClose(); }
+    document.addEventListener("keydown", handleEsc);
+    return () => document.removeEventListener("keydown", handleEsc);
+  }, [onClose]);
+
+  function set(field: keyof NewContactForm, value: string) {
+    setForm(f => ({ ...f, [field]: value }));
+    if (errors[field]) setErrors(e => ({ ...e, [field]: undefined }));
+  }
+
+  function validate(): boolean {
+    const errs: typeof errors = {};
+    if (!form.name.trim())    errs.name    = "Name is required.";
+    if (!form.company.trim()) errs.company = "Company is required.";
+    if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))
+      errs.email = "Enter a valid email address.";
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  }
+
+  async function handleSave() {
+    if (!validate()) return;
+    setSaving(true);
+    const res = await fetch("/api/contacts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name:    form.name.trim(),
+        company: form.company.trim(),
+        email:   form.email.trim(),
+        phone:   form.phone.trim(),
+        status:  form.status,
+        notes:   form.notes.trim(),
+      }),
+    });
+    if (res.ok) {
+      const saved = await res.json();
+      onSaved({ ...saved, invoiceCount: 0, overdueCount: 0, totalOwed: 0 });
+      onClose();
+    }
+    setSaving(false);
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6 bg-black/50"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="bg-white w-full sm:max-w-lg rounded-t-2xl sm:rounded-xl shadow-2xl flex flex-col max-h-[90vh] sm:max-h-[85vh]">
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 flex-shrink-0">
+          <h2 className="text-sm font-semibold text-gray-900">Add Contact</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+            aria-label="Close"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Form */}
+        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+
+          {/* Name */}
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">
+              Contact name <span className="text-red-500">*</span>
+            </label>
+            <input
+              ref={nameRef}
+              type="text"
+              value={form.name}
+              onChange={(e) => set("name", e.target.value)}
+              placeholder="e.g. Sarah Nguyen"
+              className={`w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                errors.name ? "border-red-300 focus:border-red-400 focus:ring-red-300" : "border-gray-200 focus:border-blue-400"
+              }`}
+            />
+            {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name}</p>}
+          </div>
+
+          {/* Company */}
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">
+              Company <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={form.company}
+              onChange={(e) => set("company", e.target.value)}
+              placeholder="e.g. Metro Supplies Pty Ltd"
+              className={`w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                errors.company ? "border-red-300 focus:border-red-400 focus:ring-red-300" : "border-gray-200 focus:border-blue-400"
+              }`}
+            />
+            {errors.company && <p className="mt-1 text-xs text-red-600">{errors.company}</p>}
+          </div>
+
+          {/* Email + Phone — side by side on desktop */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Email</label>
+              <input
+                type="email"
+                value={form.email}
+                onChange={(e) => set("email", e.target.value)}
+                placeholder="sarah@example.com"
+                className={`w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                  errors.email ? "border-red-300 focus:border-red-400 focus:ring-red-300" : "border-gray-200 focus:border-blue-400"
+                }`}
+              />
+              {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email}</p>}
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Phone</label>
+              <input
+                type="tel"
+                value={form.phone}
+                onChange={(e) => set("phone", e.target.value)}
+                placeholder="+61 400 000 000"
+                className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          {/* Status */}
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Status</label>
+            <select
+              value={form.status}
+              onChange={(e) => set("status", e.target.value)}
+              className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-500 bg-white"
+            >
+              <option value="active">Active — included in automations</option>
+              <option value="excluded">Excluded — no emails, SMS, or calls</option>
+              <option value="on_hold">On Hold — automations paused</option>
+            </select>
+          </div>
+
+          {/* Notes */}
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Notes <span className="text-gray-400">(optional)</span></label>
+            <textarea
+              value={form.notes}
+              onChange={(e) => set("notes", e.target.value)}
+              placeholder="Any relevant notes about this contact…"
+              rows={3}
+              className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-500 resize-none"
+            />
+          </div>
+
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between gap-3 px-5 py-4 border-t border-gray-100 flex-shrink-0 bg-gray-50/50">
+          <p className="text-xs text-gray-400">
+            <span className="text-red-500">*</span> Required fields
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={onClose}
+              className="rounded-md border border-gray-200 px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            >
+              {saving ? "Saving…" : "Save Contact"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Contacts page ─────────────────────────────────────────────────────────────
+
 export default function ContactsPage() {
   const [contacts, setContacts] = useState<ContactRow[]>([]);
-  const [sortCol, setSortCol] = useState<SortCol>("name");
-  const [sortDir, setSortDir] = useState<SortDir>("asc");
-  const [loading, setLoading] = useState(true);
+  const [sortCol, setSortCol]   = useState<SortCol>("name");
+  const [sortDir, setSortDir]   = useState<SortDir>("asc");
+  const [loading, setLoading]   = useState(true);
+  const [showAdd, setShowAdd]   = useState(false);
 
   // Shared search state — also written by the TopBar search input
   const { query, setQuery, clear } = useSearchStore();
@@ -115,9 +326,25 @@ export default function ContactsPage() {
 
   return (
     <div>
+      {showAdd && (
+        <AddContactModal
+          onClose={() => setShowAdd(false)}
+          onSaved={(c) => setContacts(prev => [c, ...prev])}
+        />
+      )}
       <TopBar
         title="Contacts"
         subtitle={`${contacts.length} total · ${excluded} excluded · ${onHold} on hold`}
+        actions={
+          <button
+            onClick={() => setShowAdd(true)}
+            className="flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors"
+          >
+            <UserPlus className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Add Contact</span>
+            <span className="sm:hidden">Add</span>
+          </button>
+        }
       />
       <div className="p-4 sm:p-6">
         {excluded > 0 && (
