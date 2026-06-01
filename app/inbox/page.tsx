@@ -21,9 +21,9 @@ import {
   PhoneMissed,
   Voicemail,
   UserCheck,
-  ChevronDown,
-  ChevronUp,
   Mail,
+  ArrowLeft,
+  Inbox as InboxIcon,
 } from "lucide-react";
 import { formatDateTime, formatCurrency } from "@/lib/utils";
 import type { MessageClassification, CallStatus } from "@/lib/types";
@@ -48,81 +48,88 @@ type Message = {
   transcript?: string;
 };
 
-// ── Email classification config ───────────────────────────────────────────────
+// ── Configs (used for search label lookups) ───────────────────────────────────
 
-const classificationConfig: Record<
-  MessageClassification,
-  { label: string; color: string; icon: React.ElementType; aiLabel: string }
-> = {
-  promise_to_pay: {
-    label: "Promise to Pay",
-    color: "bg-green-100 text-green-700 border-green-200",
-    icon: CheckCircle2,
-    aiLabel: "AI classified this reply as a promise to pay",
-  },
-  dispute: {
-    label: "Dispute",
-    color: "bg-red-100 text-red-700 border-red-200",
-    icon: AlertTriangle,
-    aiLabel: "AI classified this reply as a dispute",
-  },
-  out_of_office: {
-    label: "Out of Office",
-    color: "bg-gray-100 text-gray-600 border-gray-200",
-    icon: Clock,
-    aiLabel: "AI classified this reply as out of office",
-  },
-  payment_query: {
-    label: "Payment Query",
-    color: "bg-blue-100 text-blue-700 border-blue-200",
-    icon: MessageCircle,
-    aiLabel: "AI classified this reply as a payment query",
-  },
-  unclassified: {
-    label: "Unclassified",
-    color: "bg-gray-100 text-gray-500 border-gray-200",
-    icon: BrainCircuit,
-    aiLabel: "AI could not classify this reply",
-  },
+const classificationConfig: Record<MessageClassification, { label: string }> = {
+  promise_to_pay: { label: "Promise to Pay" },
+  dispute:        { label: "Dispute" },
+  out_of_office:  { label: "Out of Office" },
+  payment_query:  { label: "Payment Query" },
+  unclassified:   { label: "Unclassified" },
 };
 
-// ── Call status config ────────────────────────────────────────────────────────
-
-const callStatusConfig: Record<
-  CallStatus,
-  { label: string; color: string; icon: React.ElementType }
-> = {
-  completed:    { label: "Completed",          color: "bg-green-100 text-green-700 border-green-200",  icon: PhoneCall },
-  no_answer:    { label: "No Answer",          color: "bg-gray-100 text-gray-600 border-gray-200",    icon: PhoneMissed },
-  voicemail:    { label: "Voicemail Left",     color: "bg-blue-100 text-blue-700 border-blue-200",    icon: Voicemail },
-  needs_review: { label: "Needs Human Review", color: "bg-red-100 text-red-700 border-red-200",       icon: UserCheck },
+const callStatusConfig: Record<CallStatus, { label: string }> = {
+  completed:    { label: "Completed" },
+  no_answer:    { label: "No Answer" },
+  voicemail:    { label: "Voicemail Left" },
+  needs_review: { label: "Needs Human Review" },
 };
 
-// ── Inbox row ─────────────────────────────────────────────────────────────────
+// ── TranscriptView ─────────────────────────────────────────────────────────────
 
-function InboxRow({
+function TranscriptView({ text }: { text: string }) {
+  const lines = (text || "").split("\n").map(l => l.trim()).filter(Boolean);
+  const hasSpeakers = lines.some(l => /^(AI( caller)?|Customer):/i.test(l));
+
+  if (!hasSpeakers) {
+    return (
+      <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-4 max-h-72 overflow-y-auto">
+        <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{text}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-4 space-y-3 max-h-72 overflow-y-auto">
+      {lines.map((line, i) => {
+        const aiMatch = line.match(/^(AI( caller)?): /i);
+        const custMatch = line.match(/^Customer: /i);
+
+        if (aiMatch) {
+          return (
+            <div key={i} className="flex gap-3 items-start">
+              <span className="w-20 flex-shrink-0 text-xs font-semibold text-green-600 pt-0.5">AI</span>
+              <p className="flex-1 text-sm text-gray-700 leading-relaxed">{line.slice(aiMatch[0].length)}</p>
+            </div>
+          );
+        }
+        if (custMatch) {
+          return (
+            <div key={i} className="flex gap-3 items-start">
+              <span className="w-20 flex-shrink-0 text-xs font-semibold text-blue-600 pt-0.5">Customer</span>
+              <p className="flex-1 text-sm text-gray-700 leading-relaxed">{line.slice(custMatch[0].length)}</p>
+            </div>
+          );
+        }
+        return (
+          <p key={i} className="text-xs text-gray-400 italic ml-24">{line}</p>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── MessageDetail ──────────────────────────────────────────────────────────────
+
+function MessageDetail({
   message,
-  isSelected,
-  onSelect,
+  onClose,
   onPatch,
 }: {
   message: Message;
-  isSelected: boolean;
-  onSelect: () => void;
+  onClose: () => void;
   onPatch: (changes: Partial<Message>) => void;
 }) {
-  const [replyText, setReplyText] = useState("");
   const [showReply, setShowReply] = useState(false);
+  const [replyText, setReplyText] = useState("");
   const [pausing, setPausing] = useState(false);
   const [replying, setReplying] = useState(false);
 
-  const isCall = message.type === "call";
+  const isCall      = message.type === "call";
   const isVoicemail = message.callStatus === "voicemail";
-
-  function handleClick() {
-    onSelect();
-    if (!message.isRead) onPatch({ isRead: true });
-  }
+  const TypeIcon    = isVoicemail ? Voicemail : isCall ? Phone : Mail;
+  const typeLabel   = isVoicemail ? "Voicemail" : isCall ? "AI Call Transcript" : "Email Reply";
+  const typeColor   = isCall ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700";
 
   async function pauseAutomation() {
     setPausing(true);
@@ -149,15 +156,227 @@ function InboxRow({
     setReplying(false);
   }
 
-  const senderName = message.contact?.name || message.from;
-  const company    = message.contact?.company;
-  const preview    = (message.transcript || message.body || "").replace(/\n/g, " ").trim();
+  // Combined status — one box, not multiple stacked
+  const statusItems: { text: string; variant: "error" | "success" | "warning" }[] = [];
+  if (message.classification === "dispute")
+    statusItems.push({ text: "Dispute detected — automation paused. This invoice needs human review.", variant: "error" });
+  if (isCall && message.callStatus === "needs_review")
+    statusItems.push({ text: "This AI call needs human review — the outcome is unclear.", variant: "error" });
+  if (message.classification === "promise_to_pay")
+    statusItems.push({ text: "Customer promised to pay — automation on hold for 7 days.", variant: "success" });
+  if (message.automationPaused && message.classification !== "dispute" && message.classification !== "promise_to_pay")
+    statusItems.push({ text: "Automation paused due to customer reply.", variant: "warning" });
 
-  // Source icon communicates type without needing a text label
-  const TypeIcon  = isVoicemail ? Voicemail : isCall ? Phone : Mail;
-  const typeColor = isCall ? "text-green-500" : "text-blue-400";
+  const isUrgent = statusItems.some(s => s.variant === "error");
 
-  // Single most-important badge — only notable states, no badge for routine
+  // Recommended action — one clear sentence
+  const recommendedAction = (() => {
+    if (message.classification === "dispute")           return "Contact the customer directly before resuming any automated follow-up.";
+    if (message.classification === "promise_to_pay")    return "Monitor payment. If unpaid after the promised date, resume the follow-up automation.";
+    if (message.callStatus === "needs_review")          return "Review this transcript and decide whether to follow up, escalate, or pause automation.";
+    if (message.classification === "payment_query")     return "Reply to the customer's question before any further automated messages go out.";
+    if (message.classification === "out_of_office")     return "No action needed. Automation will hold until the out-of-office period ends.";
+    if (message.callStatus === "voicemail")             return "Voicemail was left. Follow up manually if there is no callback within 2 business days.";
+    return null;
+  })();
+
+  return (
+    <div className="flex flex-col h-full bg-white">
+
+      {/* ── Header ── */}
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-200 flex-shrink-0 bg-white">
+        <button
+          onClick={onClose}
+          className="flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-800 transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span className="hidden sm:inline">Inbox</span>
+          <span className="sm:hidden">Back</span>
+        </button>
+        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${typeColor}`}>
+          <TypeIcon className="h-3 w-3" />
+          {typeLabel}
+        </span>
+        {!message.isRead && (
+          <span className="ml-auto text-xs font-medium text-blue-500">Unread</span>
+        )}
+      </div>
+
+      {/* ── Scrollable content ── */}
+      <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-5 space-y-5">
+
+        {/* Sender / subject / date */}
+        <div>
+          <h2 className="text-base font-semibold text-gray-900 leading-snug mb-1.5">
+            {message.subject}
+          </h2>
+          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm">
+            <span className="font-medium text-gray-800">{message.contact?.name || message.from}</span>
+            {message.contact?.company && (
+              <span className="text-gray-400">· {message.contact.company}</span>
+            )}
+          </div>
+          <p className="text-xs text-gray-400 mt-1">{formatDateTime(message.receivedAt)}</p>
+        </div>
+
+        {/* Invoice summary card */}
+        {message.invoice && (
+          <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="font-mono text-sm font-semibold text-gray-800">{message.invoice.invoiceNumber}</span>
+              <span className="text-sm text-gray-500">{formatCurrency(message.invoice.amount)}</span>
+              {message.contact?.company && (
+                <span className="hidden sm:inline text-sm text-gray-400">· {message.contact.company}</span>
+              )}
+            </div>
+            <Link
+              href={`/invoices/${message.invoiceId}`}
+              className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline whitespace-nowrap ml-4 flex-shrink-0"
+            >
+              View invoice →
+            </Link>
+          </div>
+        )}
+
+        {/* Combined status alert — one box, not stacked */}
+        {statusItems.length > 0 && (
+          <div className={`rounded-lg border px-4 py-3 ${
+            isUrgent ? "border-red-200 bg-red-50" : statusItems[0].variant === "success" ? "border-green-200 bg-green-50" : "border-amber-200 bg-amber-50"
+          }`}>
+            {statusItems.length === 1 ? (
+              <p className={`text-sm font-medium ${isUrgent ? "text-red-700" : statusItems[0].variant === "success" ? "text-green-700" : "text-amber-700"}`}>
+                {statusItems[0].text}
+              </p>
+            ) : (
+              <ul className="space-y-1">
+                {statusItems.map((item, i) => (
+                  <li key={i} className={`text-sm ${item.variant === "error" ? "text-red-700" : item.variant === "success" ? "text-green-700" : "text-amber-700"}`}>
+                    · {item.text}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+
+        {/* Recommended action */}
+        {recommendedAction && (
+          <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
+            <div className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-blue-100">
+              <span className="text-xs font-bold text-blue-600">→</span>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-0.5">Recommended action</p>
+              <p className="text-sm text-blue-800">{recommendedAction}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Body / transcript */}
+        {isCall ? (
+          <div>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Call Transcript</p>
+            <TranscriptView text={message.transcript || message.body} />
+          </div>
+        ) : (
+          <div>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Message</p>
+            <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-4">
+              <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{message.body}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Reply form */}
+        {!isCall && showReply && (
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Reply</p>
+            <textarea
+              value={replyText}
+              onChange={(e) => setReplyText(e.target.value)}
+              placeholder={`Reply to ${message.from}…`}
+              rows={4}
+              className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:border-blue-400 focus:outline-none resize-none"
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={sendReply}
+                disabled={replying || !replyText.trim()}
+                className="flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              >
+                {replying ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Reply className="h-3.5 w-3.5" />}
+                {replying ? "Sending…" : "Send Reply (simulated)"}
+              </button>
+              <button
+                onClick={() => setShowReply(false)}
+                className="rounded-md border border-gray-200 px-4 py-2 text-sm text-gray-500 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Action footer ── */}
+      <div className="flex-shrink-0 border-t border-gray-200 bg-white px-4 py-3 flex gap-2 flex-wrap items-center">
+        {!message.automationPaused && (
+          <button
+            onClick={pauseAutomation}
+            disabled={pausing}
+            className="flex items-center gap-1.5 rounded-md border border-orange-200 bg-orange-50 px-3 py-1.5 text-xs font-medium text-orange-700 hover:bg-orange-100 disabled:opacity-50"
+          >
+            <PauseCircle className="h-3.5 w-3.5" />
+            {pausing ? "Pausing…" : "Pause Automation"}
+          </button>
+        )}
+        {message.automationPaused && (
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-orange-200 bg-orange-50 px-3 py-1.5 text-xs font-medium text-orange-600">
+            <PauseCircle className="h-3.5 w-3.5" />
+            Automation paused
+          </span>
+        )}
+        {!isCall && !showReply && (
+          <button
+            onClick={() => setShowReply(true)}
+            className="flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100"
+          >
+            <Reply className="h-3.5 w-3.5" />
+            Reply
+          </button>
+        )}
+        <button
+          onClick={onClose}
+          className="ml-auto flex items-center gap-1.5 rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-500 hover:bg-gray-50"
+        >
+          <ArrowLeft className="h-3 w-3" />
+          <span className="hidden sm:inline">Back to inbox</span>
+          <span className="sm:hidden">Back</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── InboxRow — simplified, no inline expansion ────────────────────────────────
+
+function InboxRow({
+  message,
+  isSelected,
+  onClick,
+}: {
+  message: Message;
+  isSelected: boolean;
+  onClick: () => void;
+}) {
+  const isCall      = message.type === "call";
+  const isVoicemail = message.callStatus === "voicemail";
+  const TypeIcon    = isVoicemail ? Voicemail : isCall ? Phone : Mail;
+  const typeColor   = isCall ? "text-green-500" : "text-blue-400";
+  const senderName  = message.contact?.name || message.from;
+  const company     = message.contact?.company;
+  const preview     = (message.transcript || message.body || "").replace(/\n/g, " ").trim();
+
   const badge = (() => {
     if (message.classification === "dispute")        return { label: "Dispute",        cls: "bg-red-100 text-red-700" };
     if (message.automationPaused)                    return { label: "Paused",          cls: "bg-amber-100 text-amber-700" };
@@ -168,230 +387,65 @@ function InboxRow({
     return null;
   })();
 
-  // Contextual recommended action for expanded section
-  const recommendedAction = (() => {
-    if (message.classification === "dispute")           return "Contact customer directly — automation is paused pending your review.";
-    if (message.classification === "promise_to_pay")    return "Monitor payment. Automation is on hold for 7 days.";
-    if (message.callStatus === "needs_review")          return "Review the transcript and decide on next steps manually.";
-    if (message.classification === "payment_query")     return "Reply to the customer's question before continuing.";
-    if (message.classification === "out_of_office")     return "Automation will resume when the out-of-office period ends.";
-    if (message.callStatus === "voicemail")             return "Wait for a callback. Follow up manually if no response within 2 days.";
-    return null;
-  })();
-
   return (
     <div
       id={`msg-${message.id}`}
-      className={isSelected ? "border-l-2 border-l-blue-500" : ""}
+      className={`flex items-start gap-2.5 px-4 py-3 cursor-pointer select-none transition-colors ${
+        isSelected
+          ? "bg-blue-50 border-l-2 border-l-blue-500"
+          : "hover:bg-gray-50"
+      }`}
+      onClick={onClick}
     >
-      {/* ── Clickable row ── */}
-      <div
-        className={`flex items-start gap-2.5 px-4 py-3 select-none cursor-pointer transition-colors ${
-          isSelected ? "bg-blue-50/30" : "hover:bg-gray-50"
-        }`}
-        onClick={handleClick}
-      >
-        {/* Unread dot */}
-        <div className="w-3 flex-shrink-0 flex items-center justify-center pt-2">
-          {!message.isRead && <div className="h-2 w-2 rounded-full bg-blue-500" />}
-        </div>
-
-        {/* Source type icon */}
-        <div className="flex-shrink-0 pt-0.5">
-          <TypeIcon className={`h-4 w-4 ${typeColor}`} />
-        </div>
-
-        {/* Content — 3 lines */}
-        <div className="flex-1 min-w-0">
-
-          {/* Line 1: Sender · Company (left) | Badge [desktop] + Date (right) */}
-          <div className="flex items-baseline justify-between gap-3">
-            <p className={`text-sm truncate ${
-              !message.isRead ? "font-semibold text-gray-900" : "font-medium text-gray-600"
-            }`}>
-              {senderName}
-              {company && (
-                <span className="ml-1.5 font-normal text-xs text-gray-400">· {company}</span>
-              )}
-            </p>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              {badge && (
-                <span className={`hidden sm:inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium ${badge.cls}`}>
-                  {badge.label}
-                </span>
-              )}
-              <span className={`text-xs whitespace-nowrap ${
-                !message.isRead ? "font-medium text-gray-700" : "text-gray-400"
-              }`}>
-                {formatDateTime(message.receivedAt)}
-              </span>
-            </div>
-          </div>
-
-          {/* Line 2: Subject */}
-          <p className={`text-xs mt-0.5 truncate ${
-            !message.isRead ? "font-semibold text-gray-800" : "text-gray-500"
-          }`}>
-            {message.subject}
-          </p>
-
-          {/* Line 3: Preview (desktop only) */}
-          {preview && (
-            <p className="hidden sm:block text-xs text-gray-400 mt-0.5 truncate">
-              {preview.slice(0, 160)}
-            </p>
-          )}
-
-          {/* Mobile badge — shown below subject on small screens */}
-          {badge && (
-            <span className={`sm:hidden mt-1 inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium ${badge.cls}`}>
-              {badge.label}
-            </span>
-          )}
-        </div>
-
-        {/* Chevron */}
-        <div className="flex-shrink-0 pt-1 text-gray-300">
-          {isSelected ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-        </div>
+      {/* Unread dot */}
+      <div className="w-3 flex-shrink-0 flex items-center justify-center pt-2">
+        {!message.isRead && <div className="h-2 w-2 rounded-full bg-blue-500" />}
       </div>
 
-      {/* ── Expanded detail ── */}
-      {isSelected && (
-        <div className="border-t border-gray-100 bg-white px-4 py-4 space-y-3">
+      {/* Source icon */}
+      <div className="flex-shrink-0 pt-0.5">
+        <TypeIcon className={`h-4 w-4 ${typeColor}`} />
+      </div>
 
-          {/* Recommended action */}
-          {recommendedAction && (
-            <div className="flex items-start gap-2 rounded-md border border-blue-100 bg-blue-50 px-3 py-2.5">
-              <AlertTriangle className="h-3.5 w-3.5 text-blue-500 flex-shrink-0 mt-0.5" />
-              <p className="text-xs font-medium text-blue-700">{recommendedAction}</p>
-            </div>
-          )}
-
-          {/* Invoice summary */}
-          {message.invoice && (
-            <div className="flex items-center justify-between rounded-md border border-gray-100 bg-gray-50 px-3 py-2.5">
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="font-mono text-xs font-semibold text-gray-700">{message.invoice.invoiceNumber}</span>
-                <span className="text-xs text-gray-400">{formatCurrency(message.invoice.amount)}</span>
-                {message.contact?.company && (
-                  <span className="hidden sm:inline text-xs text-gray-400">· {message.contact.company}</span>
-                )}
-              </div>
-              <Link
-                href={`/invoices/${message.invoiceId}`}
-                className="text-xs font-medium text-blue-500 hover:underline whitespace-nowrap ml-3 flex-shrink-0"
-                onClick={(e) => e.stopPropagation()}
-              >
-                View invoice →
-              </Link>
-            </div>
-          )}
-
-          {/* Dispute / promise alerts */}
-          {message.classification === "dispute" && (
-            <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 flex items-start gap-2">
-              <AlertTriangle className="h-4 w-4 text-red-500 flex-shrink-0 mt-0.5" />
-              <p className="text-xs text-red-700 font-medium">
-                {isCall
-                  ? "Dispute detected on this call. Follow-up paused — this invoice needs human review."
-                  : "Dispute detected, follow-up paused. This invoice needs human review."}
-              </p>
-            </div>
-          )}
-          {message.classification === "promise_to_pay" && (
-            <div className="rounded-md border border-green-200 bg-green-50 px-3 py-2 flex items-start gap-2">
-              <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0 mt-0.5" />
-              <p className="text-xs text-green-700 font-medium">
-                {isCall
-                  ? "AI call recorded a promise to pay. Automation is on hold pending payment."
-                  : "AI classified this reply as a promise to pay. Automation will be held."}
-              </p>
-            </div>
-          )}
-          {isCall && message.callStatus === "needs_review" && (
-            <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 flex items-start gap-2">
-              <UserCheck className="h-4 w-4 text-red-500 flex-shrink-0 mt-0.5" />
-              <p className="text-xs text-red-700 font-medium">
-                This call needs human review. Automation has been paused.
-              </p>
-            </div>
-          )}
-
-          {/* Body / transcript */}
-          {isCall ? (
-            <div>
-              <p className="text-[11px] font-semibold text-gray-400 mb-2 uppercase tracking-wider">Call Transcript</p>
-              <div className="rounded-md bg-gray-50 border border-gray-100 p-3 max-h-72 overflow-y-auto">
-                <pre className="whitespace-pre-wrap text-xs text-gray-600 font-sans leading-relaxed">
-                  {message.transcript || message.body}
-                </pre>
-              </div>
-            </div>
-          ) : (
-            <div>
-              <p className="text-[11px] font-semibold text-gray-400 mb-2 uppercase tracking-wider">Message</p>
-              <div className="rounded-md bg-gray-50 border border-gray-100 p-3">
-                <pre className="whitespace-pre-wrap text-xs text-gray-600 font-sans leading-relaxed">
-                  {message.body}
-                </pre>
-              </div>
-            </div>
-          )}
-
-          {/* Actions */}
-          <div className="flex gap-2 flex-wrap">
-            {!message.automationPaused && (
-              <button
-                onClick={(e) => { e.stopPropagation(); pauseAutomation(); }}
-                disabled={pausing}
-                className="flex items-center gap-1.5 rounded-md border border-orange-200 bg-orange-50 px-3 py-1.5 text-xs font-medium text-orange-700 hover:bg-orange-100 disabled:opacity-50"
-              >
-                <PauseCircle className="h-3.5 w-3.5" />
-                {pausing ? "Pausing…" : "Pause Automation"}
-              </button>
+      {/* Content */}
+      <div className="flex-1 min-w-0">
+        {/* Line 1: Sender · Company | Badge + Date */}
+        <div className="flex items-baseline justify-between gap-2">
+          <p className={`text-sm truncate ${!message.isRead ? "font-semibold text-gray-900" : "font-medium text-gray-600"}`}>
+            {senderName}
+            {company && <span className="ml-1.5 font-normal text-xs text-gray-400">· {company}</span>}
+          </p>
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            {badge && (
+              <span className={`hidden sm:inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium ${badge.cls}`}>
+                {badge.label}
+              </span>
             )}
-            {!isCall && (
-              <button
-                onClick={(e) => { e.stopPropagation(); setShowReply(!showReply); }}
-                className="flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100"
-              >
-                <Reply className="h-3.5 w-3.5" />
-                Reply
-              </button>
-            )}
+            <span className={`text-xs whitespace-nowrap ${!message.isRead ? "font-medium text-gray-700" : "text-gray-400"}`}>
+              {formatDateTime(message.receivedAt)}
+            </span>
           </div>
-
-          {/* Reply textarea */}
-          {!isCall && showReply && (
-            <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
-              <textarea
-                value={replyText}
-                onChange={(e) => setReplyText(e.target.value)}
-                placeholder={`Reply to ${message.from}…`}
-                rows={4}
-                className="w-full rounded-md border border-gray-200 px-3 py-2 text-xs text-gray-700 focus:border-blue-400 focus:outline-none resize-none"
-              />
-              <div className="flex gap-2">
-                <button
-                  onClick={sendReply}
-                  disabled={replying || !replyText.trim()}
-                  className="flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-                >
-                  {replying ? <RefreshCw className="h-3 w-3 animate-spin" /> : <Reply className="h-3.5 w-3.5" />}
-                  {replying ? "Sending…" : "Send Reply (simulated)"}
-                </button>
-                <button
-                  onClick={() => setShowReply(false)}
-                  className="rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-500 hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          )}
         </div>
-      )}
+
+        {/* Line 2: Subject */}
+        <p className={`text-xs mt-0.5 truncate ${!message.isRead ? "font-semibold text-gray-800" : "text-gray-500"}`}>
+          {message.subject}
+        </p>
+
+        {/* Line 3: Preview (desktop only) */}
+        {preview && (
+          <p className="hidden sm:block text-xs text-gray-400 mt-0.5 truncate">
+            {preview.slice(0, 120)}
+          </p>
+        )}
+
+        {/* Mobile badge */}
+        {badge && (
+          <span className={`sm:hidden mt-1 inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium ${badge.cls}`}>
+            {badge.label}
+          </span>
+        )}
+      </div>
     </div>
   );
 }
@@ -399,47 +453,46 @@ function InboxRow({
 // ── Page content ──────────────────────────────────────────────────────────────
 
 function InboxPageContent() {
-  const searchParams = useSearchParams();
-  const focusedMessageId = searchParams.get("message");
+  const searchParams    = useSearchParams();
+  const focusedId       = searchParams.get("message");
 
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<string>("all");
-  const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
-  const deepLinkInitialized = useRef(false);
+  const [messages, setMessages]               = useState<Message[]>([]);
+  const [loading, setLoading]                 = useState(true);
+  const [filter, setFilter]                   = useState<string>("all");
+  const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
+  const [mobileView, setMobileView]           = useState<"list" | "detail">("list");
+  const deepLinkDone                          = useRef(false);
 
   const { query, setQuery, clear } = useSearchStore();
   const searchRef = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const res = await fetch("/api/inbox");
+    const res  = await fetch("/api/inbox");
     const data = await res.json();
     setMessages(data);
     setLoading(false);
   }, []);
 
-  // Initial load only
   useEffect(() => { load(); }, [load]);
 
-  // Initialize selected message from deep link query param (once, after first load)
+  // Deep-link: open detail for a specific message on first load
   useEffect(() => {
-    if (!loading && focusedMessageId && !deepLinkInitialized.current) {
-      setSelectedMessageId(focusedMessageId);
-      deepLinkInitialized.current = true;
+    if (!loading && focusedId && !deepLinkDone.current) {
+      const msg = messages.find(m => m.id === focusedId);
+      if (msg) {
+        setSelectedMessage(msg);
+        setMobileView("detail");
+        if (!msg.isRead) patchMessage(msg.id, { isRead: true });
+      }
+      deepLinkDone.current = true;
     }
-  }, [loading, focusedMessageId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, focusedId, messages]);
 
-  // Scroll to selected message when it changes (handles both deep links and normal clicks)
-  useEffect(() => {
-    if (!selectedMessageId || loading) return;
-    const el = document.getElementById(`msg-${selectedMessageId}`);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  }, [selectedMessageId, loading]);
-
-  // Optimistic local update + background API sync — no re-fetch, no loading flash
   function patchMessage(id: string, changes: Partial<Message>) {
     setMessages(prev => prev.map(m => m.id === id ? { ...m, ...changes } : m));
+    setSelectedMessage(prev => prev?.id === id ? { ...prev, ...changes } : prev);
     fetch("/api/inbox", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -447,26 +500,33 @@ function InboxPageContent() {
     });
   }
 
-  function toggleSelect(id: string) {
-    setSelectedMessageId(prev => (prev === id ? null : id));
+  function handleSelectMessage(msg: Message) {
+    setSelectedMessage(msg);
+    setMobileView("detail");
+    if (!msg.isRead) patchMessage(msg.id, { isRead: true });
+  }
+
+  function handleCloseDetail() {
+    setSelectedMessage(null);
+    setMobileView("list");
   }
 
   const emailMessages = messages.filter(m => !m.type || m.type === "email");
   const callMessages  = messages.filter(m => m.type === "call");
-  const unread = messages.filter(m => !m.isRead).length;
+  const unread        = messages.filter(m => !m.isRead).length;
 
   const filtered = messages
     .filter(m => {
-      if (filter === "all") return true;
-      if (filter === "calls") return m.type === "call";
-      if (filter === "emails") return !m.type || m.type === "email";
-      if (filter === "unread") return !m.isRead;
+      if (filter === "all")          return true;
+      if (filter === "calls")        return m.type === "call";
+      if (filter === "emails")       return !m.type || m.type === "email";
+      if (filter === "unread")       return !m.isRead;
       if (filter === "needs_action") return m.automationPaused === true || m.callStatus === "needs_review";
       return m.classification === filter;
     })
     .filter(m => {
       if (!query.trim()) return true;
-      const q = query.toLowerCase().trim();
+      const q         = query.toLowerCase().trim();
       const classLabel = (classificationConfig[m.classification]?.label ?? m.classification).toLowerCase();
       const callLabel  = m.callStatus ? (callStatusConfig[m.callStatus]?.label ?? "").toLowerCase() : "";
       return (
@@ -496,14 +556,14 @@ function InboxPageContent() {
   ];
 
   return (
-    <div>
+    <div className="flex flex-col h-full">
       <TopBar
         title="Inbox"
         subtitle={`Customer replies & call transcripts${unread > 0 ? ` · ${unread} unread` : ""}`}
         actions={
           <button
             onClick={load}
-            title="Refresh"
+            title="Refresh inbox"
             className="flex items-center gap-1.5 rounded-md border border-gray-200 px-2 sm:px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
           >
             <RefreshCw className="h-3.5 w-3.5 shrink-0" />
@@ -511,16 +571,25 @@ function InboxPageContent() {
           </button>
         }
       />
-      <div className="p-4 sm:p-6 space-y-5">
-        {/* Search */}
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-          <div className="px-5 py-3 flex items-center gap-4">
-            <div className="relative flex-1 max-w-sm">
+
+      {/* ── Two-panel layout ── */}
+      <div className="flex flex-1 min-h-0 overflow-hidden">
+
+        {/* LEFT: Inbox list */}
+        <div className={`flex flex-col overflow-hidden border-r border-gray-200 bg-white ${
+          mobileView === "detail"
+            ? "hidden md:flex md:w-2/5 lg:w-[380px] md:flex-none"
+            : "flex w-full md:w-2/5 lg:w-[380px] md:flex-none"
+        }`}>
+
+          {/* Search */}
+          <div className="px-4 py-2.5 border-b border-gray-100 flex-shrink-0">
+            <div className="relative">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
               <input
                 ref={searchRef}
                 type="text"
-                placeholder="Search sender, subject, transcript, invoice…"
+                placeholder="Search sender, subject, transcript…"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 className="w-full rounded-md border border-gray-200 pl-8 pr-8 py-1.5 text-xs focus:border-blue-400 focus:outline-none"
@@ -534,67 +603,102 @@ function InboxPageContent() {
                 </button>
               )}
             </div>
-            <span className="text-xs text-gray-400 shrink-0 ml-auto">
-              {loading ? "Loading…" : `Showing ${filtered.length} of ${messages.length}`}
-            </span>
           </div>
-        </div>
 
-        {/* Filters */}
-        <div className="flex gap-2 flex-wrap">
-          {filterTabs.map((tab) => (
-            <button
-              key={tab.value}
-              onClick={() => setFilter(tab.value)}
-              className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-                filter === tab.value
-                  ? "bg-blue-600 text-white"
-                  : "border border-gray-200 text-gray-600 hover:bg-gray-50"
-              }`}
-            >
-              {tab.label}
-              {tab.value === "unread" && unread > 0 && (
-                <span className="ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-500 px-1 text-xs text-white">
-                  {unread}
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
-
-        {/* List */}
-        {loading ? (
-          <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-            <div className="divide-y divide-gray-100">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-16 animate-pulse bg-gray-50" />
-              ))}
-            </div>
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-gray-200 py-12 text-center">
-            <p className="text-sm text-gray-400">
-              {query ? `No messages match "${query}".` : "No messages in this category."}
-            </p>
-            {query && (
-              <button onClick={clear} className="mt-2 text-xs text-blue-500 hover:underline">
-                Clear search
+          {/* Filter tabs */}
+          <div className="px-4 py-2 border-b border-gray-100 flex-shrink-0 flex gap-1.5 flex-wrap">
+            {filterTabs.map(tab => (
+              <button
+                key={tab.value}
+                onClick={() => setFilter(tab.value)}
+                className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                  filter === tab.value
+                    ? "bg-blue-600 text-white"
+                    : "border border-gray-200 text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                {tab.label}
+                {tab.value === "unread" && unread > 0 && (
+                  <span className="ml-1 inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-blue-500 px-1 text-[10px] text-white">
+                    {unread}
+                  </span>
+                )}
               </button>
+            ))}
+          </div>
+
+          {/* Message list */}
+          <div className="flex-1 overflow-y-auto">
+            {loading ? (
+              <div className="divide-y divide-gray-100">
+                {[1, 2, 3, 4, 5].map(i => (
+                  <div key={i} className="px-4 py-3 flex gap-2.5 animate-pulse">
+                    <div className="w-3 h-2 rounded-full bg-gray-100 mt-2 flex-shrink-0" />
+                    <div className="w-4 h-4 rounded bg-gray-100 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1 space-y-2 pt-0.5">
+                      <div className="h-3 bg-gray-100 rounded w-3/4" />
+                      <div className="h-2.5 bg-gray-100 rounded w-1/2" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+                <InboxIcon className="h-8 w-8 text-gray-200 mb-3" />
+                <p className="text-sm text-gray-400">
+                  {query ? `No messages match "${query}".` : "No messages in this category."}
+                </p>
+                {query && (
+                  <button onClick={clear} className="mt-2 text-xs text-blue-500 hover:underline">
+                    Clear search
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-100">
+                {filtered.map(msg => (
+                  <InboxRow
+                    key={msg.id}
+                    message={msg}
+                    isSelected={selectedMessage?.id === msg.id}
+                    onClick={() => handleSelectMessage(msg)}
+                  />
+                ))}
+              </div>
             )}
           </div>
-        ) : (
-          <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-            <div className="divide-y divide-gray-100">
-              {filtered.map((message) => (
-                <InboxRow
-                  key={message.id}
-                  message={message}
-                  isSelected={message.id === selectedMessageId}
-                  onSelect={() => toggleSelect(message.id)}
-                  onPatch={(changes) => patchMessage(message.id, changes)}
-                />
-              ))}
+
+          {/* Count footer */}
+          {!loading && messages.length > 0 && (
+            <div className="flex-shrink-0 border-t border-gray-100 px-4 py-2 bg-gray-50/50 flex items-center justify-between">
+              <p className="text-[11px] text-gray-400">
+                {filtered.length === messages.length
+                  ? `${messages.length} messages`
+                  : `${filtered.length} of ${messages.length}`}
+              </p>
+              <p className="text-[11px] text-gray-400">
+                {emailMessages.length} email{emailMessages.length !== 1 ? "s" : ""} · {callMessages.length} call{callMessages.length !== 1 ? "s" : ""}
+              </p>
             </div>
+          )}
+        </div>
+
+        {/* RIGHT: Detail panel */}
+        {selectedMessage ? (
+          <div className={`overflow-hidden flex-1 ${mobileView === "list" ? "hidden md:flex md:flex-col" : "flex flex-col"}`}>
+            <MessageDetail
+              message={selectedMessage}
+              onClose={handleCloseDetail}
+              onPatch={changes => patchMessage(selectedMessage.id, changes)}
+            />
+          </div>
+        ) : (
+          <div className="hidden md:flex flex-1 flex-col items-center justify-center bg-gray-50/20 text-center px-8">
+            <InboxIcon className="h-10 w-10 text-gray-200 mb-3" />
+            <p className="text-sm font-medium text-gray-400 mb-1">No message selected</p>
+            <p className="text-xs text-gray-400">
+              Select a message from the list to view the full details.
+            </p>
           </div>
         )}
       </div>

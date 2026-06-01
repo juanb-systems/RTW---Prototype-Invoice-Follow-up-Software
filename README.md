@@ -1,4 +1,4 @@
-# CollectPilot — AI Receivables Assistant · v2.28
+# CollectPilot — AI Receivables Assistant · v2.29
 
 A Next.js 15 prototype for an AI-powered B2B receivables follow-up platform. Demonstrates automated invoice collection workflows with "Fresh Xero Check" safety gates before every customer contact.
 
@@ -115,6 +115,7 @@ No environment variables are required for the current prototype. All data is see
 
 | Version | Date | Summary |
 |---------|------|---------|
+| v2.29.0 | 29 May 2026 | Inbox detail panel — clicking a message now opens a side detail panel (desktop) or full-screen view (mobile) instead of expanding inline; inbox list stays clean and scannable; AI call transcripts shown in readable chat format (AI / Customer speaker labels); one combined status alert per message instead of stacked boxes; recommended action surfaced prominently; deep links still work |
 | v2.28.0 | 29 May 2026 | Simplify daily workflow — sidebar restructured to Daily Work (Dashboard/Invoices/Inbox/Actions) and Setup (Automations/Templates/Contacts/Onboarding), Scheduled Actions renamed to Actions, Call Templates renamed to Templates in nav, dashboard language simplified (Outstanding Balance, System Activity label, plain-English attention copy), invoice mobile cards show one plain-English primary status, safety check language replaces lookup jargon |
 | v2.27.0 | 29 May 2026 | Gmail-style Inbox clarity refinement — badge moved to right side next to date (no longer on a separate row), company name inline with sender on Line 1, type label row removed (icon + subject communicate type), all rows use uniform hover:bg-gray-50 (no read/unread background differences), badge hidden on mobile (date stays clear), mobile badge shown below subject instead |
 | v2.26.0 | 29 May 2026 | Improve Gmail-style Inbox clarity — 4-line row structure (sender+date / subject / type·invoice·badge / preview), read rows visually dimmed, unread rows bold+white, selected rows get blue left-border accent, type labels explicit (Email Reply / AI Call Transcript / Voicemail), date text-gray-500/600 not gray-400, stronger row dividers, expanded section adds invoice summary card and recommended action, mobile date shown under content |

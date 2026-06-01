@@ -2,6 +2,49 @@
 
 ---
 
+## v2.29.0 — Inbox Detail Panel (29 May 2026)
+
+**Date:** 29 May 2026
+**package.json version:** 2.29.0
+
+### Changed
+
+**Inbox layout — two-panel split (Gmail/Outlook style):**
+- Clicking a message no longer expands a large block inline inside the list.
+- Desktop: left panel (inbox list, ~380px fixed) + right panel (message detail, `flex-1`). Each panel scrolls independently. The list height never changes when a message is opened.
+- Mobile: tapping a message switches to a full-screen detail view. "Back" / "← Inbox" button returns to the list. Filter and search state is preserved when navigating back.
+- The selected row is highlighted with a blue left-border accent and blue tint (`bg-blue-50`).
+- Empty state placeholder on desktop when no message is selected.
+
+**New `MessageDetail` component:**
+- Header bar: back/close button + communication type badge (Email Reply / AI Call Transcript / Voicemail) + unread indicator.
+- Subject heading + sender name + company + formatted date.
+- Invoice summary card: invoice number, amount, company, direct "View invoice →" link.
+- **Combined status alert** — one box only (not multiple stacked banners). If dispute + needs_review occur together, both bullets appear in a single red box. Removes the previous pattern of 2–3 stacked warning banners.
+- **Recommended action** — one blue box with a single plain-English sentence. Appears after the status alert.
+- Message body or transcript in a clean, readable panel (not a cramped `<pre>` textarea).
+- Sticky action footer: Pause Automation button, Reply button (email only), Back to inbox button.
+
+**New `TranscriptView` component:**
+- Parses AI call transcript lines for speaker labels (`AI caller:` / `Customer:`).
+- Renders as a two-column chat format: left column (speaker label in colored text), right column (message text).
+- Falls back to plain text if no speaker labels are detected.
+- Fixed max-height with scroll so long transcripts don't push content off screen.
+
+**`InboxRow` simplified:**
+- Removed `ChevronDown`/`ChevronUp` toggle entirely.
+- No expanded section — row is just the summary (sender, subject, preview, badge, date).
+- `onClick` prop replaces the old `onSelect` / `onPatch` pattern; message reads are handled in `InboxPageContent`.
+
+**Deep links preserved:**
+- `?message=<id>` query param still opens the correct message in the detail panel on initial load.
+- On mobile, deep link also switches to the detail view automatically.
+
+**`patchMessage` updated:**
+- Now also updates `selectedMessage` state (not just the `messages` array), so pausing automation or marking as replied reflects immediately in the detail panel without a re-fetch.
+
+---
+
 ## v2.28.0 — Simplified Daily Workflow (29 May 2026)
 
 **Date:** 29 May 2026
