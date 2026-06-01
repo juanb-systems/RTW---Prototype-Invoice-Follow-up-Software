@@ -2,6 +2,39 @@
 
 ---
 
+## v2.36.0 — Fix Mobile Contact Detail Layout (29 May 2026)
+
+**Date:** 29 May 2026
+**package.json version:** 2.36.0
+
+### Fixed
+
+**Contact detail page (`app/contacts/[id]/page.tsx`) — responsive mobile layout:**
+
+| Issue | Fix |
+|-------|-----|
+| Hardcoded `grid grid-cols-3` — no mobile breakpoint | Changed to `grid grid-cols-1 md:grid-cols-3`; single-column stack on mobile |
+| `grid grid-cols-2` for email+phone — too narrow | Changed to `flex flex-col sm:flex-row sm:flex-wrap gap-2`; stacks vertically on mobile |
+| Total Owed value overflows on mobile | `text-xs sm:text-base` + `break-all` on the amount; no more overflow |
+| Stat card padding/font too large on mobile | `p-2.5 sm:p-3`, `text-xl sm:text-2xl` on counts, responsive font on Total Owed |
+| Automation Status squashed in narrow right column on mobile | Rendered twice: inline `md:hidden` version shows between stats and invoices on mobile; `hidden md:block` version shows in sidebar on desktop. Only one instance visible at a time — independent state acceptable for prototype. |
+| Invoice table squashed on mobile | Added `sm:hidden` mobile card list alongside `hidden sm:block` desktop table. Mobile cards show: invoice number + amount (top row), due date + days overdue, status badge + "View invoice →" link. |
+| No mobile description on TopBar | Added `description="Review contact details, automation status, and related invoices."` |
+
+**Mobile layout order (< md breakpoint):**
+1. Contact summary card (name, company, email, phone, tags, notes)
+2. Key stats: Invoices · Overdue · Total Owed
+3. Automation Status (ExclusionControls — inline, `md:hidden`)
+4. Related invoices (mobile cards)
+
+**Desktop layout (md+ breakpoint):**
+- Left 2/3: Contact summary + Stats + Invoices table
+- Right 1/3: Automation Status / ExclusionControls (sidebar)
+
+**Contact list page and Add Contact form:** Both were already mobile-friendly from earlier versions (v2.18.0 mobile cards, v2.30.0 bottom-sheet modal). No changes needed.
+
+---
+
 ## v2.35.0 — Fix Sidebar Navigation (29 May 2026)
 
 **Date:** 29 May 2026
