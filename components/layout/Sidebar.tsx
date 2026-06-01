@@ -139,7 +139,7 @@ export function Sidebar() {
   }, [profileOpen]);
 
   return (
-    <aside className="flex h-screen w-64 flex-col bg-zinc-900 border-r border-zinc-800">
+    <aside className="relative flex h-screen w-64 flex-col bg-zinc-900 border-r border-zinc-800 z-10">
 
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-4 py-5 border-b border-zinc-800">

@@ -15,8 +15,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
-      {/* Desktop sidebar — always visible md+ */}
-      <div className="hidden md:flex md:flex-shrink-0">
+      {/* Desktop sidebar — always visible md+, z-20 keeps it above page content overlays */}
+      <div className="hidden md:flex md:flex-shrink-0 z-20">
         <Sidebar />
       </div>
 

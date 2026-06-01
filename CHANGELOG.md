@@ -2,6 +2,37 @@
 
 ---
 
+## v2.35.0 — Fix Sidebar Navigation (29 May 2026)
+
+**Date:** 29 May 2026
+**package.json version:** 2.35.0
+
+### Fixed
+
+**`NavItem` converted from `<button>` + `router.push()` to Next.js `<Link>` (`components/layout/NavItem.tsx`):**
+
+The root cause of the navigation regression was that `NavItem` used `<button onClick={handleClick}>` where `handleClick` called `router.push(href)`. In Next.js 15 App Router, `router.push()` called from an event handler can fail silently in certain component states (e.g. during transitions, when the router is in a loading state, or under specific rendering conditions introduced by the recent layout changes).
+
+The fix converts `NavItem` to use the standard Next.js `<Link>` component as the navigation primitive. The nav guard logic (unsaved-changes confirmation for the flow builder and call-templates editor) is preserved via `e.preventDefault()` in the `onClick` handler. `closeMobileMenu()` is still called on every successful navigation.
+
+Changes to `handleClick`:
+- `if (isActive)` → calls `e.preventDefault()` + `closeMobileMenu()` (was `closeMobileMenu(); return`)
+- `if (isDirty && !confirm)` → calls `e.preventDefault()` (was `return`)
+- Otherwise → calls `closeMobileMenu()` and lets `<Link>` handle navigation (was `closeMobileMenu(); router.push(href)`)
+
+Benefits of `<Link>` over `button+router.push`:
+- Right-click → Open in new tab / Open in new window works
+- Keyboard navigation (Tab + Enter) works
+- Correct `href` attribute for accessibility and browser history
+- Native prefetching behaviour
+- No dependency on `router` being in a non-loading state
+
+**Sidebar z-index hardening (`components/layout/Sidebar.tsx`, `components/layout/AppShell.tsx`):**
+- `<aside>` gains `relative z-10` to establish a stacking context above page-level content
+- Desktop sidebar wrapper `<div className="hidden md:flex">` gains `z-20` so the sidebar is always rendered above any absolute/fixed overlays from page content (e.g. the Inbox two-panel layout's `overflow-hidden` containers or TopBar dropdowns)
+
+---
+
 ## v2.34.0 — Simplify Automations Page (29 May 2026)
 
 **Date:** 29 May 2026
