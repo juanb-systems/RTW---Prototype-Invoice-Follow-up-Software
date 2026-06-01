@@ -1,4 +1,4 @@
-# CollectPilot — AI Receivables Assistant · v2.32
+# CollectPilot — AI Receivables Assistant · v2.33
 
 A Next.js 15 prototype for an AI-powered B2B receivables follow-up platform. Demonstrates automated invoice collection workflows with "Fresh Xero Check" safety gates before every customer contact.
 
@@ -115,6 +115,7 @@ No environment variables are required for the current prototype. All data is see
 
 | Version | Date | Summary |
 |---------|------|---------|
+| v2.33.0 | 29 May 2026 | Refined clickable card interactions — Actions cards expand historical details on click (buttons never trigger expand); Templates card header area (icon + info) now clickable to expand/collapse; stopPropagation on Edit/Chevron/Delete buttons; Run Lookup and Skip buttons safe from accidental card clicks |
 | v2.32.0 | 29 May 2026 | Clickable list cards — Automation flow cards, Invoice table rows and mobile cards, Contact table rows and mobile cards all navigate on click; cursor-pointer + hover states added; button/link click propagation stopped to prevent double-trigger; Notifications already used Link wrappers; Inbox rows already had onClick |
 | v2.31.0 | 29 May 2026 | Add simplified page descriptions — helper text under page titles on all main sections (Dashboard, Invoices, Inbox, Notifications, Actions, Automations, Templates, Contacts, Settings, Preferences, Onboarding, Invoice Detail) using new TopBar description prop |
 | v2.30.0 | 29 May 2026 | Add Contact creation — "Add Contact" button in Contacts header opens a modal form (name, company, email, phone, status, notes); validates required fields and email format; POSTs to API and appends to list immediately; persists within server session; mobile-friendly bottom-sheet modal |

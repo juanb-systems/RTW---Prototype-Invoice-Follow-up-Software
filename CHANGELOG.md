@@ -2,6 +2,41 @@
 
 ---
 
+## v2.33.0 — Refined Clickable Card Interactions (29 May 2026)
+
+**Date:** 29 May 2026
+**package.json version:** 2.33.0
+
+### Changed
+
+**Actions (`components/scheduled/ScheduledActionCard.tsx`) — safe detail expand:**
+- Added `expanded` state. Cards that have historical details (lookup result or skip reason) now show a chevron toggle in the header.
+- Clicking the card body (or the chevron) expands/collapses the historical details section.
+- `Run Lookup & Fire`, `Approve & Run Lookup`, and `Skip` buttons have `e.stopPropagation()` so clicking them never triggers the card-level expand.
+- Invoice and Contact links inside the card also have `e.stopPropagation()` to prevent accidental expand when clicking through.
+- Live fire result (appears after clicking Run) remains always visible — it is not hidden behind the expand toggle.
+- Removed `hover:shadow-md transition-shadow` that implied false interactivity on static cards; replaced with `hover:bg-gray-50/40` only when `hasDetails` is true.
+- Updated "Lookup at" label to "Safety check at" for plain-English consistency.
+
+**Templates (`app/call-templates/page.tsx`) — clickable header to expand:**
+- The template card header info area (icon + template name + badge + category + outcome count) now has `cursor-pointer` and an `onClick` that calls `handleCollapseClick` — the same expand/collapse handler used by the chevron button.
+- Edit, Chevron, and Delete buttons all have `e.stopPropagation()` so they function independently without also triggering the header expand.
+- Unsaved-changes collapse confirmation dialog, save/discard flow, and all edit functionality remain unchanged.
+
+### Interaction model clarified across the app
+
+| Page | Click behavior |
+|------|---------------|
+| Invoices | Row/card → navigate to invoice detail |
+| Contacts | Row/card → navigate to contact detail |
+| Inbox | Row → open message detail panel |
+| Notifications | Row → navigate to related item |
+| Automations | Card → open flow builder |
+| Templates | Card header → expand/collapse template |
+| Actions | Card body → expand/collapse historical details only; buttons perform operations |
+
+---
+
 ## v2.32.0 — Clickable List Cards (29 May 2026)
 
 **Date:** 29 May 2026

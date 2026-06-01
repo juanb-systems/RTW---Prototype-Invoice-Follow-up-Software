@@ -178,12 +178,21 @@ function TemplateCard({
   return (
     <div className={`rounded-xl border bg-white shadow-sm overflow-hidden transition-shadow ${expanded ? "border-blue-300 shadow-md" : "border-gray-200"}`}>
 
-      {/* ── Header ── */}
+      {/* ── Header — clicking the info area expands/collapses ── */}
       <div className="flex items-start gap-3 p-4">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-green-600">
+        {/* Icon — also triggers expand on click */}
+        <div
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-green-600 cursor-pointer"
+          onClick={handleCollapseClick}
+        >
           <Mic className="h-4 w-4 text-white" />
         </div>
-        <div className="flex-1 min-w-0">
+
+        {/* Info area — clickable to expand/collapse */}
+        <div
+          className="flex-1 min-w-0 cursor-pointer hover:opacity-80 transition-opacity"
+          onClick={handleCollapseClick}
+        >
           <div className="flex items-center gap-2 flex-wrap mb-0.5">
             <p className="text-sm font-semibold text-gray-900 truncate">{template.name || "Untitled Template"}</p>
             <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium ${cfg.cls}`}>
@@ -196,24 +205,27 @@ function TemplateCard({
             {template.outcomeClassifications.length} outcome classifications
           </p>
         </div>
+
+        {/* Buttons — stopPropagation so they don't also trigger expand */}
         <div className="flex items-center gap-1.5 shrink-0">
           {!editing && (
             <button
-              onClick={() => { setEditing(true); setExpanded(true); setCollapseConfirm(false); }}
+              onClick={(e) => { e.stopPropagation(); setEditing(true); setExpanded(true); setCollapseConfirm(false); }}
               className="rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
             >
               Edit
             </button>
           )}
           <button
-            onClick={handleCollapseClick}
+            onClick={(e) => { e.stopPropagation(); handleCollapseClick(); }}
             className="flex h-7 w-7 items-center justify-center rounded-md border border-gray-200 text-gray-400 hover:bg-gray-50"
           >
             {expanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
           </button>
           {!SEEDED_TEMPLATE_IDS.has(template.id) && (
             <button
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 if (confirm(`Delete "${template.name}"?`)) onDelete(template.id);
               }}
               className="flex h-7 w-7 items-center justify-center rounded-md text-gray-300 hover:bg-red-50 hover:text-red-500"
