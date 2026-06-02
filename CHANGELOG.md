@@ -2,6 +2,41 @@
 
 ---
 
+## v2.40.0 — Complete Progressive Disclosure (29 May 2026)
+
+**Date:** 29 May 2026
+**package.json version:** 2.40.0
+
+### Changed
+
+**Inbox — Voicemail / no-answer removed from "All" view (`app/inbox/page.tsx`):**
+- `callStatus === "no_answer"` and `callStatus === "voicemail"` messages are now classified as `isSystemOutcome`. These are automation-run results, not customer replies.
+- The `filter === "all"` condition now filters them out: `return !isSystemOutcome(m)`.
+- The `unread` count is updated to exclude system outcomes: `messages.filter(m => !m.isRead && !isSystemOutcome(m))`.
+- System outcome calls (voicemail, no-answer) are still accessible via the "AI Calls" filter tab.
+- Inbox "All" now correctly shows: email replies, completed calls with outcomes, needs-review calls.
+
+**Invoice Detail — Line Items accordion (`app/invoices/[id]/page.tsx`):**
+- Line Items section is now wrapped in `<CollapsibleSection title="Line Items" badge={count} defaultOpen={false}>`. Collapsed by default — business owners don't need to read line items to take action.
+- Opening the accordion shows the full line item table as before.
+
+**Invoice Detail — Activity Timeline accordion (`app/invoices/[id]/page.tsx`):**
+- Activity Timeline is now wrapped in `<CollapsibleSection title="Activity Timeline" badge={count} defaultOpen={false}>`. Collapsed by default — detailed system history is secondary information.
+- The count badge on the section header shows how many events are in the timeline without requiring expansion.
+
+**New `CollapsibleSection` component (`components/invoices/CollapsibleSection.tsx`):**
+- Generic `"use client"` accordion component accepting `title`, `children`, `defaultOpen`, and optional `badge` props.
+- Full-width click target on the header row. ChevronDown rotates 180° when open.
+- Used for Line Items and Activity Timeline on the invoice detail page.
+
+**Previous changes retained from v2.39.0:**
+- AI Overview at top of every Inbox message detail
+- Email/call content in collapsible accordion (collapsed by default)
+- Improved AI Caller / Customer transcript speaker layout
+- Invoice Detail Automation section summary-by-default with Edit mode
+
+---
+
 ## v2.39.0 — Progressive Disclosure: Inbox Detail & Invoice Automation (29 May 2026)
 
 **Date:** 29 May 2026

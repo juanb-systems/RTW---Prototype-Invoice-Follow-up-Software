@@ -4,6 +4,7 @@ import { TopBar } from "@/components/layout/TopBar";
 import { InvoiceStatusBadge } from "@/components/invoices/InvoiceStatusBadge";
 import { BatchedTimeline } from "@/components/invoices/BatchedTimeline";
 import { InvoiceDetailActions } from "@/components/invoices/InvoiceDetailActions";
+import { CollapsibleSection } from "@/components/invoices/CollapsibleSection";
 import { formatCurrency, formatDate, agingColor } from "@/lib/utils";
 import {
   getInvoiceWithContact,
@@ -291,44 +292,52 @@ export default async function InvoiceDetailPage({
               )}
             </div>
 
-            {/* Line items */}
+            {/* Line items — secondary detail, collapsed by default */}
             {invoice.lineItems.length > 0 && (
-              <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">Line Items</h3>
-                <div className="overflow-x-auto">
-                <table className="w-full text-sm min-w-[360px]">
-                  <thead>
-                    <tr className="border-b border-gray-100">
-                      <th className="pb-2 text-left text-xs text-gray-400 font-medium">Description</th>
-                      <th className="pb-2 text-right text-xs text-gray-400 font-medium">Qty</th>
-                      <th className="pb-2 text-right text-xs text-gray-400 font-medium">Unit Price</th>
-                      <th className="pb-2 text-right text-xs text-gray-400 font-medium">Total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {invoice.lineItems.map((item, i) => (
-                      <tr key={i} className="border-b border-gray-50">
-                        <td className="py-2 text-gray-700">{item.description}</td>
-                        <td className="py-2 text-right text-gray-500">{item.quantity}</td>
-                        <td className="py-2 text-right text-gray-500">{formatCurrency(item.unitPrice)}</td>
-                        <td className="py-2 text-right font-medium text-gray-900">{formatCurrency(item.total)}</td>
+              <CollapsibleSection
+                title="Line Items"
+                badge={invoice.lineItems.length}
+                defaultOpen={false}
+              >
+                <div className="px-5 py-4 overflow-x-auto">
+                  <table className="w-full text-sm min-w-[360px]">
+                    <thead>
+                      <tr className="border-b border-gray-100">
+                        <th className="pb-2 text-left text-xs text-gray-400 font-medium">Description</th>
+                        <th className="pb-2 text-right text-xs text-gray-400 font-medium">Qty</th>
+                        <th className="pb-2 text-right text-xs text-gray-400 font-medium">Unit Price</th>
+                        <th className="pb-2 text-right text-xs text-gray-400 font-medium">Total</th>
                       </tr>
-                    ))}
-                    <tr>
-                      <td colSpan={3} className="pt-2 text-right text-sm font-semibold text-gray-900">Total</td>
-                      <td className="pt-2 text-right text-sm font-bold text-gray-900">{formatCurrency(invoice.amount)}</td>
-                    </tr>
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {invoice.lineItems.map((item, i) => (
+                        <tr key={i} className="border-b border-gray-50">
+                          <td className="py-2 text-gray-700">{item.description}</td>
+                          <td className="py-2 text-right text-gray-500">{item.quantity}</td>
+                          <td className="py-2 text-right text-gray-500">{formatCurrency(item.unitPrice)}</td>
+                          <td className="py-2 text-right font-medium text-gray-900">{formatCurrency(item.total)}</td>
+                        </tr>
+                      ))}
+                      <tr>
+                        <td colSpan={3} className="pt-2 text-right text-sm font-semibold text-gray-900">Total</td>
+                        <td className="pt-2 text-right text-sm font-bold text-gray-900">{formatCurrency(invoice.amount)}</td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
-              </div>
+              </CollapsibleSection>
             )}
 
-            {/* Timeline — grouped into batches when events happen within the same hour */}
-            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-              <h3 className="text-sm font-semibold text-gray-900 mb-4">Activity Timeline</h3>
-              <BatchedTimeline events={timeline} />
-            </div>
+            {/* Activity Timeline — secondary, collapsed by default */}
+            <CollapsibleSection
+              title="Activity Timeline"
+              badge={timeline.length}
+              defaultOpen={false}
+            >
+              <div className="px-5 py-4">
+                <BatchedTimeline events={timeline} />
+              </div>
+            </CollapsibleSection>
           </div>
 
           {/* Right sidebar */}

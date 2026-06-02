@@ -746,12 +746,18 @@ function InboxPageContent() {
 
   const emailMessages = messages.filter(m => !m.type || m.type === "email");
   const callMessages  = messages.filter(m => m.type === "call");
-  const unread        = messages.filter(m => !m.isRead).length;
+
+  // voicemail / no-answer are system outcomes, not customer replies —
+  // excluded from the default "all" view and unread count
+  const isSystemOutcome = (m: Message) =>
+    m.callStatus === "no_answer" || m.callStatus === "voicemail";
+
+  const unread = messages.filter(m => !m.isRead && !isSystemOutcome(m)).length;
 
   const filtered = messages
     .filter(m => {
-      if (filter === "all")          return true;
-      if (filter === "calls")        return m.type === "call";
+      if (filter === "all")          return !isSystemOutcome(m);  // hide no-answer & voicemail
+      if (filter === "calls")        return m.type === "call";    // AI Calls shows everything
       if (filter === "emails")       return !m.type || m.type === "email";
       if (filter === "unread")       return !m.isRead;
       if (filter === "needs_action") return m.automationPaused === true || m.callStatus === "needs_review";
@@ -784,7 +790,7 @@ function InboxPageContent() {
     <div className="flex flex-col h-full">
       <TopBar
         title="Inbox"
-        subtitle={`Customer replies & call transcripts${unread > 0 ? ` · ${unread} unread` : ""}`}
+        subtitle={`Customer replies & AI call transcripts${unread > 0 ? ` · ${unread} unread` : ""}`}
         description="Review actual customer replies, payment questions, disputes, and AI call transcripts."
         actions={
           <button
