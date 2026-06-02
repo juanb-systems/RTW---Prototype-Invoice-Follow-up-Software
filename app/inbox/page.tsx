@@ -324,12 +324,9 @@ function MessageDetail({
       </div>
 
       {/* ── Scrollable content ── */}
-      <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-5 space-y-5">
+      <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-5 space-y-4">
 
-        {/* AI Overview — always first */}
-        <AIOverview message={message} />
-
-        {/* Sender / subject / date */}
+        {/* 1. Subject + sender + date — first thing to read */}
         <div>
           <h2 className="text-base font-semibold text-gray-900 leading-snug mb-1.5">
             {message.subject}
@@ -343,7 +340,20 @@ function MessageDetail({
           <p className="text-xs text-gray-400 mt-1">{formatDateTime(message.receivedAt)}</p>
         </div>
 
-        {/* Invoice summary card */}
+        {/* 2. Message body / transcript — read the actual content next */}
+        <div className="rounded-lg border border-gray-100 bg-white overflow-hidden">
+          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider px-4 pt-3 pb-2">
+            {isCall ? "Call Transcript" : "Message"}
+          </p>
+          <div className="px-4 pb-4">
+            {isCall
+              ? <TranscriptView text={message.transcript || message.body} />
+              : <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{message.body}</p>
+            }
+          </div>
+        </div>
+
+        {/* 3. Invoice link — quick reference below the message */}
         {message.invoice && (
           <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
             <div className="flex items-center gap-3 min-w-0">
@@ -362,7 +372,10 @@ function MessageDetail({
           </div>
         )}
 
-        {/* Combined status alert — one box, not stacked */}
+        {/* 4. AI Overview — analysis after reading the message */}
+        <AIOverview message={message} />
+
+        {/* 5. Status alert — only if critical */}
         {statusItems.length > 0 && (
           <div className={`rounded-lg border px-4 py-3 ${
             isUrgent ? "border-red-200 bg-red-50" : statusItems[0].variant === "success" ? "border-green-200 bg-green-50" : "border-amber-200 bg-amber-50"
@@ -383,31 +396,18 @@ function MessageDetail({
           </div>
         )}
 
-        {/* Recommended action */}
+        {/* 6. Recommended action */}
         {recommendedAction && (
-          <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
+          <div className="flex items-start gap-3 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3">
             <div className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-blue-100">
               <span className="text-xs font-bold text-blue-600">→</span>
             </div>
             <div>
-              <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-0.5">Recommended action</p>
+              <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-0.5">Recommended</p>
               <p className="text-sm text-blue-800">{recommendedAction}</p>
             </div>
           </div>
         )}
-
-        {/* Message body / transcript — always visible */}
-        <div className="rounded-lg border border-gray-100 bg-white overflow-hidden">
-          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider px-4 pt-3 pb-2">
-            {isCall ? "Call Transcript" : "Message"}
-          </p>
-          <div className="px-4 pb-4">
-            {isCall
-              ? <TranscriptView text={message.transcript || message.body} />
-              : <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{message.body}</p>
-            }
-          </div>
-        </div>
 
         {/* Reply form */}
         {!isCall && showReply && (
