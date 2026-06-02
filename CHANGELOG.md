@@ -2,6 +2,29 @@
 
 ---
 
+## v2.50.0 — Fix AI Call Transcript Speaker Labels (02 Jun 2026)
+
+**Date:** 02 Jun 2026
+**package.json version:** 2.50.0
+
+### Fixed
+
+**`TranscriptView` — "Contact:" speaker label now recognised (`app/inbox/page.tsx`):**
+
+The seeded transcript data uses `Contact:` as the speaker prefix for customer responses (e.g. `Contact: Yeah, sure. Look, I know it's overdue.`), but `TranscriptView` only matched `Customer:`. Lines starting with `Contact:` fell through to the plain italic catch-all, making them visually identical to system notes — which was why the customer side of the transcript appeared faint and hard to read.
+
+**Regex fixes:**
+- `hasSpeakers` check: added `Contact` → `/^(AI( caller)?|Customer|Contact):/i`
+- `custMatch`: added `Contact` → `/^(Customer|Contact): /i`
+
+**Visual improvements (James: "the caller should be much more obvious"):**
+- AI Caller blocks: `bg-green-50 border border-green-100` rounded card with `AI CALLER` label
+- Customer blocks: `bg-blue-50 border border-blue-100` rounded card with `Customer` label and italic body text
+- Colour-block cards replace the previous left-border-only style — the two sides of the conversation are now clearly distinct at a glance
+- Max height increased from `max-h-72` to `max-h-96` to show more of longer transcripts without scrolling
+
+---
+
 ## v2.49.0 — Dashboard "View all" Links Pre-Filter Destination Pages (02 Jun 2026)
 
 **Date:** 02 Jun 2026

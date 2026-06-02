@@ -72,27 +72,29 @@ const callStatusConfig: Record<CallStatus, { label: string }> = {
 
 function TranscriptView({ text }: { text: string }) {
   const lines = (text || "").split("\n").map(l => l.trim()).filter(Boolean);
-  const hasSpeakers = lines.some(l => /^(AI( caller)?|Customer):/i.test(l));
+  // seeded data uses "Contact:" for customer; also handle "Customer:" for future data
+  const hasSpeakers = lines.some(l => /^(AI( caller)?|Customer|Contact):/i.test(l));
 
   if (!hasSpeakers) {
     return (
-      <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-4 max-h-72 overflow-y-auto">
+      <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-4 max-h-96 overflow-y-auto">
         <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{text}</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
+    <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
       {lines.map((line, i) => {
-        const aiMatch = line.match(/^(AI( caller)?): /i);
-        const custMatch = line.match(/^Customer: /i);
+        const aiMatch   = line.match(/^(AI( caller)?): /i);
+        // recognise both "Customer:" and "Contact:" as the human speaker
+        const custMatch = line.match(/^(Customer|Contact): /i);
 
         if (aiMatch) {
           return (
-            <div key={i} className="space-y-1">
-              <p className="text-[10px] font-bold text-green-700 uppercase tracking-widest">AI Caller</p>
-              <p className="text-sm text-gray-700 leading-relaxed pl-3 border-l-2 border-green-200">
+            <div key={i} className="rounded-lg bg-green-50 border border-green-100 px-3 py-2.5">
+              <p className="text-[10px] font-bold text-green-700 uppercase tracking-widest mb-1">AI Caller</p>
+              <p className="text-sm text-gray-800 leading-relaxed">
                 {line.slice(aiMatch[0].length)}
               </p>
             </div>
@@ -100,16 +102,16 @@ function TranscriptView({ text }: { text: string }) {
         }
         if (custMatch) {
           return (
-            <div key={i} className="space-y-1">
-              <p className="text-[10px] font-bold text-blue-700 uppercase tracking-widest">Customer</p>
-              <p className="text-sm text-gray-700 leading-relaxed pl-3 border-l-2 border-blue-200">
+            <div key={i} className="rounded-lg bg-blue-50 border border-blue-100 px-3 py-2.5">
+              <p className="text-[10px] font-bold text-blue-700 uppercase tracking-widest mb-1">Customer</p>
+              <p className="text-sm text-gray-800 leading-relaxed italic">
                 {line.slice(custMatch[0].length)}
               </p>
             </div>
           );
         }
         return (
-          <p key={i} className="text-xs text-gray-400 italic">{line}</p>
+          <p key={i} className="text-xs text-gray-400 italic px-1">{line}</p>
         );
       })}
     </div>
