@@ -2,6 +2,31 @@
 
 ---
 
+## v2.41.0 — Progressive Disclosure Complete (29 May 2026)
+
+**Date:** 29 May 2026
+**package.json version:** 2.41.0
+
+### Changed
+
+**Dashboard — Charts grid and System Activity in CollapsibleSection (`app/dashboard/page.tsx` or `components/dashboard/`):**
+- Aging breakdown chart and collections trend chart grid are now wrapped in a `<CollapsibleSection>` accordion (`defaultOpen={false}`). Dashboard loads showing only Needs Attention cards and KPI summary cards; charts are one click away.
+- Recent System Activity feed is also wrapped in a `<CollapsibleSection>` (`defaultOpen={false}`). Operational log is secondary to actionable items.
+- Dashboard default view now surfaces only what demands attention: Needs Attention section + KPI cards.
+
+**Templates — AI prompt collapsed under accordion in non-edit view (`components/templates/`):**
+- In the read-only (non-edit) template card view, the AI prompt text is hidden behind a "View AI prompt" accordion toggle (`defaultOpen={false}`).
+- Users see the template name, type, outcome classifications and voicemail/escalation settings without having to scroll past a long prompt.
+- In edit mode the full prompt textarea remains fully visible and editable as before.
+
+**Contact ExclusionControls — Summary+Edit by default, radio controls in edit mode only (`components/contacts/`):**
+- `ExclusionControls` now mirrors the `InvoiceDetailActions` pattern introduced in v2.39.0.
+- Default (non-edit) state: shows a plain-text summary of the current exclusion status (e.g. "Automations active" or "Excluded — Manual override") and an Edit button.
+- Edit mode: clicking Edit reveals the full radio control group and Save / Cancel buttons.
+- Reduces visual noise on the Contact detail page for contacts where no change is needed.
+
+---
+
 ## v2.40.0 — Complete Progressive Disclosure (29 May 2026)
 
 **Date:** 29 May 2026
