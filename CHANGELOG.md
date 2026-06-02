@@ -2,6 +2,42 @@
 
 ---
 
+## v2.49.0 — Dashboard "View all" Links Pre-Filter Destination Pages (02 Jun 2026)
+
+**Date:** 02 Jun 2026
+**package.json version:** 2.49.0
+
+### Fixed
+
+**Dashboard Needs Attention "View all →" links now land on pre-filtered pages.**
+
+Previously all links went to the root URL of each destination page with no filter applied, so clicking "View all 4 overdue 60+ days" landed on the full invoice list showing all 25 invoices.
+
+**Changes:**
+
+`components/dashboard/NeedsAttentionSection.tsx` — updated `viewAllHref` values:
+
+| Card | Old href | New href |
+|------|----------|----------|
+| Disputes | `/invoices?status=disputed` | unchanged ✓ |
+| Blocked actions | `/scheduled` | `/scheduled?filter=blocked` |
+| Overdue 60+ days | `/invoices` | `/invoices?status=overdue` |
+| Overdue 30–60 days | `/invoices` | `/invoices?status=overdue` |
+| Needs approval | `/scheduled` | `/scheduled?filter=awaiting_approval` |
+| Automations paused | `/inbox` | `/inbox?filter=needs_action` |
+| Unread replies | `/inbox` | `/inbox?filter=unread` |
+| Promises to pay | `/inbox?filter=promise_to_pay` | unchanged ✓ |
+
+**Destination pages updated to read URL params:**
+
+- `app/invoices/page.tsx` — `useSearchParams` added; `statusFilter` initialised from `?status=` param; wrapped in Suspense.
+- `app/scheduled/page.tsx` — `useSearchParams` added; `filter` initialised from `?filter=` param; wrapped in Suspense.
+- `app/inbox/page.tsx` — `filter` state now initialised from `?filter=` param (already had Suspense + useSearchParams for deep-link support).
+
+**Invoices overdue note:** `/invoices?status=overdue` shows all overdue invoices. The default sort is already `daysPastDue desc`, so 60+ day items appear at the top of the list automatically.
+
+---
+
 ## v2.48.0 — Fix Invoice Detail Customer Reply Panel (02 Jun 2026)
 
 **Date:** 02 Jun 2026

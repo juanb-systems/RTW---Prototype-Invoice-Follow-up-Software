@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { Suspense, useEffect, useRef, useState, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { TopBar } from "@/components/layout/TopBar";
 import { ScheduledActionCard } from "@/components/scheduled/ScheduledActionCard";
 import { RefreshCw, Search, X } from "lucide-react";
@@ -29,10 +30,12 @@ type FullAction = {
 
 const statusOrder = ["pending", "awaiting_approval", "sent", "skipped", "blocked"];
 
-export default function ScheduledPage() {
+function ScheduledPageContent() {
+  const searchParams = useSearchParams();
   const [actions, setActions] = useState<FullAction[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<string>("all");
+  // Initialise filter from URL param so Dashboard "View all →" links land pre-filtered
+  const [filter, setFilter] = useState<string>(searchParams.get("filter") ?? "all");
 
   const { query, setQuery, clear } = useSearchStore();
   const searchRef = useRef<HTMLInputElement>(null);
@@ -185,5 +188,13 @@ export default function ScheduledPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function ScheduledPage() {
+  return (
+    <Suspense>
+      <ScheduledPageContent />
+    </Suspense>
   );
 }

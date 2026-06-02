@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { TopBar } from "@/components/layout/TopBar";
 import { InvoiceStatusBadge } from "@/components/invoices/InvoiceStatusBadge";
 import { formatCurrency, formatDate, agingColor } from "@/lib/utils";
@@ -71,8 +71,9 @@ const AUTO_STATUS_CONFIG = {
   no_actions:        { label: "No Actions",      cls: "bg-gray-100 text-gray-400 border-gray-200" },
 } as const;
 
-export default function InvoicesPage() {
-  const router = useRouter();
+function InvoicesPageContent() {
+  const router      = useRouter();
+  const searchParams = useSearchParams();
   const [invoices, setInvoices] = useState<InvoiceRow[]>([]);
   const [flowMap, setFlowMap] = useState<Record<string, string>>({});
   const [replyMap, setReplyMap] = useState<Record<string, ReplyInfo>>({});
@@ -80,9 +81,10 @@ export default function InvoicesPage() {
   const [sortCol, setSortCol] = useState<SortCol>("daysPastDue");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [flowFilter, setFlowFilter]   = useState<string>("all");
-  const [replyFilter, setReplyFilter] = useState<string>("all");
+  // Initialise filters from URL params so Dashboard "View all →" links land pre-filtered
+  const [statusFilter, setStatusFilter] = useState<string>(searchParams.get("status") ?? "all");
+  const [flowFilter, setFlowFilter]     = useState<string>("all");
+  const [replyFilter, setReplyFilter]   = useState<string>("all");
 
   // Shared search state — also written by the TopBar search input
   const { query, setQuery, clear } = useSearchStore();
@@ -586,5 +588,13 @@ export default function InvoicesPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function InvoicesPage() {
+  return (
+    <Suspense>
+      <InvoicesPageContent />
+    </Suspense>
   );
 }

@@ -683,7 +683,8 @@ function InboxPageContent() {
 
   const [messages, setMessages]               = useState<Message[]>([]);
   const [loading, setLoading]                 = useState(true);
-  const [filter, setFilter]                   = useState<string>("all");
+  // Initialise filter from URL param so Dashboard "View all →" links land pre-filtered
+  const [filter, setFilter]                   = useState<string>(searchParams.get("filter") ?? "all");
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [mobileView, setMobileView]           = useState<"list" | "detail">("list");
   const deepLinkDone                          = useRef(false);
