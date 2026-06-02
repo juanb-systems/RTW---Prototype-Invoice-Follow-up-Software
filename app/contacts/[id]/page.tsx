@@ -118,11 +118,6 @@ export default async function ContactDetailPage({
               </div>
             </div>
 
-            {/* Automation Status — mobile only, shows between stats and invoices */}
-            <div className="md:hidden">
-              <ExclusionControls contactId={id} currentStatus={contact.status} />
-            </div>
-
             {/* Related invoices */}
             <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
               <div className="px-4 sm:px-5 py-4 border-b border-gray-100">
@@ -204,6 +199,11 @@ export default async function ContactDetailPage({
                 </>
               )}
             </div>
+          </div>
+
+          {/* Automation Status — below invoices on mobile, sidebar on desktop */}
+          <div className="md:hidden">
+            <ExclusionControls contactId={id} currentStatus={contact.status} />
           </div>
 
           {/* ── Right sidebar — desktop only ── */}
