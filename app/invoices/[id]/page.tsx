@@ -172,17 +172,9 @@ export default async function InvoiceDetailPage({
                 </span>
               </div>
             )}
-            {/* Automation */}
+            {/* Automation status — flow name shown in sidebar, no need to repeat here */}
             <div className="flex flex-col gap-0.5">
-              <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Automation</span>
-              <span className="inline-flex items-center gap-1 rounded border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 max-w-[180px] truncate">
-                <GitBranch className="h-3 w-3 flex-shrink-0" />
-                <span className="truncate">{assignedFlow?.name ?? "No automation assigned"}</span>
-              </span>
-            </div>
-            {/* Automation status */}
-            <div className="flex flex-col gap-0.5">
-              <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Automation</span>
+              <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Auto Status</span>
               <span className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-xs font-medium ${autoStatus.cls}`}>
                 <autoStatus.icon className="h-3 w-3" />
                 {autoStatus.label}
