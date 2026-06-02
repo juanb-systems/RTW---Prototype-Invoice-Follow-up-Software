@@ -92,7 +92,12 @@ const CONFIGS: Record<CardKey, {
 function InvItemRow({ item, cardKey }: { item: AttentionInvItem; cardKey: CardKey }) {
   const actionLabel = cardKey === "disputes" ? "Review dispute" : "View invoice";
   return (
-    <div className="flex items-start justify-between gap-3 py-2 border-b border-gray-50 last:border-0">
+    // Whole row is a link — no nested links needed
+    <Link
+      href={`/invoices/${item.id}`}
+      className="flex items-start justify-between gap-3 py-2 border-b border-gray-50 last:border-0 hover:bg-gray-50/60 transition-colors cursor-pointer -mx-3 px-3 rounded"
+      onClick={(e) => e.stopPropagation()}
+    >
       <div className="flex-1 min-w-0">
         <p className="text-xs font-semibold text-gray-800 truncate">
           {item.invoiceNumber}
@@ -107,14 +112,10 @@ function InvItemRow({ item, cardKey }: { item: AttentionInvItem; cardKey: CardKe
           )}
         </div>
       </div>
-      <Link
-        href={`/invoices/${item.id}`}
-        className="shrink-0 text-xs font-medium text-blue-600 hover:text-blue-700 hover:underline whitespace-nowrap"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <span className="shrink-0 text-xs font-medium text-blue-600 whitespace-nowrap">
         {actionLabel} →
-      </Link>
-    </div>
+      </span>
+    </Link>
   );
 }
 
@@ -122,7 +123,11 @@ function ActionItemRow({ item }: { item: AttentionActionItem }) {
   const typeLabel = item.stepType === "email" ? "Email" : item.stepType === "sms" ? "SMS" : item.stepType === "call" ? "AI Call" : item.stepType;
   const reason = item.lookupReason ?? item.skipReason ?? "Safety check result";
   return (
-    <div className="flex items-start justify-between gap-3 py-2 border-b border-gray-50 last:border-0">
+    <Link
+      href={`/scheduled`}
+      className="flex items-start justify-between gap-3 py-2 border-b border-gray-50 last:border-0 hover:bg-gray-50/60 transition-colors cursor-pointer -mx-3 px-3 rounded"
+      onClick={(e) => e.stopPropagation()}
+    >
       <div className="flex-1 min-w-0">
         <p className="text-xs font-semibold text-gray-800 truncate">
           {typeLabel} · {item.invoiceNumber}
@@ -132,14 +137,10 @@ function ActionItemRow({ item }: { item: AttentionActionItem }) {
         </p>
         <p className="text-xs text-gray-500 mt-0.5 truncate">{reason}</p>
       </div>
-      <Link
-        href={`/scheduled`}
-        className="shrink-0 text-xs font-medium text-blue-600 hover:text-blue-700 hover:underline whitespace-nowrap"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <span className="shrink-0 text-xs font-medium text-blue-600 whitespace-nowrap">
         View →
-      </Link>
-    </div>
+      </span>
+    </Link>
   );
 }
 
@@ -153,7 +154,11 @@ function MsgItemRow({ item }: { item: AttentionMsgItem }) {
   };
   const classLabel = classLabels[item.classification] ?? item.classification;
   return (
-    <div className="flex items-start justify-between gap-3 py-2 border-b border-gray-50 last:border-0">
+    <Link
+      href={`/inbox`}
+      className="flex items-start justify-between gap-3 py-2 border-b border-gray-50 last:border-0 hover:bg-gray-50/60 transition-colors cursor-pointer -mx-3 px-3 rounded"
+      onClick={(e) => e.stopPropagation()}
+    >
       <div className="flex-1 min-w-0">
         <p className="text-xs font-semibold text-gray-800 truncate">
           {item.contactName}
@@ -163,14 +168,10 @@ function MsgItemRow({ item }: { item: AttentionMsgItem }) {
         </p>
         <p className="text-xs text-gray-500 mt-0.5 truncate">{item.subject || classLabel}</p>
       </div>
-      <Link
-        href={`/inbox`}
-        className="shrink-0 text-xs font-medium text-blue-600 hover:text-blue-700 hover:underline whitespace-nowrap"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <span className="shrink-0 text-xs font-medium text-blue-600 whitespace-nowrap">
         View reply →
-      </Link>
-    </div>
+      </span>
+    </Link>
   );
 }
 
