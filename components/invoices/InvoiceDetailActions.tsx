@@ -22,6 +22,7 @@ export function InvoiceDetailActions({
   assignedFlowDescription,
 }: InvoiceDetailActionsProps) {
   const router = useRouter();
+  const [collapsed, setCollapsed]     = useState(true);   // collapsed by default
   const [editing, setEditing]         = useState(false);
   const [excluded, setExcluded]       = useState(excludedFromAutomation);
   const [selectedFlow, setSelectedFlow] = useState(assignedFlowId ?? "");
@@ -57,24 +58,52 @@ export function InvoiceDetailActions({
     });
     setSaving(false);
     setEditing(false);
+    setCollapsed(true);   // collapse after saving
     router.refresh();
   }
 
-  // ── Summary (default, read-only) ──────────────────────────────────────────
+  // ── Collapsed state ───────────────────────────────────────────────────────
+  if (collapsed && !editing) {
+    return (
+      <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+        <button
+          onClick={() => setCollapsed(false)}
+          className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-gray-50 transition-colors text-left"
+        >
+          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Automation</h3>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <span className="text-xs text-gray-500 truncate max-w-[130px]">
+              {assignedFlowName ?? "Not assigned"}
+            </span>
+            <ChevronDown className="h-4 w-4 text-gray-400" />
+          </div>
+        </button>
+      </div>
+    );
+  }
+
+  // ── Summary (expanded, read-only) ─────────────────────────────────────────
   if (!editing) {
     return (
-      <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-        <div className="flex items-center justify-between mb-3">
+      <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+        {/* Collapse header */}
+        <button
+          onClick={() => setCollapsed(true)}
+          className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-gray-50 transition-colors text-left border-b border-gray-100"
+        >
           <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Automation</h3>
-          <button
-            onClick={() => setEditing(true)}
-            className="flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors"
-          >
-            <Pencil className="h-3 w-3" />
-            Edit
-          </button>
-        </div>
-        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={(e) => { e.stopPropagation(); setEditing(true); setCollapsed(false); }}
+              className="flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors"
+            >
+              <Pencil className="h-3 w-3" />
+              Edit
+            </button>
+            <ChevronDown className="h-4 w-4 text-gray-400 rotate-180" />
+          </div>
+        </button>
+        <div className="px-4 py-3 space-y-2">
           <div className="flex items-start gap-2">
             <GitBranch className="h-3.5 w-3.5 text-blue-400 flex-shrink-0 mt-0.5" />
             <div className="min-w-0">
@@ -105,7 +134,7 @@ export function InvoiceDetailActions({
       <div className="flex items-center justify-between">
         <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Edit Automation</h3>
         <button
-          onClick={() => { setEditing(false); setShowConfirm(false); }}
+          onClick={() => { setEditing(false); setShowConfirm(false); setCollapsed(true); }}
           className="text-gray-400 hover:text-gray-600"
           aria-label="Cancel"
         >
