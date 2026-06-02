@@ -33,11 +33,11 @@ const stepTypeConfig = {
 };
 
 const outcomeConfig: Record<LookupOutcome, { label: string; color: string; icon: React.ElementType }> = {
-  proceed:           { label: "Lookup passed",                          color: "text-green-700 bg-green-50 border-green-200",  icon: CheckCircle2 },
-  skip:              { label: "Action skipped: invoice is now paid",    color: "text-yellow-700 bg-yellow-50 border-yellow-200", icon: SkipForward },
-  block:             { label: "Contact excluded from all automations",  color: "text-red-700 bg-red-50 border-red-200",       icon: ShieldX },
-  hold:              { label: "Automation paused",                      color: "text-orange-700 bg-orange-50 border-orange-200", icon: PauseCircle },
-  awaiting_approval: { label: "Manual approval mode is enabled",        color: "text-blue-700 bg-blue-50 border-blue-200",    icon: Clock },
+  proceed:           { label: "Safety check passed — cleared to send",   color: "text-green-700 bg-green-50 border-green-200",  icon: CheckCircle2 },
+  skip:              { label: "Skipped — invoice is now paid",           color: "text-yellow-700 bg-yellow-50 border-yellow-200", icon: SkipForward },
+  block:             { label: "Contact excluded from automations",        color: "text-red-700 bg-red-50 border-red-200",       icon: ShieldX },
+  hold:              { label: "Automation paused",                        color: "text-orange-700 bg-orange-50 border-orange-200", icon: PauseCircle },
+  awaiting_approval: { label: "Needs your approval to send",             color: "text-blue-700 bg-blue-50 border-blue-200",    icon: Clock },
 };
 
 const statusConfig = {
@@ -110,46 +110,43 @@ export function ScheduledActionCard({ action, onRefresh }: { action: FullAction;
             </span>
           </div>
 
-          {/* Invoice + Contact + Flow links */}
+          {/* Contact · Invoice · Automation */}
           <div className="text-xs text-gray-500 space-y-0.5 mb-2">
-            {action.invoice && (
-              <p>
-                Invoice:{" "}
-                <Link
-                  href={`/invoices/${action.invoiceId}`}
-                  className="font-medium text-blue-600 hover:underline"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {action.invoice.invoiceNumber}
-                </Link>
-                {" · "}
-                <span className="font-medium text-gray-700">{formatCurrency(action.invoice.amount)}</span>
-              </p>
-            )}
-            {action.contact && (
-              <p>
-                Contact:{" "}
-                <Link
-                  href={`/contacts/${action.contactId}`}
-                  className="font-medium text-gray-700 hover:underline"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {action.contact.name}
-                </Link>
-                {" — "}{action.contact.company}
+            {(action.contact || action.invoice) && (
+              <p className="flex flex-wrap items-center gap-1">
+                {action.contact && (
+                  <Link
+                    href={`/contacts/${action.contactId}`}
+                    className="font-medium text-gray-800 hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {action.contact.name}
+                  </Link>
+                )}
+                {action.invoice && (
+                  <>
+                    {action.contact && <span className="text-gray-300">·</span>}
+                    <Link
+                      href={`/invoices/${action.invoiceId}`}
+                      className="font-medium text-blue-600 hover:underline"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {action.invoice.invoiceNumber}
+                    </Link>
+                    <span className="text-gray-700">{formatCurrency(action.invoice.amount)}</span>
+                  </>
+                )}
               </p>
             )}
             {action.flow && (
-              <p>Flow: <span className="text-gray-600">{action.flow.name}</span></p>
+              <p className="text-gray-400">{action.flow.name}</p>
             )}
           </div>
 
           {/* Scheduled time */}
           <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-2">
             <Clock className="h-3 w-3" />
-            {action.status === "pending" || action.status === "awaiting_approval"
-              ? `Scheduled: ${formatDateTime(action.scheduledAt)}`
-              : `Was scheduled: ${formatDateTime(action.scheduledAt)}`}
+            {formatDateTime(action.scheduledAt)}
           </div>
 
           {/* Live result after firing — always visible when present */}
@@ -175,12 +172,12 @@ export function ScheduledActionCard({ action, onRefresh }: { action: FullAction;
                 {firing ? (
                   <>
                     <RefreshCw className="h-3 w-3 animate-spin" />
-                    Running lookup...
+                    Sending...
                   </>
                 ) : action.status === "awaiting_approval" ? (
-                  "Approve & Run Lookup"
+                  "Approve & Send"
                 ) : (
-                  "Run Lookup & Fire"
+                  "Send Now"
                 )}
               </button>
               <button

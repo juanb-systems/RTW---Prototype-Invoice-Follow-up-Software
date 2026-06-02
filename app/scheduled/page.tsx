@@ -95,7 +95,7 @@ function ScheduledPageContent() {
         {/* Key reminder */}
         <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
           <p className="text-sm text-amber-700">
-            <strong>Safety check required.</strong> Before any action fires, CollectPilot runs a safety check — verifying the invoice is still unpaid, the contact is not excluded, and no disputes or promises are active.
+            <strong>Safety check before every send.</strong> Before sending an email, SMS, or call, CollectPilot checks the invoice is still unpaid and the contact can receive automated messages. Actions are skipped if the invoice is paid or the contact is excluded.
           </p>
         </div>
 

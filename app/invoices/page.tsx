@@ -295,8 +295,8 @@ function InvoicesPageContent() {
               onChange={(e) => setFlowFilter(e.target.value)}
               className={`rounded-md border py-1 pl-2.5 pr-6 text-xs focus:border-blue-400 focus:outline-none appearance-none bg-white ${flowFilter !== "all" ? "border-blue-400 text-blue-700 font-medium" : "border-gray-200 text-gray-600"}`}
             >
-              <option value="all">Flow: All</option>
-              <option value="no-flow">No flow assigned</option>
+              <option value="all">Automation: All</option>
+              <option value="no-flow">No automation</option>
               {assignedFlowIds.map((fId) => (
                 <option key={fId} value={fId}>{flowMap[fId] ?? fId}</option>
               ))}
@@ -308,13 +308,13 @@ function InvoicesPageContent() {
               onChange={(e) => setReplyFilter(e.target.value)}
               className={`rounded-md border py-1 pl-2.5 pr-6 text-xs focus:border-blue-400 focus:outline-none appearance-none bg-white ${replyFilter !== "all" ? "border-blue-400 text-blue-700 font-medium" : "border-gray-200 text-gray-600"}`}
             >
-              <option value="all">Reply: All</option>
-              <option value="has-reply">Has reply</option>
-              <option value="no-reply">No reply</option>
+              <option value="all">Response: All</option>
+              <option value="has-reply">Has response</option>
+              <option value="no-reply">No response</option>
               <option value="promise_to_pay">Promise to Pay</option>
               <option value="dispute">Dispute</option>
               <option value="out_of_office">Out of Office</option>
-              <option value="payment_query">Payment Query</option>
+              <option value="payment_query">Payment Question</option>
               <option value="unclassified">Unclassified</option>
             </select>
 
