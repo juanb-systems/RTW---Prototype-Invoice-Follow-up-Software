@@ -243,7 +243,7 @@ function MessageDetail({
   const [replyText, setReplyText]     = useState("");
   const [pausing, setPausing]         = useState(false);
   const [replying, setReplying]       = useState(false);
-  const [showContent, setShowContent] = useState(false);
+  // showContent removed — email/transcript always visible below AI Overview
 
   const isCall      = message.type === "call";
   const isVoicemail = message.callStatus === "voicemail";
@@ -396,25 +396,17 @@ function MessageDetail({
           </div>
         )}
 
-        {/* Content accordion — collapsed by default so AI Overview is read first */}
-        <div className="rounded-lg border border-gray-200 overflow-hidden">
-          <button
-            onClick={() => setShowContent(v => !v)}
-            className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors text-left"
-          >
-            <span className="text-xs font-medium text-gray-600">
-              {isVoicemail ? "View voicemail details" : isCall ? "View call transcript" : "View email content"}
-            </span>
-            <ChevronDown className={`h-3.5 w-3.5 text-gray-400 flex-shrink-0 transition-transform ${showContent ? "rotate-180" : ""}`} />
-          </button>
-          {showContent && (
-            <div className="px-4 py-4 bg-white">
-              {isCall
-                ? <TranscriptView text={message.transcript || message.body} />
-                : <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{message.body}</p>
-              }
-            </div>
-          )}
+        {/* Message body / transcript — always visible */}
+        <div className="rounded-lg border border-gray-100 bg-white overflow-hidden">
+          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider px-4 pt-3 pb-2">
+            {isCall ? "Call Transcript" : "Message"}
+          </p>
+          <div className="px-4 pb-4">
+            {isCall
+              ? <TranscriptView text={message.transcript || message.body} />
+              : <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{message.body}</p>
+            }
+          </div>
         </div>
 
         {/* Reply form */}

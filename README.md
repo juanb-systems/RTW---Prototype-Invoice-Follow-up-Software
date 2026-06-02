@@ -1,4 +1,4 @@
-# CollectPilot — AI Receivables Assistant · v2.53
+# CollectPilot — AI Receivables Assistant · v2.54
 
 A Next.js 15 prototype for an AI-powered B2B receivables follow-up platform. Demonstrates automated invoice collection workflows with "Fresh Xero Check" safety gates before every customer contact.
 
@@ -115,6 +115,7 @@ No environment variables are required for the current prototype. All data is see
 
 | Version | Date | Summary |
 |---------|------|---------|
+| v2.54.0 | 02 Jun 2026 | Inbox email content always visible — removed accordion toggle from message detail; email body and call transcript now show directly below AI Overview without requiring a click |
 | v2.53.0 | 02 Jun 2026 | Fix Invoice Detail Status Overview — removed duplicate Automation flow-name chip (already shown in sidebar), renamed remaining Automation label to "Auto Status" so all labels are unique |
 | v2.52.0 | 02 Jun 2026 | Make Dashboard Needs Attention item rows fully clickable — entire row is now a Link (not just the "View →" button); hover state added; all three row types updated (invoice, action, message) |
 | v2.51.0 | 02 Jun 2026 | Fix Invoices Automation column — flow name and status badge now stack vertically (flex-col) instead of running together inline |
