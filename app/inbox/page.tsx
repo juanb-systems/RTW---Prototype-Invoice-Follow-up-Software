@@ -24,6 +24,9 @@ import {
   Mail,
   ArrowLeft,
   Inbox as InboxIcon,
+  SlidersHorizontal,
+  ChevronDown,
+  Check,
 } from "lucide-react";
 import { formatDateTime, formatCurrency } from "@/lib/utils";
 import type { MessageClassification, CallStatus } from "@/lib/types";
@@ -450,6 +453,104 @@ function InboxRow({
   );
 }
 
+// ── Filter dropdown ───────────────────────────────────────────────────────────
+
+const FILTER_OPTIONS = [
+  { value: "unread",         label: "Unread" },
+  { value: "emails",         label: "Email Replies" },
+  { value: "calls",          label: "AI Calls" },
+  { value: "dispute",        label: "Disputes" },
+  { value: "promise_to_pay", label: "Promises" },
+  { value: "needs_action",   label: "Needs Action" },
+];
+
+function FilterDropdown({
+  filter,
+  onFilter,
+  unread,
+}: {
+  filter: string;
+  onFilter: (f: string) => void;
+  unread: number;
+}) {
+  const [open, setOpen] = useState(false);
+  const dropRef         = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (dropRef.current && !dropRef.current.contains(e.target as Node)) setOpen(false);
+    }
+    if (open) document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  const active    = FILTER_OPTIONS.find(o => o.value === filter);
+  const isFiltered = filter !== "all";
+
+  return (
+    <div ref={dropRef} className="relative flex-shrink-0">
+      <button
+        onClick={() => setOpen(v => !v)}
+        className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors ${
+          isFiltered
+            ? "border-blue-400 bg-blue-50 text-blue-700"
+            : "border-gray-200 text-gray-600 hover:bg-gray-50"
+        }`}
+      >
+        <SlidersHorizontal className="h-3.5 w-3.5 flex-shrink-0" />
+        <span className="hidden xs:inline sm:inline">
+          {isFiltered ? active?.label : "Filter"}
+        </span>
+        <span className="xs:hidden sm:hidden">
+          {isFiltered ? active?.label : "Filter"}
+        </span>
+        {isFiltered && filter === "unread" && unread > 0 && (
+          <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-500 px-1 text-[10px] font-semibold text-white">
+            {unread}
+          </span>
+        )}
+        <ChevronDown className={`h-3 w-3 opacity-60 transition-transform flex-shrink-0 ${open ? "rotate-180" : ""}`} />
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-1 w-48 rounded-xl border border-gray-200 bg-white shadow-xl z-50 overflow-hidden">
+          {isFiltered && (
+            <>
+              <button
+                onClick={() => { onFilter("all"); setOpen(false); }}
+                className="flex w-full items-center gap-2 px-3 py-2 text-xs text-gray-500 hover:bg-gray-50 transition-colors"
+              >
+                <X className="h-3.5 w-3.5 flex-shrink-0" />
+                Clear filter
+              </button>
+              <div className="border-t border-gray-100" />
+            </>
+          )}
+          {FILTER_OPTIONS.map(opt => (
+            <button
+              key={opt.value}
+              onClick={() => { onFilter(opt.value); setOpen(false); }}
+              className={`flex w-full items-center justify-between gap-2 px-3 py-2 text-xs font-medium transition-colors ${
+                filter === opt.value
+                  ? "bg-blue-50 text-blue-700"
+                  : "text-gray-700 hover:bg-gray-50"
+              }`}
+            >
+              <span>{opt.label}</span>
+              <div className="flex items-center gap-1.5 flex-shrink-0">
+                {opt.value === "unread" && unread > 0 && (
+                  <span className="text-[10px] text-gray-400">{unread}</span>
+                )}
+                {filter === opt.value && <Check className="h-3.5 w-3.5 text-blue-600" />}
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Page content ──────────────────────────────────────────────────────────────
 
 function InboxPageContent() {
@@ -511,6 +612,14 @@ function InboxPageContent() {
     setMobileView("list");
   }
 
+  function handleFilterChange(newFilter: string) {
+    setFilter(newFilter);
+    // Clear the detail panel when filter changes — avoids showing a message
+    // that no longer appears in the filtered list
+    setSelectedMessage(null);
+    setMobileView("list");
+  }
+
   const emailMessages = messages.filter(m => !m.type || m.type === "email");
   const callMessages  = messages.filter(m => m.type === "call");
   const unread        = messages.filter(m => !m.isRead).length;
@@ -545,15 +654,7 @@ function InboxPageContent() {
     })
     .sort((a, b) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime());
 
-  const filterTabs = [
-    { value: "all",            label: "All" },
-    { value: "unread",         label: "Unread" },
-    { value: "emails",         label: "Email Replies" },
-    { value: "calls",          label: "AI Calls" },
-    { value: "dispute",        label: "Disputes" },
-    { value: "promise_to_pay", label: "Promises" },
-    { value: "needs_action",   label: "Needs Action" },
-  ];
+  // filterTabs removed — filter options moved to FilterDropdown component
 
   return (
     <div className="flex flex-col h-full">
@@ -583,9 +684,9 @@ function InboxPageContent() {
             : "flex w-full md:w-2/5 lg:w-[380px] md:flex-none"
         }`}>
 
-          {/* Search */}
-          <div className="px-4 py-2.5 border-b border-gray-100 flex-shrink-0">
-            <div className="relative">
+          {/* Search + filter — single combined row */}
+          <div className="px-4 py-2.5 border-b border-gray-100 flex-shrink-0 flex items-center gap-2">
+            <div className="relative flex-1 min-w-0">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
               <input
                 ref={searchRef}
@@ -604,28 +705,11 @@ function InboxPageContent() {
                 </button>
               )}
             </div>
-          </div>
-
-          {/* Filter tabs */}
-          <div className="px-4 py-2 border-b border-gray-100 flex-shrink-0 flex gap-1.5 flex-wrap">
-            {filterTabs.map(tab => (
-              <button
-                key={tab.value}
-                onClick={() => setFilter(tab.value)}
-                className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-                  filter === tab.value
-                    ? "bg-blue-600 text-white"
-                    : "border border-gray-200 text-gray-600 hover:bg-gray-50"
-                }`}
-              >
-                {tab.label}
-                {tab.value === "unread" && unread > 0 && (
-                  <span className="ml-1 inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-blue-500 px-1 text-[10px] text-white">
-                    {unread}
-                  </span>
-                )}
-              </button>
-            ))}
+            <FilterDropdown
+              filter={filter}
+              onFilter={handleFilterChange}
+              unread={unread}
+            />
           </div>
 
           {/* Message list */}

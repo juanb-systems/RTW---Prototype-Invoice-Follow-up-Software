@@ -2,6 +2,29 @@
 
 ---
 
+## v2.38.0 — Simplify Inbox Filter Controls (29 May 2026)
+
+**Date:** 29 May 2026
+**package.json version:** 2.38.0
+
+### Changed
+
+**Inbox filter UI (`app/inbox/page.tsx`):**
+
+- **Removed:** 7 visible filter tab buttons (All / Unread / Email Replies / AI Calls / Disputes / Promises / Needs Action).
+- **Added:** Single `FilterDropdown` component — a compact button that opens a dropdown list of filter options.
+- **Combined:** Search input and Filter button are now in one single row instead of two separate rows. Saves vertical space in the inbox list panel.
+- **Active state:** When a filter is active, the Filter button shows the filter name (e.g. `Disputes`) and uses a blue border/background. When no filter is active, the button shows `Filter` in a neutral style.
+- **Unread count:** The Unread count badge appears inside the `Unread` option in the dropdown.
+- **Clear filter:** A `Clear filter` option appears at the top of the dropdown when a filter is active.
+- **Dropdown close behavior:** Closes on outside click via `mousedown` listener. Clicking any option selects it and closes the dropdown.
+- **Filter change clears detail panel:** Changing the filter calls `handleFilterChange()` which also resets `selectedMessage` and `mobileView` to `"list"`, preventing the detail panel from showing a message that no longer appears in the filtered list.
+- **Filtering logic unchanged:** All 7 filter conditions (all, unread, emails, calls, dispute, promise_to_pay, needs_action) work identically. Search still combines with the active filter.
+
+**Actions/Scheduled Actions:** Evaluated — left unchanged. The 6 filter tabs on the Actions page (All, Upcoming, Needs Approval, Sent, Blocked, Skipped) serve as primary navigation between distinct action states and are more useful as visible tabs than a dropdown.
+
+---
+
 ## v2.37.0 — Expandable Needs Attention Cards (29 May 2026)
 
 **Date:** 29 May 2026
