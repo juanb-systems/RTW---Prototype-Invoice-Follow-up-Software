@@ -11,6 +11,7 @@ interface InvoiceDetailActionsProps {
   excludedFromAutomation: boolean;
   flows: AutomationFlow[];
   assignedFlowId: string | null;
+  assignedFlowDescription?: string | null;
 }
 
 export function InvoiceDetailActions({
@@ -18,6 +19,7 @@ export function InvoiceDetailActions({
   excludedFromAutomation,
   flows,
   assignedFlowId,
+  assignedFlowDescription,
 }: InvoiceDetailActionsProps) {
   const router = useRouter();
   const [editing, setEditing]         = useState(false);
@@ -73,11 +75,18 @@ export function InvoiceDetailActions({
           </button>
         </div>
         <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <GitBranch className="h-3.5 w-3.5 text-blue-400 flex-shrink-0" />
-            <p className="text-sm font-medium text-gray-800">
-              {assignedFlowName ?? "No automation assigned"}
-            </p>
+          <div className="flex items-start gap-2">
+            <GitBranch className="h-3.5 w-3.5 text-blue-400 flex-shrink-0 mt-0.5" />
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-gray-800">
+                {assignedFlowName ?? "No automation assigned"}
+              </p>
+              {assignedFlowDescription && (
+                <p className="text-xs text-gray-400 mt-0.5 leading-snug">
+                  {assignedFlowDescription}
+                </p>
+              )}
+            </div>
           </div>
           {excluded && (
             <div className="flex items-center gap-1.5 text-xs text-red-600">

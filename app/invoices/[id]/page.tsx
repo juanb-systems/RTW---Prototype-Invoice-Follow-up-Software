@@ -419,25 +419,7 @@ export default async function InvoiceDetailPage({
               </div>
             )}
 
-            {/* Assigned flow */}
-            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Automation</h3>
-              {invoice.assignedFlowId ? (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <GitBranch className="h-4 w-4 text-blue-500" />
-                    <p className="text-sm font-medium text-gray-900">
-                      {flows.find((f: AutomationFlow) => f.id === invoice.assignedFlowId)?.name ?? invoice.assignedFlowId}
-                    </p>
-                  </div>
-                  <p className="text-xs text-gray-400">
-                    {flows.find((f: AutomationFlow) => f.id === invoice.assignedFlowId)?.description}
-                  </p>
-                </div>
-              ) : (
-                <p className="text-xs text-gray-400">No automation assigned.</p>
-              )}
-            </div>
+            {/* Automation summary + edit — handled by InvoiceDetailActions below */}
 
             {/* Pending actions */}
             {pendingActions.length > 0 && (
@@ -464,13 +446,14 @@ export default async function InvoiceDetailPage({
               </div>
             )}
 
-            {/* Actions panel */}
+            {/* Automation summary + edit controls */}
             <InvoiceDetailActions
               invoiceId={id}
               currentStatus={invoice.status}
               excludedFromAutomation={invoice.excludedFromAutomation}
               flows={flows}
               assignedFlowId={invoice.assignedFlowId}
+              assignedFlowDescription={assignedFlow?.description ?? null}
             />
           </div>
         </div>

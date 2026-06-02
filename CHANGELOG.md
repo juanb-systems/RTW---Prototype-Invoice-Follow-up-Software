@@ -2,6 +2,32 @@
 
 ---
 
+## v2.47.0 — Remove Redundant Automation Section on Invoice Detail (02 Jun 2026)
+
+**Date:** 02 Jun 2026
+**package.json version:** 2.47.0
+
+### Fixed
+
+**Invoice Detail right sidebar — removed duplicate Automation display:**
+
+The right sidebar had two separate sections both showing the assigned automation:
+1. A static "Assigned flow" card (always visible, showed name + description)
+2. `InvoiceDetailActions` component summary view (showed name + Edit button)
+
+This created the redundancy James flagged: the automation name appeared twice, and the full edit form (dropdown, exclude button, Save) appeared as a separate "ACTIONS" card below.
+
+**Fix:**
+- Removed the static "Assigned flow" card from `app/invoices/[id]/page.tsx`
+- Added `assignedFlowDescription` prop to `InvoiceDetailActions` and displayed it in the summary view beneath the automation name
+- The right sidebar now has ONE automation section: name + description + Edit button
+- Clicking **Edit** reveals: dropdown to reassign automation + exclude toggle + Save/Cancel
+- Clicking **Cancel** or **Save** returns to the summary view
+
+**Result:** The automation section is clean by default — name + description only. All edit controls hidden until requested.
+
+---
+
 ## v2.46.0 — Remove Expand Controls from Invoice Detail Sections (02 Jun 2026)
 
 **Date:** 02 Jun 2026
