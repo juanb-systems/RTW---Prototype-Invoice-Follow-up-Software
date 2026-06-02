@@ -2,6 +2,40 @@
 
 ---
 
+## v2.44.0 — Inbox is Email-Only (02 Jun 2026)
+
+**Date:** 02 Jun 2026
+**package.json version:** 2.44.0
+
+### Changed
+
+**Inbox now shows email replies only (`app/inbox/page.tsx`):**
+
+All call-type messages (`m.type === "call"`) are excluded from the Inbox at every filter path. The `isCallMessage` guard fires first, before any category-specific logic:
+
+```js
+if (isCallMessage(m)) return false;  // always — no call record appears in Inbox
+```
+
+This removes:
+- Voicemail records
+- No-answer records
+- Completed AI call transcripts (even with dispute/promise outcomes)
+
+**Why:** James specifically said he does not need call-related records in the Inbox. Call items (even when the customer spoke) look like automated/AI-system records to a business owner, not like "things the customer sent back." Email replies are the clear, familiar customer communication format.
+
+**Where call outcomes appear instead:**
+- Invoice Detail page → "Customer Reply" sidebar panel shows the latest inbox message (email only now), and the AI Overview + recommended action remain
+- Actions page → `ScheduledActionCard` shows lookup/call results (voicemail, no-answer, completed) in the expandable detail section
+
+**"Call Transcripts" filter tab removed** from `FILTER_OPTIONS` since it would always be empty.
+
+**New filter options:** Unread | Disputes | Promises | Payment Questions | Needs Action
+
+**Counts updated:** `emailMessages`, `unread`, footer total — all use email-only messages.
+
+---
+
 ## v2.43.0 — Clarify Inbox Call Transcript Labels (02 Jun 2026)
 
 **Date:** 02 Jun 2026

@@ -582,10 +582,9 @@ function InboxRow({
 
 const FILTER_OPTIONS = [
   { value: "unread",         label: "Unread" },
-  { value: "emails",         label: "Email Replies" },
-  { value: "calls",          label: "Call Transcripts" },
   { value: "dispute",        label: "Disputes" },
   { value: "promise_to_pay", label: "Promises" },
+  { value: "payment_query",  label: "Payment Questions" },
   { value: "needs_action",   label: "Needs Action" },
 ];
 
@@ -745,29 +744,24 @@ function InboxPageContent() {
     setMobileView("list");
   }
 
-  // Voicemail / no-answer are system outcomes (CollectPilot tried, no customer response).
-  // They are NOT customer communications and should never appear in Inbox.
-  // They surface as lookup/call outcomes in the Actions page instead.
-  const isSystemOutcome = (m: Message) =>
-    m.callStatus === "no_answer" || m.callStatus === "voicemail";
+  // Inbox = email replies only.
+  // All call-type messages (voicemail, no-answer, transcripts) belong in Actions,
+  // not Inbox. Call outcomes surface on the Invoice Detail customer reply panel
+  // and in the Actions page lookup results.
+  const isCallMessage = (m: Message) => m.type === "call";
 
-  // Email replies and meaningful AI call transcripts only
-  const emailMessages = messages.filter(m => (!m.type || m.type === "email"));
-  const callMessages  = messages.filter(m => m.type === "call" && !isSystemOutcome(m));
-
-  // Unread = only customer communications, never system outcomes
-  const unread = messages.filter(m => !m.isRead && !isSystemOutcome(m)).length;
+  const emailMessages = messages.filter(m => !isCallMessage(m));
+  const unread        = messages.filter(m => !m.isRead && !isCallMessage(m)).length;
 
   const filtered = messages
     .filter(m => {
-      // All views: exclude voicemail / no-answer universally
-      if (isSystemOutcome(m)) return false;
+      // Inbox is email-only — all calls excluded from every view
+      if (isCallMessage(m)) return false;
 
       if (filter === "all")          return true;
-      if (filter === "calls")        return m.type === "call";      // meaningful calls only (voicemail already excluded)
-      if (filter === "emails")       return !m.type || m.type === "email";
+      if (filter === "emails")       return true;   // same as all (calls already gone)
       if (filter === "unread")       return !m.isRead;
-      if (filter === "needs_action") return m.automationPaused === true || m.callStatus === "needs_review";
+      if (filter === "needs_action") return m.automationPaused === true;
       return m.classification === filter;
     })
     .filter(m => {
@@ -798,7 +792,7 @@ function InboxPageContent() {
       <TopBar
         title="Inbox"
         subtitle={unread > 0 ? `${unread} unread` : "All caught up"}
-        description="Customer email replies and call transcripts where the customer spoke. Voicemail and no-answer outcomes appear in Actions."
+        description="Customer email replies — disputes, payment promises, and questions. AI call outcomes appear in Actions."
         actions={
           <button
             onClick={load}
@@ -895,14 +889,13 @@ function InboxPageContent() {
           </div>
 
           {/* Count footer */}
-          {!loading && (emailMessages.length + callMessages.length) > 0 && (
+          {!loading && emailMessages.length > 0 && (
             <div className="flex-shrink-0 border-t border-gray-100 px-4 py-2 bg-gray-50/50 flex items-center justify-between">
-              {/* total counts only meaningful inbox items */}
               <p className="text-[11px] text-gray-400">
-                {filtered.length} of {emailMessages.length + callMessages.length}
+                {filtered.length} of {emailMessages.length}
               </p>
               <p className="text-[11px] text-gray-400">
-                {emailMessages.length} email repl{emailMessages.length !== 1 ? "ies" : "y"}{callMessages.length > 0 ? ` · ${callMessages.length} AI call${callMessages.length !== 1 ? "s" : ""}` : ""}
+                {emailMessages.length} email repl{emailMessages.length !== 1 ? "ies" : "y"}
               </p>
             </div>
           )}
