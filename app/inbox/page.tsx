@@ -744,20 +744,26 @@ function InboxPageContent() {
     setMobileView("list");
   }
 
-  const emailMessages = messages.filter(m => !m.type || m.type === "email");
-  const callMessages  = messages.filter(m => m.type === "call");
-
-  // voicemail / no-answer are system outcomes, not customer replies —
-  // excluded from the default "all" view and unread count
+  // Voicemail / no-answer are system outcomes (CollectPilot tried, no customer response).
+  // They are NOT customer communications and should never appear in Inbox.
+  // They surface as lookup/call outcomes in the Actions page instead.
   const isSystemOutcome = (m: Message) =>
     m.callStatus === "no_answer" || m.callStatus === "voicemail";
 
+  // Email replies and meaningful AI call transcripts only
+  const emailMessages = messages.filter(m => (!m.type || m.type === "email"));
+  const callMessages  = messages.filter(m => m.type === "call" && !isSystemOutcome(m));
+
+  // Unread = only customer communications, never system outcomes
   const unread = messages.filter(m => !m.isRead && !isSystemOutcome(m)).length;
 
   const filtered = messages
     .filter(m => {
-      if (filter === "all")          return !isSystemOutcome(m);  // hide no-answer & voicemail
-      if (filter === "calls")        return m.type === "call";    // AI Calls shows everything
+      // All views: exclude voicemail / no-answer universally
+      if (isSystemOutcome(m)) return false;
+
+      if (filter === "all")          return true;
+      if (filter === "calls")        return m.type === "call";      // meaningful calls only (voicemail already excluded)
       if (filter === "emails")       return !m.type || m.type === "email";
       if (filter === "unread")       return !m.isRead;
       if (filter === "needs_action") return m.automationPaused === true || m.callStatus === "needs_review";
@@ -790,8 +796,8 @@ function InboxPageContent() {
     <div className="flex flex-col h-full">
       <TopBar
         title="Inbox"
-        subtitle={`Customer replies & AI call transcripts${unread > 0 ? ` · ${unread} unread` : ""}`}
-        description="Review actual customer replies, payment questions, disputes, and AI call transcripts."
+        subtitle={unread > 0 ? `${unread} unread` : "Customer replies and call transcripts"}
+        description="Email replies, disputes, payment promises, and AI call transcripts with customer outcomes."
         actions={
           <button
             onClick={load}
@@ -884,15 +890,14 @@ function InboxPageContent() {
           </div>
 
           {/* Count footer */}
-          {!loading && messages.length > 0 && (
+          {!loading && (emailMessages.length + callMessages.length) > 0 && (
             <div className="flex-shrink-0 border-t border-gray-100 px-4 py-2 bg-gray-50/50 flex items-center justify-between">
+              {/* total counts only meaningful inbox items */}
               <p className="text-[11px] text-gray-400">
-                {filtered.length === messages.length
-                  ? `${messages.length} messages`
-                  : `${filtered.length} of ${messages.length}`}
+                {filtered.length} of {emailMessages.length + callMessages.length}
               </p>
               <p className="text-[11px] text-gray-400">
-                {emailMessages.length} email{emailMessages.length !== 1 ? "s" : ""} · {callMessages.length} call{callMessages.length !== 1 ? "s" : ""}
+                {emailMessages.length} email repl{emailMessages.length !== 1 ? "ies" : "y"}{callMessages.length > 0 ? ` · ${callMessages.length} AI call${callMessages.length !== 1 ? "s" : ""}` : ""}
               </p>
             </div>
           )}

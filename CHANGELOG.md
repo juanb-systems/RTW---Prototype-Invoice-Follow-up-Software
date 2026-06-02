@@ -2,6 +2,44 @@
 
 ---
 
+## v2.42.0 — Remove Voicemail / No-Answer from Inbox (02 Jun 2026)
+
+**Date:** 02 Jun 2026
+**package.json version:** 2.42.0
+
+### Fixed
+
+**The root bug:** `isSystemOutcome` (voicemail + no_answer) was only applied to the `"all"` filter in v2.40. Every other filter path still showed these items, and `callMessages` count still included them.
+
+**Comprehensive fix applied to `app/inbox/page.tsx`:**
+
+The exclusion now happens at the top of the filter chain — **before** any category filter is evaluated:
+
+```js
+// First gate: reject system outcomes from ALL filter paths
+if (isSystemOutcome(m)) return false;
+
+// Then apply category-specific logic
+if (filter === "all")          return true;
+if (filter === "calls")        return m.type === "call";      // voicemail already gone
+if (filter === "emails")       return !m.type || m.type === "email";
+if (filter === "unread")       return !m.isRead;
+if (filter === "needs_action") return m.automationPaused || m.callStatus === "needs_review";
+```
+
+**Count fixes:**
+- `callMessages` now: `messages.filter(m => m.type === "call" && !isSystemOutcome(m))` — only meaningful calls
+- `unread` already excluded system outcomes (from v2.40) — confirmed correct
+- Footer `"of N"` now uses `emailMessages.length + callMessages.length` (meaningful items only, not raw `messages.length`)
+- Footer label: "N email replies · M AI calls" (only shows AI calls if M > 0)
+
+**TopBar subtitle:** Shows `"N unread"` when unread > 0, otherwise `"Customer replies and call transcripts"`. No longer shows inflated numbers.
+
+**Where voicemail/no-answer outcomes appear instead:**
+Voicemail and no-answer outcomes already surface in the **Actions** page. `ScheduledActionCard` shows the lookup result (including "Voicemail Left" or "No answer") as an expandable detail row after an AI call action is run. They are system outcomes of CollectPilot's activity — correctly placed in Actions, not Inbox.
+
+---
+
 ## v2.41.0 — Progressive Disclosure Complete (29 May 2026)
 
 **Date:** 29 May 2026
