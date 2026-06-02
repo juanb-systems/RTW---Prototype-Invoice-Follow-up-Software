@@ -7,7 +7,7 @@ import { TopBar } from "@/components/layout/TopBar";
 import { ContactStatusBadge } from "@/components/contacts/ContactStatusBadge";
 import { formatCurrency } from "@/lib/utils";
 import { useSearchStore } from "@/lib/search-store";
-import { Mail, Phone, Building2, Search, X, ChevronUp, ChevronDown, ChevronsUpDown, UserPlus } from "lucide-react";
+import { Mail, Phone, Building2, Search, X, ChevronUp, ChevronDown, ChevronsUpDown, UserPlus, SlidersHorizontal, Check } from "lucide-react";
 import type { ContactStatus } from "@/lib/types";
 
 type SortCol = "name" | "email" | "phone" | "invoices" | "totalOwed" | "overdueCount" | "status";
@@ -244,15 +244,93 @@ function AddContactModal({
   );
 }
 
+// ── Status filter dropdown ────────────────────────────────────────────────────
+
+const STATUS_OPTIONS = [
+  { value: "active",   label: "Active" },
+  { value: "excluded", label: "Excluded" },
+  { value: "on_hold",  label: "On Hold" },
+];
+
+function ContactFilterDropdown({
+  statusFilter,
+  onFilter,
+}: {
+  statusFilter: string;
+  onFilter: (v: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const dropRef         = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (dropRef.current && !dropRef.current.contains(e.target as Node)) setOpen(false);
+    }
+    if (open) document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  const active = STATUS_OPTIONS.find(o => o.value === statusFilter);
+  const isFiltered = statusFilter !== "all";
+
+  return (
+    <div ref={dropRef} className="relative flex-shrink-0">
+      <button
+        onClick={() => setOpen(v => !v)}
+        className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors ${
+          isFiltered
+            ? "border-blue-400 bg-blue-50 text-blue-700"
+            : "border-gray-200 text-gray-600 hover:bg-gray-50"
+        }`}
+      >
+        <SlidersHorizontal className="h-3.5 w-3.5 flex-shrink-0" />
+        <span>{isFiltered ? active?.label : "Status"}</span>
+        <ChevronDown className={`h-3 w-3 opacity-60 flex-shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full mt-1 w-40 rounded-xl border border-gray-200 bg-white shadow-xl z-50 overflow-hidden">
+          {isFiltered && (
+            <>
+              <button
+                onClick={() => { onFilter("all"); setOpen(false); }}
+                className="flex w-full items-center gap-2 px-3 py-2 text-xs text-gray-500 hover:bg-gray-50 transition-colors"
+              >
+                <X className="h-3.5 w-3.5 flex-shrink-0" />
+                All contacts
+              </button>
+              <div className="border-t border-gray-100" />
+            </>
+          )}
+          {STATUS_OPTIONS.map(opt => (
+            <button
+              key={opt.value}
+              onClick={() => { onFilter(opt.value); setOpen(false); }}
+              className={`flex w-full items-center justify-between px-3 py-2 text-xs font-medium transition-colors ${
+                statusFilter === opt.value
+                  ? "bg-blue-50 text-blue-700"
+                  : "text-gray-700 hover:bg-gray-50"
+              }`}
+            >
+              <span>{opt.label}</span>
+              {statusFilter === opt.value && <Check className="h-3.5 w-3.5 text-blue-600" />}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Contacts page ─────────────────────────────────────────────────────────────
 
 export default function ContactsPage() {
   const router = useRouter();
-  const [contacts, setContacts] = useState<ContactRow[]>([]);
-  const [sortCol, setSortCol]   = useState<SortCol>("name");
-  const [sortDir, setSortDir]   = useState<SortDir>("asc");
-  const [loading, setLoading]   = useState(true);
-  const [showAdd, setShowAdd]   = useState(false);
+  const [contacts, setContacts]     = useState<ContactRow[]>([]);
+  const [sortCol, setSortCol]       = useState<SortCol>("name");
+  const [sortDir, setSortDir]       = useState<SortDir>("asc");
+  const [loading, setLoading]       = useState(true);
+  const [showAdd, setShowAdd]       = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   // Shared search state — also written by the TopBar search input
   const { query, setQuery, clear } = useSearchStore();
@@ -276,7 +354,12 @@ export default function ContactsPage() {
     }
   }
 
-  const filtered = contacts.filter((c) => {
+  const filtered = contacts
+    .filter((c) => {
+      if (statusFilter !== "all") return c.status === statusFilter;
+      return true;
+    })
+    .filter((c) => {
     if (!query.trim()) return true;
     const q = query.toLowerCase().trim();
     const normQ = normaliseAmount(q);
@@ -360,32 +443,41 @@ export default function ContactsPage() {
         )}
 
         <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-4">
-            <h2 className="text-sm font-semibold text-gray-900 shrink-0">All Contacts</h2>
-            {/* In-table search — shares the same store state as the TopBar search */}
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
-              <input
-                ref={searchRef}
-                type="text"
-                placeholder="Search by name, company, email, phone, status…"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="w-full rounded-md border border-gray-200 pl-8 pr-8 py-1.5 text-xs focus:border-blue-400 focus:outline-none"
-              />
-              {query && (
-                <button
-                  onClick={() => { clear(); searchRef.current?.focus(); }}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  title="Clear search"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              )}
+          {/* Toolbar: search + status filter + count */}
+          <div className="px-4 sm:px-5 py-3 border-b border-gray-100 space-y-2">
+            {/* Row 1: search + filter */}
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1 min-w-0">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
+                <input
+                  ref={searchRef}
+                  type="text"
+                  placeholder="Search name, company, email…"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  className="w-full rounded-md border border-gray-200 pl-8 pr-8 py-1.5 text-xs focus:border-blue-400 focus:outline-none"
+                />
+                {query && (
+                  <button
+                    onClick={() => { clear(); searchRef.current?.focus(); }}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    title="Clear search"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+              <ContactFilterDropdown statusFilter={statusFilter} onFilter={setStatusFilter} />
             </div>
-            <span className="text-xs text-gray-400 shrink-0 ml-auto">
+            {/* Row 2: count */}
+            <p className="text-xs text-gray-400">
               {loading ? "Loading…" : `Showing ${sorted.length} of ${contacts.length} contacts`}
-            </span>
+              {statusFilter !== "all" && (
+                <span className="ml-1 text-blue-600 font-medium">
+                  · {STATUS_OPTIONS.find(o => o.value === statusFilter)?.label} only
+                </span>
+              )}
+            </p>
           </div>
 
           {loading ? (
