@@ -377,8 +377,9 @@ export default async function InvoiceDetailPage({
 
           {/* Right sidebar */}
           <div className="space-y-4">
-            {/* Customer Reply / AI Recommendation — shown first so it's immediately visible */}
-            {latestMessage && (
+            {/* Customer Reply — email replies only; calls are not in Inbox so don't show here.
+                Status Overview already captures call classification + recommendation above. */}
+            {latestMessage && latestMessage.type !== "call" && (
               <CustomerReplyPanel message={latestMessage} />
             )}
 

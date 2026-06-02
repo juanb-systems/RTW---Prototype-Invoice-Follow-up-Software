@@ -2,6 +2,29 @@
 
 ---
 
+## v2.48.0 — Fix Invoice Detail Customer Reply Panel (02 Jun 2026)
+
+**Date:** 02 Jun 2026
+**package.json version:** 2.48.0
+
+### Fixed
+
+**Invoice Detail — "Customer Reply" panel no longer shows AI call transcripts (`app/invoices/[id]/page.tsx`):**
+
+`getLatestInboxMessageForInvoice` returns the most recent inbox message for an invoice, which can be a call-type message (e.g. an AI call transcript with `type: "call"`). Since Inbox was made email-only in v2.44.0, showing a call record in the "CUSTOMER REPLY" sidebar panel was inconsistent — the label "Customer Reply" was wrong, and the "View full message in Inbox →" link would lead nowhere since calls are not in the Inbox.
+
+**Fix:** Added `latestMessage.type !== "call"` guard on the `CustomerReplyPanel`:
+
+```tsx
+{latestMessage && latestMessage.type !== "call" && (
+  <CustomerReplyPanel message={latestMessage} />
+)}
+```
+
+The **Status Overview** section at the top of the Invoice Detail page continues to use `latestMessage` (including call-type) for its classification chips and recommended-action banner — so the useful outcome data (e.g. "Promise to Pay" from a call) is still surfaced there.
+
+---
+
 ## v2.47.0 — Remove Redundant Automation Section on Invoice Detail (02 Jun 2026)
 
 **Date:** 02 Jun 2026
