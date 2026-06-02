@@ -2,6 +2,31 @@
 
 ---
 
+## v2.45.0 — Fix Mobile Invoice Detail Line Items (02 Jun 2026)
+
+**Date:** 02 Jun 2026
+**package.json version:** 2.45.0
+
+### Fixed
+
+**Invoice Detail Line Items mobile layout (`app/invoices/[id]/page.tsx`):**
+
+The `overflow-x-auto` table with `min-w-[360px]` caused horizontal scroll and cut-off totals on mobile. The fix uses the same `hidden sm:block` / `sm:hidden` dual-layout pattern used throughout the app:
+
+- **Desktop (sm+):** `hidden sm:block` — existing table layout unchanged (4 columns: Description, Qty, Unit Price, Total)
+- **Mobile (< sm):** `sm:hidden` — stacked card layout:
+  - Each item shows: description (full width), then a 2-column grid for Qty + Unit Price, then a border-separated "Line total" row
+  - Invoice Total shown as a full-width footer row with `bg-gray-50/70`
+  - No horizontal overflow, all amounts visible, text wraps cleanly
+
+**Status Overview chip overflow prevention (`app/invoices/[id]/page.tsx`):**
+- Automation name chip: added `max-w-[180px] truncate` — long automation names no longer push content outside the container
+- Next Action chip: added `max-w-[200px]` with `truncate` span — step type + date string is capped
+
+**Other sections checked:** Invoice summary header (amount uses `text-xl sm:text-2xl` — fine), Activity Timeline (BatchedTimeline scrolls internally — fine), Customer Reply panel (existing layout is column-based — fine), Automation summary (`InvoiceDetailActions` uses full-width layout — fine).
+
+---
+
 ## v2.44.0 — Inbox is Email-Only (02 Jun 2026)
 
 **Date:** 02 Jun 2026

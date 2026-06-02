@@ -176,9 +176,9 @@ export default async function InvoiceDetailPage({
             {/* Automation */}
             <div className="flex flex-col gap-0.5">
               <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Automation</span>
-              <span className="inline-flex items-center gap-1 rounded border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">
-                <GitBranch className="h-3 w-3" />
-                {assignedFlow?.name ?? "No automation assigned"}
+              <span className="inline-flex items-center gap-1 rounded border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 max-w-[180px] truncate">
+                <GitBranch className="h-3 w-3 flex-shrink-0" />
+                <span className="truncate">{assignedFlow?.name ?? "No automation assigned"}</span>
               </span>
             </div>
             {/* Automation status */}
@@ -202,9 +202,9 @@ export default async function InvoiceDetailPage({
             {nextAction && (
               <div className="flex flex-col gap-0.5">
                 <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Next Action</span>
-                <span className="inline-flex items-center gap-1 rounded border border-gray-200 bg-gray-50 px-2 py-0.5 text-xs font-medium text-gray-600 capitalize">
-                  <Calendar className="h-3 w-3" />
-                  {nextAction.stepType} · {formatDate(nextAction.scheduledAt)}
+                <span className="inline-flex items-center gap-1 rounded border border-gray-200 bg-gray-50 px-2 py-0.5 text-xs font-medium text-gray-600 capitalize max-w-[200px]">
+                  <Calendar className="h-3 w-3 flex-shrink-0" />
+                  <span className="truncate">{nextAction.stepType} · {formatDate(nextAction.scheduledAt)}</span>
                 </span>
               </div>
             )}
@@ -299,8 +299,9 @@ export default async function InvoiceDetailPage({
                 badge={invoice.lineItems.length}
                 defaultOpen={false}
               >
-                <div className="px-5 py-4 overflow-x-auto">
-                  <table className="w-full text-sm min-w-[360px]">
+                {/* ── Desktop table (sm+) ── */}
+                <div className="hidden sm:block px-5 py-4">
+                  <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-gray-100">
                         <th className="pb-2 text-left text-xs text-gray-400 font-medium">Description</th>
@@ -324,6 +325,34 @@ export default async function InvoiceDetailPage({
                       </tr>
                     </tbody>
                   </table>
+                </div>
+
+                {/* ── Mobile stacked cards (< sm) ── */}
+                <div className="sm:hidden divide-y divide-gray-100">
+                  {invoice.lineItems.map((item, i) => (
+                    <div key={i} className="px-4 py-3">
+                      <p className="text-sm font-medium text-gray-800 mb-2 leading-snug">{item.description}</p>
+                      <div className="grid grid-cols-2 gap-y-1.5 text-xs">
+                        <div>
+                          <p className="text-gray-400">Qty</p>
+                          <p className="font-medium text-gray-700">{item.quantity}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-400">Unit price</p>
+                          <p className="font-medium text-gray-700">{formatCurrency(item.unitPrice)}</p>
+                        </div>
+                      </div>
+                      <div className="mt-2 pt-2 border-t border-gray-50 flex items-center justify-between">
+                        <span className="text-xs text-gray-400">Line total</span>
+                        <span className="text-sm font-semibold text-gray-900">{formatCurrency(item.total)}</span>
+                      </div>
+                    </div>
+                  ))}
+                  {/* Invoice total row */}
+                  <div className="px-4 py-3 bg-gray-50/70 flex items-center justify-between">
+                    <span className="text-sm font-semibold text-gray-900">Invoice Total</span>
+                    <span className="text-sm font-bold text-gray-900">{formatCurrency(invoice.amount)}</span>
+                  </div>
                 </div>
               </CollapsibleSection>
             )}
