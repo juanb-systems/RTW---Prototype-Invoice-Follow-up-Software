@@ -416,7 +416,7 @@ function InvoicesPageContent() {
                           {/* ── Flow column (CHANGE 3) ── */}
                           <td className="px-5 py-3.5">
                             {invoice.assignedFlowId ? (
-                              <div className="space-y-1">
+                              <div className="flex flex-col items-start gap-1">
                                 <span className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 border border-blue-200 whitespace-nowrap">
                                   <Zap className="h-2.5 w-2.5" />
                                   {flowMap[invoice.assignedFlowId] ?? invoice.assignedFlowId}
