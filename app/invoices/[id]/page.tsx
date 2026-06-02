@@ -4,7 +4,6 @@ import { TopBar } from "@/components/layout/TopBar";
 import { InvoiceStatusBadge } from "@/components/invoices/InvoiceStatusBadge";
 import { BatchedTimeline } from "@/components/invoices/BatchedTimeline";
 import { InvoiceDetailActions } from "@/components/invoices/InvoiceDetailActions";
-import { CollapsibleSection } from "@/components/invoices/CollapsibleSection";
 import { formatCurrency, formatDate, agingColor } from "@/lib/utils";
 import {
   getInvoiceWithContact,
@@ -292,13 +291,17 @@ export default async function InvoiceDetailPage({
               )}
             </div>
 
-            {/* Line items — secondary detail, collapsed by default */}
+            {/* Line items — always visible, no expand/collapse */}
             {invoice.lineItems.length > 0 && (
-              <CollapsibleSection
-                title="Line Items"
-                badge={invoice.lineItems.length}
-                defaultOpen={false}
-              >
+              <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+                {/* Header — title + count badge, no chevron */}
+                <div className="flex items-center gap-2 px-5 py-4 border-b border-gray-100">
+                  <h3 className="text-sm font-semibold text-gray-900">Line Items</h3>
+                  <span className="inline-flex items-center rounded-full bg-gray-100 px-1.5 py-0.5 text-xs font-medium text-gray-500">
+                    {invoice.lineItems.length}
+                  </span>
+                </div>
+
                 {/* ── Desktop table (sm+) ── */}
                 <div className="hidden sm:block px-5 py-4">
                   <table className="w-full text-sm">
@@ -348,25 +351,28 @@ export default async function InvoiceDetailPage({
                       </div>
                     </div>
                   ))}
-                  {/* Invoice total row */}
                   <div className="px-4 py-3 bg-gray-50/70 flex items-center justify-between">
                     <span className="text-sm font-semibold text-gray-900">Invoice Total</span>
                     <span className="text-sm font-bold text-gray-900">{formatCurrency(invoice.amount)}</span>
                   </div>
                 </div>
-              </CollapsibleSection>
+              </div>
             )}
 
-            {/* Activity Timeline — secondary, collapsed by default */}
-            <CollapsibleSection
-              title="Activity Timeline"
-              badge={timeline.length}
-              defaultOpen={false}
-            >
+            {/* Activity Timeline — always visible, no expand/collapse */}
+            <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+              <div className="flex items-center gap-2 px-5 py-4 border-b border-gray-100">
+                <h3 className="text-sm font-semibold text-gray-900">Activity Timeline</h3>
+                {timeline.length > 0 && (
+                  <span className="inline-flex items-center rounded-full bg-gray-100 px-1.5 py-0.5 text-xs font-medium text-gray-500">
+                    {timeline.length}
+                  </span>
+                )}
+              </div>
               <div className="px-5 py-4">
                 <BatchedTimeline events={timeline} />
               </div>
-            </CollapsibleSection>
+            </div>
           </div>
 
           {/* Right sidebar */}

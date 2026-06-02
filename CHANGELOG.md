@@ -2,6 +2,27 @@
 
 ---
 
+## v2.46.0 — Remove Expand Controls from Invoice Detail Sections (02 Jun 2026)
+
+**Date:** 02 Jun 2026
+**package.json version:** 2.46.0
+
+### Changed
+
+**Line Items and Activity Timeline — static sections, no chevron (`app/invoices/[id]/page.tsx`):**
+
+Both sections previously used `<CollapsibleSection>` (which renders a chevron toggle button). The user requested these sections remain always visible with no expand/collapse UI.
+
+Both sections are now rendered as plain `<div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">` cards with:
+- A static header row: title text + count badge (no chevron, no click handler)
+- Content always visible beneath
+
+The mobile stacked card layout for Line Items (from v2.45.0) is preserved exactly. The Activity Timeline `<BatchedTimeline>` is preserved exactly.
+
+**Cleanup:** `CollapsibleSection` import removed from `app/invoices/[id]/page.tsx` — it is no longer used on this page (the component itself remains available for other uses).
+
+---
+
 ## v2.45.0 — Fix Mobile Invoice Detail Line Items (02 Jun 2026)
 
 **Date:** 02 Jun 2026
