@@ -246,7 +246,8 @@ function MessageDetail({
   const isCall      = message.type === "call";
   const isVoicemail = message.callStatus === "voicemail";
   const TypeIcon    = isVoicemail ? Voicemail : isCall ? Phone : Mail;
-  const typeLabel   = isVoicemail ? "Voicemail" : isCall ? "AI Call Transcript" : "Email Reply";
+  // voicemail/no-answer never reach MessageDetail (filtered at source)
+  const typeLabel = isCall ? "Customer call transcript" : "Email Reply";
   const typeColor   = isCall ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700";
 
   async function pauseAutomation() {
@@ -582,7 +583,7 @@ function InboxRow({
 const FILTER_OPTIONS = [
   { value: "unread",         label: "Unread" },
   { value: "emails",         label: "Email Replies" },
-  { value: "calls",          label: "AI Calls" },
+  { value: "calls",          label: "Call Transcripts" },
   { value: "dispute",        label: "Disputes" },
   { value: "promise_to_pay", label: "Promises" },
   { value: "needs_action",   label: "Needs Action" },
@@ -796,8 +797,8 @@ function InboxPageContent() {
     <div className="flex flex-col h-full">
       <TopBar
         title="Inbox"
-        subtitle={unread > 0 ? `${unread} unread` : "Customer replies and call transcripts"}
-        description="Email replies, disputes, payment promises, and AI call transcripts with customer outcomes."
+        subtitle={unread > 0 ? `${unread} unread` : "All caught up"}
+        description="Customer email replies and call transcripts where the customer spoke. Voicemail and no-answer outcomes appear in Actions."
         actions={
           <button
             onClick={load}
@@ -867,7 +868,11 @@ function InboxPageContent() {
               <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
                 <InboxIcon className="h-8 w-8 text-gray-200 mb-3" />
                 <p className="text-sm text-gray-400">
-                  {query ? `No messages match "${query}".` : "No messages in this category."}
+                  {query
+                    ? `No messages match "${query}".`
+                    : filter === "calls"
+                    ? "No customer call transcripts to review."
+                    : "No messages in this category."}
                 </p>
                 {query && (
                   <button onClick={clear} className="mt-2 text-xs text-blue-500 hover:underline">

@@ -2,6 +2,29 @@
 
 ---
 
+## v2.43.0 — Clarify Inbox Call Transcript Labels (02 Jun 2026)
+
+**Date:** 02 Jun 2026
+**package.json version:** 2.43.0
+
+### Changed
+
+**Inbox call transcript clarity (`app/inbox/page.tsx`):**
+
+After v2.42.0 ensured voicemail/no-answer never reach the Inbox list, the UI labels still said "AI Calls" and "AI Call Transcript" which made users unsure whether voicemail items were included. These label changes make it unambiguous:
+
+| Before | After |
+|--------|-------|
+| Filter tab: "AI Calls" | Filter tab: "Call Transcripts" |
+| MessageDetail badge: "AI Call Transcript" | MessageDetail badge: "Customer call transcript" |
+| Empty state (calls filter): "No messages in this category." | "No customer call transcripts to review." |
+| Page subtitle (0 unread): "Customer replies and call transcripts" | "All caught up" |
+| Page description | "Customer email replies and call transcripts where the customer spoke. Voicemail and no-answer outcomes appear in Actions." |
+
+**Context:** Any call transcript that now appears in the Inbox has `callStatus !== "voicemail"` and `callStatus !== "no_answer"` — guaranteed by the `isSystemOutcome` gate added in v2.42.0. Renaming the label to "Customer call transcript" accurately describes what is shown: calls where the customer actually spoke and there is a meaningful outcome (dispute, promise to pay, needs review, etc.).
+
+---
+
 ## v2.42.0 — Remove Voicemail / No-Answer from Inbox (02 Jun 2026)
 
 **Date:** 02 Jun 2026
