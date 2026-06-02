@@ -341,11 +341,13 @@ function MessageDetail({
         </div>
 
         {/* 2. Message body / transcript — read the actual content next */}
-        <div className="rounded-lg border border-gray-100 bg-white overflow-hidden">
-          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider px-4 pt-3 pb-2">
-            {isCall ? "Call Transcript" : "Message"}
-          </p>
-          <div className="px-4 pb-4">
+        <div className="rounded-xl border border-gray-200 bg-gray-50 shadow-sm overflow-hidden">
+          <div className="border-b border-gray-200 px-4 py-2 bg-white">
+            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+              {isCall ? "Call Transcript" : "Message"}
+            </p>
+          </div>
+          <div className="px-4 py-4">
             {isCall
               ? <TranscriptView text={message.transcript || message.body} />
               : <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{message.body}</p>
