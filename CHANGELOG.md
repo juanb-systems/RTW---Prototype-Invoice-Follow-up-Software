@@ -2,6 +2,47 @@
 
 ---
 
+## v2.39.0 — Progressive Disclosure: Inbox Detail & Invoice Automation (29 May 2026)
+
+**Date:** 29 May 2026
+**package.json version:** 2.39.0
+
+### Changed
+
+**Inbox — AI Overview at top of message detail (`app/inbox/page.tsx`):**
+- Every message/call detail view now opens with an **AI Overview** section (2–4 bullet points) generated from the classification and call status. Answers: what happened, what it means, what to do next.
+- Generated summaries per classification: Promise to Pay, Dispute, Out of Office, Payment Query, Unclassified; per call status: Completed, Voicemail, No Answer, Needs Review.
+- Blue card style (`bg-blue-50 border-blue-100`) so it reads as a summary/guidance item, distinct from action alerts.
+- Voicemail and No Answer overviews clearly communicate these are system-outcome notes, not customer replies.
+
+**Inbox — Content accordion (`app/inbox/page.tsx`):**
+- Email body and call transcripts are now in a collapsible accordion, **collapsed by default**.
+- Button labels: "View email content" / "View call transcript" / "View voicemail details".
+- User sees the AI Overview first; raw content is only one tap/click away.
+- Accordion uses `ChevronDown` with `rotate-180` for open state.
+- `showContent` state resets to `false` when a new message is opened (each `MessageDetail` is remounted on message selection).
+
+**Inbox — Improved call transcript speaker layout (`app/inbox/page.tsx`):**
+- `TranscriptView` speaker blocks redesigned: each turn has a distinct section with a `text-[10px] font-bold uppercase tracking-widest` speaker label and the text indented with a `border-l-2` color accent (`border-green-200` for AI Caller, `border-blue-200` for Customer).
+- Label changed from "AI" to "AI Caller" for clarity.
+- Removed the `w-20` side label — labels now appear above each block.
+
+**Invoice detail — Automation section simplified (`components/invoices/InvoiceDetailActions.tsx`):**
+- Default view: shows the assigned automation name + "Excluded" note if applicable, with a small **Edit** button (pencil icon).
+- Edit mode: clicking Edit reveals the full Assign Automation dropdown, Exclude toggle, Save/Cancel.
+- Cancel (X) button in edit mode returns to summary view.
+- Reduces visible controls: business owners see the current state, not an admin form.
+- Component renamed internal state: `editMode` replaces old always-visible form pattern.
+
+**Invoice detail — Language cleanup (`app/invoices/[id]/page.tsx`):**
+- "Flow" label → "Automation" in Status Overview chip.
+- `autoStatus` label "No Flow" → "No Automation".
+- "No flow assigned" → "No automation assigned".
+- Pending actions link: "Manage in Scheduled Actions" → "View in Actions →".
+- Label "Awaiting Approval" → "Needs Approval" (in autoStatus config via sed).
+
+---
+
 ## v2.38.0 — Simplify Inbox Filter Controls (29 May 2026)
 
 **Date:** 29 May 2026

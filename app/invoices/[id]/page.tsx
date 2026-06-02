@@ -115,9 +115,9 @@ export default async function InvoiceDetailPage({
     if (latestMessage?.automationPaused) return { label: "Paused", cls: "bg-amber-100 text-amber-700 border-amber-200", icon: PauseCircle };
     if (invoice.status === "disputed") return { label: "Blocked (Dispute)", cls: "bg-red-100 text-red-700 border-red-200", icon: ShieldX };
     if (invoice.contact?.status === "excluded") return { label: "Blocked (Contact)", cls: "bg-red-100 text-red-700 border-red-200", icon: ShieldX };
-    if (pendingActions.some(a => a.status === "awaiting_approval")) return { label: "Awaiting Approval", cls: "bg-purple-100 text-purple-700 border-purple-200", icon: Clock };
+    if (pendingActions.some(a => a.status === "awaiting_approval")) return { label: "Needs Approval", cls: "bg-purple-100 text-purple-700 border-purple-200", icon: Clock };
     if (pendingActions.some(a => a.status === "pending")) return { label: "Active", cls: "bg-green-100 text-green-700 border-green-200", icon: Zap };
-    if (!invoice.assignedFlowId) return { label: "No Flow", cls: "bg-gray-100 text-gray-500 border-gray-200", icon: GitBranch };
+    if (!invoice.assignedFlowId) return { label: "No Automation", cls: "bg-gray-100 text-gray-500 border-gray-200", icon: GitBranch };
     return { label: "No Actions", cls: "bg-gray-100 text-gray-400 border-gray-200", icon: CheckCircle2 };
   })();
 
@@ -172,12 +172,12 @@ export default async function InvoiceDetailPage({
                 </span>
               </div>
             )}
-            {/* Flow */}
+            {/* Automation */}
             <div className="flex flex-col gap-0.5">
-              <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Flow</span>
+              <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Automation</span>
               <span className="inline-flex items-center gap-1 rounded border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">
                 <GitBranch className="h-3 w-3" />
-                {assignedFlow?.name ?? "No flow assigned"}
+                {assignedFlow?.name ?? "No automation assigned"}
               </span>
             </div>
             {/* Automation status */}
@@ -412,7 +412,7 @@ export default async function InvoiceDetailPage({
                           : `Scheduled: ${formatDate(action.scheduledAt)}`}
                       </p>
                       <Link href="/scheduled" className="text-xs text-blue-600 hover:underline mt-1 block">
-                        Manage in Scheduled Actions →
+                        View in Actions →
                       </Link>
                     </div>
                   ))}

@@ -1,4 +1,4 @@
-# CollectPilot — AI Receivables Assistant · v2.38
+# CollectPilot — AI Receivables Assistant · v2.39
 
 A Next.js 15 prototype for an AI-powered B2B receivables follow-up platform. Demonstrates automated invoice collection workflows with "Fresh Xero Check" safety gates before every customer contact.
 
@@ -115,6 +115,7 @@ No environment variables are required for the current prototype. All data is see
 
 | Version | Date | Summary |
 |---------|------|---------|
+| v2.39.0 | 29 May 2026 | Progressive disclosure in Inbox and Invoice detail — AI Overview at top of every message detail view, email/transcript content moved into accordion (collapsed by default), AI call transcript uses distinct AI Caller/Customer speaker blocks with left-border indicators, Invoice detail Automation section shows summary+Edit button by default, edit controls only visible in edit mode |
 | v2.38.0 | 29 May 2026 | Simplify Inbox filters — 7 visible filter tabs replaced by single Filter dropdown button; search and filter combined into one row; active filter shown in button label; Clear filter option in dropdown; changing filter clears detail panel to avoid stale state |
 | v2.37.0 | 29 May 2026 | Expandable Needs Attention cards — each card collapses to count+label+description, expands on click to show up to 3 related items (invoice#/contact/amount for overdue+disputes; action type/invoice/reason for blocked+approval; contact/invoice/subject for inbox items) with "View all N →" overflow link; accordion behavior keeps only one card open; server data function getAttentionDetails() provides flat serializable item lists |
 | v2.36.0 | 29 May 2026 | Fix mobile Contact detail layout — responsive single-column stacked layout on mobile, email/phone stack vertically, Total Owed uses break-all + smaller text, Automation Status appears inline between stats and invoices on mobile, invoice table replaced by mobile cards (< sm) |

@@ -83,31 +83,145 @@ function TranscriptView({ text }: { text: string }) {
   }
 
   return (
-    <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-4 space-y-3 max-h-72 overflow-y-auto">
+    <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
       {lines.map((line, i) => {
         const aiMatch = line.match(/^(AI( caller)?): /i);
         const custMatch = line.match(/^Customer: /i);
 
         if (aiMatch) {
           return (
-            <div key={i} className="flex gap-3 items-start">
-              <span className="w-20 flex-shrink-0 text-xs font-semibold text-green-600 pt-0.5">AI</span>
-              <p className="flex-1 text-sm text-gray-700 leading-relaxed">{line.slice(aiMatch[0].length)}</p>
+            <div key={i} className="space-y-1">
+              <p className="text-[10px] font-bold text-green-700 uppercase tracking-widest">AI Caller</p>
+              <p className="text-sm text-gray-700 leading-relaxed pl-3 border-l-2 border-green-200">
+                {line.slice(aiMatch[0].length)}
+              </p>
             </div>
           );
         }
         if (custMatch) {
           return (
-            <div key={i} className="flex gap-3 items-start">
-              <span className="w-20 flex-shrink-0 text-xs font-semibold text-blue-600 pt-0.5">Customer</span>
-              <p className="flex-1 text-sm text-gray-700 leading-relaxed">{line.slice(custMatch[0].length)}</p>
+            <div key={i} className="space-y-1">
+              <p className="text-[10px] font-bold text-blue-700 uppercase tracking-widest">Customer</p>
+              <p className="text-sm text-gray-700 leading-relaxed pl-3 border-l-2 border-blue-200">
+                {line.slice(custMatch[0].length)}
+              </p>
             </div>
           );
         }
         return (
-          <p key={i} className="text-xs text-gray-400 italic ml-24">{line}</p>
+          <p key={i} className="text-xs text-gray-400 italic">{line}</p>
         );
       })}
+    </div>
+  );
+}
+
+// ── AI Overview (generated from classification/callStatus, no real AI) ────────
+
+function AIOverview({ message }: { message: Message }) {
+  const isCall      = message.type === "call";
+  const isVoicemail = message.callStatus === "voicemail";
+  const isNoAnswer  = message.callStatus === "no_answer";
+  const paused      = message.automationPaused;
+
+  let points: string[];
+
+  if (!isCall) {
+    // Email reply
+    switch (message.classification) {
+      case "promise_to_pay":
+        points = [
+          "Customer promised to pay this invoice.",
+          "Automation is on hold for 7 days while payment is monitored.",
+          "Recommended: Monitor and resume automation if unpaid after the promised date.",
+        ];
+        break;
+      case "dispute":
+        points = [
+          "Customer has raised a dispute about this invoice.",
+          "All automated follow-ups are paused until this is resolved.",
+          "Recommended: Review the invoice and contact the customer directly.",
+        ];
+        break;
+      case "out_of_office":
+        points = [
+          "Customer is currently out of office.",
+          paused
+            ? "Automation is on hold until they return."
+            : "Automation will hold until the customer is back.",
+          "Recommended: Check the return date in their reply and follow up then.",
+        ];
+        break;
+      case "payment_query":
+        points = [
+          "Customer has a question about this invoice.",
+          "Recommended: Reply with the full invoice breakdown before sending more reminders.",
+        ];
+        break;
+      default:
+        points = [
+          "A reply was received but could not be automatically classified.",
+          "Recommended: Review this message and decide on the next step.",
+        ];
+    }
+  } else if (isVoicemail) {
+    points = [
+      "The AI caller reached voicemail and left a message.",
+      "The customer has not yet responded.",
+      "Recommended: Follow up manually if no callback within 2 business days.",
+    ];
+  } else if (isNoAnswer) {
+    points = [
+      "The AI caller did not reach the contact — no answer.",
+      "No message was left.",
+      "Recommended: Retry at a different time or follow up via email.",
+    ];
+  } else {
+    // Completed call
+    switch (message.classification) {
+      case "promise_to_pay":
+        points = [
+          "AI call completed. The customer promised to pay this invoice.",
+          "Automation is on hold while payment is monitored.",
+          "Recommended: Monitor the payment date and resume automation if unpaid.",
+        ];
+        break;
+      case "dispute":
+        points = [
+          "AI call completed. The customer raised a dispute during the call.",
+          "Automation is paused. This invoice needs human review.",
+          "Recommended: Contact the customer directly to resolve the dispute.",
+        ];
+        break;
+      default:
+        if (message.callStatus === "needs_review") {
+          points = [
+            "AI call completed but the outcome was unclear.",
+            "Automation is paused pending human review.",
+            "Recommended: Review the call transcript below and decide on next steps.",
+          ];
+        } else {
+          points = [
+            "AI call was completed with this contact.",
+            message.callOutcome
+              ? `Detected: ${message.callOutcome}.`
+              : "No specific outcome was captured.",
+          ];
+        }
+    }
+  }
+
+  return (
+    <div className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3.5">
+      <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-2.5">AI Overview</p>
+      <ul className="space-y-1.5">
+        {points.map((pt, i) => (
+          <li key={i} className="flex items-start gap-2">
+            <span className="text-blue-300 mt-1 flex-shrink-0 text-xs">·</span>
+            <p className="text-sm text-blue-900 leading-snug">{pt}</p>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -123,10 +237,11 @@ function MessageDetail({
   onClose: () => void;
   onPatch: (changes: Partial<Message>) => void;
 }) {
-  const [showReply, setShowReply] = useState(false);
-  const [replyText, setReplyText] = useState("");
-  const [pausing, setPausing] = useState(false);
-  const [replying, setReplying] = useState(false);
+  const [showReply, setShowReply]     = useState(false);
+  const [replyText, setReplyText]     = useState("");
+  const [pausing, setPausing]         = useState(false);
+  const [replying, setReplying]       = useState(false);
+  const [showContent, setShowContent] = useState(false);
 
   const isCall      = message.type === "call";
   const isVoicemail = message.callStatus === "voicemail";
@@ -208,6 +323,9 @@ function MessageDetail({
       {/* ── Scrollable content ── */}
       <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-5 space-y-5">
 
+        {/* AI Overview — always first */}
+        <AIOverview message={message} />
+
         {/* Sender / subject / date */}
         <div>
           <h2 className="text-base font-semibold text-gray-900 leading-snug mb-1.5">
@@ -275,20 +393,26 @@ function MessageDetail({
           </div>
         )}
 
-        {/* Body / transcript */}
-        {isCall ? (
-          <div>
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Call Transcript</p>
-            <TranscriptView text={message.transcript || message.body} />
-          </div>
-        ) : (
-          <div>
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Message</p>
-            <div className="rounded-lg bg-gray-50 border border-gray-100 px-4 py-4">
-              <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{message.body}</p>
+        {/* Content accordion — collapsed by default so AI Overview is read first */}
+        <div className="rounded-lg border border-gray-200 overflow-hidden">
+          <button
+            onClick={() => setShowContent(v => !v)}
+            className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors text-left"
+          >
+            <span className="text-xs font-medium text-gray-600">
+              {isVoicemail ? "View voicemail details" : isCall ? "View call transcript" : "View email content"}
+            </span>
+            <ChevronDown className={`h-3.5 w-3.5 text-gray-400 flex-shrink-0 transition-transform ${showContent ? "rotate-180" : ""}`} />
+          </button>
+          {showContent && (
+            <div className="px-4 py-4 bg-white">
+              {isCall
+                ? <TranscriptView text={message.transcript || message.body} />
+                : <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{message.body}</p>
+              }
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Reply form */}
         {!isCall && showReply && (
