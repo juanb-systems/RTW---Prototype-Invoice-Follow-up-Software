@@ -84,14 +84,8 @@ export default function DashboardPage() {
                   <h3 className="text-sm font-semibold text-gray-900">Performance Summary</h3>
                 </div>
                 <div className="p-4 space-y-4">
-                  <div>
-                    <p className="text-xs font-medium text-gray-500 mb-2">Overdue Aging</p>
-                    <AgingChart data={agingBuckets} height={160} compact />
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium text-gray-500 mb-2">Collections Trend</p>
-                    <CollectionsTrendChart data={collectionsTrend} height={160} compact />
-                  </div>
+                  <AgingChart data={agingBuckets} height={160} compact />
+                  <CollectionsTrendChart data={collectionsTrend} height={160} compact />
                 </div>
               </div>
 
@@ -99,14 +93,8 @@ export default function DashboardPage() {
               <div className="lg:hidden">
                 <CollapsibleSection title="Performance Summary" defaultOpen={false}>
                   <div className="p-3 space-y-4">
-                    <div>
-                      <p className="text-xs font-medium text-gray-500 mb-2">Overdue Aging</p>
-                      <AgingChart data={agingBuckets} height={180} compact />
-                    </div>
-                    <div>
-                      <p className="text-xs font-medium text-gray-500 mb-2">Collections Trend</p>
-                      <CollectionsTrendChart data={collectionsTrend} height={180} compact />
-                    </div>
+                    <AgingChart data={agingBuckets} height={180} compact />
+                    <CollectionsTrendChart data={collectionsTrend} height={180} compact />
                   </div>
                 </CollapsibleSection>
               </div>
