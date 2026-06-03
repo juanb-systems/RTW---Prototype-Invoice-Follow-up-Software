@@ -7,7 +7,7 @@ import { TopBar } from "@/components/layout/TopBar";
 import { InvoiceStatusBadge } from "@/components/invoices/InvoiceStatusBadge";
 import { formatCurrency, formatDate, agingColor } from "@/lib/utils";
 import { useSearchStore } from "@/lib/search-store";
-import { Search, X, ChevronUp, ChevronDown, ChevronsUpDown, PauseCircle, SlidersHorizontal, Zap, AlertTriangle } from "lucide-react";
+import { Search, X, ChevronUp, ChevronDown, ChevronsUpDown, SlidersHorizontal, AlertTriangle, Check } from "lucide-react";
 
 type SortCol = "invoiceNumber" | "contact" | "amount" | "dueDate" | "daysPastDue" | "status" | "flow" | "reply";
 type SortDir = "asc" | "desc";
@@ -71,6 +71,125 @@ const AUTO_STATUS_CONFIG = {
   no_actions:        { label: "No Actions",      cls: "bg-gray-100 text-gray-400 border-gray-200" },
 } as const;
 
+// ── Unified filter options ────────────────────────────────────────────────────
+
+type FilterOption = {
+  value: string;
+  label: string;
+  group: "status" | "response" | "automation";
+  /** which state variable + value this option maps to */
+  sets: { field: "status" | "flow" | "reply"; value: string };
+};
+
+const INVOICE_FILTER_OPTIONS: FilterOption[] = [
+  // Status
+  { value: "status:overdue",  label: "Overdue",          group: "status",     sets: { field: "status", value: "overdue" } },
+  { value: "status:disputed", label: "Disputed",         group: "status",     sets: { field: "status", value: "disputed" } },
+  { value: "status:partial",  label: "Partial",          group: "status",     sets: { field: "status", value: "partial" } },
+  { value: "status:paid",     label: "Paid",             group: "status",     sets: { field: "status", value: "paid" } },
+  { value: "status:voided",   label: "Voided",           group: "status",     sets: { field: "status", value: "voided" } },
+  // Response
+  { value: "reply:promise_to_pay", label: "Promise to Pay",    group: "response", sets: { field: "reply", value: "promise_to_pay" } },
+  { value: "reply:dispute",        label: "Dispute raised",    group: "response", sets: { field: "reply", value: "dispute" } },
+  { value: "reply:out_of_office",  label: "Out of Office",     group: "response", sets: { field: "reply", value: "out_of_office" } },
+  { value: "reply:payment_query",  label: "Payment Question",  group: "response", sets: { field: "reply", value: "payment_query" } },
+  // Automation
+  { value: "flow:none",       label: "No automation",    group: "automation", sets: { field: "flow",   value: "no-flow" } },
+  { value: "flow:has",        label: "Has automation",   group: "automation", sets: { field: "flow",   value: "has-flow" } },
+];
+
+const GROUP_LABELS: Record<FilterOption["group"], string> = {
+  status:     "Status",
+  response:   "Response",
+  automation: "Automation",
+};
+
+function InvoiceFilterDropdown({
+  activeKey,
+  onSelect,
+  onClear,
+}: {
+  activeKey: string | null;
+  onSelect: (opt: FilterOption) => void;
+  onClear: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const dropRef         = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (dropRef.current && !dropRef.current.contains(e.target as Node)) setOpen(false);
+    }
+    if (open) document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  const activeOpt  = activeKey ? INVOICE_FILTER_OPTIONS.find(o => o.value === activeKey) : null;
+  const isFiltered = !!activeOpt;
+
+  // Group options by their group field
+  const groups: FilterOption["group"][] = ["status", "response", "automation"];
+
+  return (
+    <div ref={dropRef} className="relative flex-shrink-0">
+      <button
+        onClick={() => setOpen(v => !v)}
+        className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors ${
+          isFiltered
+            ? "border-blue-400 bg-blue-50 text-blue-700"
+            : "border-gray-200 text-gray-600 hover:bg-gray-50"
+        }`}
+      >
+        <SlidersHorizontal className="h-3.5 w-3.5 flex-shrink-0" />
+        <span>{isFiltered ? activeOpt.label : "Filter"}</span>
+        <ChevronDown className={`h-3 w-3 opacity-60 transition-transform flex-shrink-0 ${open ? "rotate-180" : ""}`} />
+      </button>
+
+      {open && (
+        <div className="absolute left-0 top-full mt-1 w-52 rounded-xl border border-gray-200 bg-white shadow-xl z-50 overflow-hidden">
+          {/* All / clear */}
+          <button
+            onClick={() => { onClear(); setOpen(false); }}
+            className={`flex w-full items-center justify-between gap-2 px-3 py-2 text-xs font-medium transition-colors ${
+              !isFiltered ? "bg-blue-50 text-blue-700" : "text-gray-600 hover:bg-gray-50"
+            }`}
+          >
+            <span>All</span>
+            {!isFiltered && <Check className="h-3.5 w-3.5 text-blue-600" />}
+          </button>
+          <div className="border-t border-gray-100" />
+
+          {groups.map((group, gi) => {
+            const opts = INVOICE_FILTER_OPTIONS.filter(o => o.group === group);
+            return (
+              <div key={group}>
+                {gi > 0 && <div className="border-t border-gray-100" />}
+                <p className="px-3 pt-2 pb-0.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+                  {GROUP_LABELS[group]}
+                </p>
+                {opts.map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => { onSelect(opt); setOpen(false); }}
+                    className={`flex w-full items-center justify-between gap-2 px-3 py-1.5 text-xs font-medium transition-colors ${
+                      activeKey === opt.value
+                        ? "bg-blue-50 text-blue-700"
+                        : "text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    <span>{opt.label}</span>
+                    {activeKey === opt.value && <Check className="h-3.5 w-3.5 text-blue-600" />}
+                  </button>
+                ))}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function InvoicesPageContent() {
   const router      = useRouter();
   const searchParams = useSearchParams();
@@ -85,6 +204,26 @@ function InvoicesPageContent() {
   const [statusFilter, setStatusFilter] = useState<string>(searchParams.get("status") ?? "all");
   const [flowFilter, setFlowFilter]     = useState<string>("all");
   const [replyFilter, setReplyFilter]   = useState<string>("all");
+
+  // Derive which unified filter key is active (null = none)
+  const activeFilterKey: string | null = (() => {
+    if (statusFilter !== "all") return `status:${statusFilter}`;
+    if (replyFilter !== "all")  return `reply:${replyFilter}`;
+    if (flowFilter === "no-flow") return "flow:none";
+    if (flowFilter !== "all")     return "flow:has";
+    return null;
+  })();
+
+  function handleUnifiedFilter(opt: FilterOption) {
+    // Reset all three first, then apply the selected one
+    setStatusFilter("all");
+    setFlowFilter("all");
+    setReplyFilter("all");
+    const { field, value } = opt.sets;
+    if (field === "status") setStatusFilter(value);
+    else if (field === "flow")  setFlowFilter(value);
+    else if (field === "reply") setReplyFilter(value);
+  }
 
   // Shared search state — also written by the TopBar search input
   const { query, setQuery, clear } = useSearchStore();
@@ -216,8 +355,6 @@ function InvoicesPageContent() {
     (i) => i.status === "overdue" || i.status === "disputed" || i.status === "partial"
   ).length;
 
-  // Unique flows that appear in the current invoice list (for the Flow dropdown)
-  const assignedFlowIds = [...new Set(invoices.filter((i) => i.assignedFlowId).map((i) => i.assignedFlowId!))];
   const hasActiveFilters = statusFilter !== "all" || flowFilter !== "all" || replyFilter !== "all";
 
   function resetFilters() {
@@ -226,15 +363,12 @@ function InvoicesPageContent() {
     setReplyFilter("all");
   }
 
-  const columns: { col: SortCol; label: string; align: "left" | "right" | "center" }[] = [
-    { col: "invoiceNumber", label: "Invoice",      align: "left" },
-    { col: "contact",       label: "Contact",      align: "left" },
-    { col: "amount",        label: "Amount",       align: "right" },
-    { col: "dueDate",       label: "Due Date",     align: "left" },
-    { col: "daysPastDue",   label: "Days Overdue", align: "center" },
-    { col: "status",        label: "Status",       align: "left" },
-    { col: "flow",          label: "Automation",   align: "left" },
-    { col: "reply",         label: "Reply",        align: "left" },
+  // 4-column clean table: Customer | Amount | Status | Response
+  const columns: { col: SortCol; label: string }[] = [
+    { col: "contact",     label: "Customer"  },
+    { col: "amount",      label: "Amount"    },
+    { col: "status",      label: "Status"    },
+    { col: "reply",       label: "Response"  },
   ];
 
   return (
@@ -266,66 +400,24 @@ function InvoicesPageContent() {
                 </button>
               )}
             </div>
-            <span className="text-xs text-gray-400 shrink-0 ml-auto">
-              {loading ? "Loading…" : `Showing ${sorted.length} of ${invoices.length} invoices`}
-            </span>
-          </div>
-
-          {/* Filter row */}
-          <div className="px-5 py-3 border-b border-gray-100 bg-gray-50/40 flex items-center gap-3 flex-wrap">
-            <SlidersHorizontal className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
-
-            {/* Status filter */}
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className={`rounded-md border py-1 pl-2.5 pr-6 text-xs focus:border-blue-400 focus:outline-none appearance-none bg-white ${statusFilter !== "all" ? "border-blue-400 text-blue-700 font-medium" : "border-gray-200 text-gray-600"}`}
-            >
-              <option value="all">Status: All</option>
-              <option value="overdue">Overdue</option>
-              <option value="partial">Partial</option>
-              <option value="disputed">Disputed</option>
-              <option value="paid">Paid</option>
-              <option value="voided">Voided</option>
-            </select>
-
-            {/* Flow filter */}
-            <select
-              value={flowFilter}
-              onChange={(e) => setFlowFilter(e.target.value)}
-              className={`rounded-md border py-1 pl-2.5 pr-6 text-xs focus:border-blue-400 focus:outline-none appearance-none bg-white ${flowFilter !== "all" ? "border-blue-400 text-blue-700 font-medium" : "border-gray-200 text-gray-600"}`}
-            >
-              <option value="all">Automation: All</option>
-              <option value="no-flow">No automation</option>
-              {assignedFlowIds.map((fId) => (
-                <option key={fId} value={fId}>{flowMap[fId] ?? fId}</option>
-              ))}
-            </select>
-
-            {/* Reply filter */}
-            <select
-              value={replyFilter}
-              onChange={(e) => setReplyFilter(e.target.value)}
-              className={`rounded-md border py-1 pl-2.5 pr-6 text-xs focus:border-blue-400 focus:outline-none appearance-none bg-white ${replyFilter !== "all" ? "border-blue-400 text-blue-700 font-medium" : "border-gray-200 text-gray-600"}`}
-            >
-              <option value="all">Response: All</option>
-              <option value="has-reply">Has response</option>
-              <option value="no-reply">No response</option>
-              <option value="promise_to_pay">Promise to Pay</option>
-              <option value="dispute">Dispute</option>
-              <option value="out_of_office">Out of Office</option>
-              <option value="payment_query">Payment Question</option>
-              <option value="unclassified">Unclassified</option>
-            </select>
-
-            {hasActiveFilters && (
-              <button
-                onClick={resetFilters}
-                className="text-xs text-blue-600 hover:underline font-medium"
-              >
-                Reset filters
-              </button>
-            )}
+            <div className="flex items-center gap-2 ml-auto flex-shrink-0">
+              <InvoiceFilterDropdown
+                activeKey={activeFilterKey}
+                onSelect={handleUnifiedFilter}
+                onClear={resetFilters}
+              />
+              {hasActiveFilters && (
+                <button
+                  onClick={resetFilters}
+                  className="text-xs text-blue-600 hover:underline font-medium"
+                >
+                  Reset
+                </button>
+              )}
+              <span className="text-xs text-gray-400">
+                {loading ? "Loading…" : `Showing ${sorted.length} of ${invoices.length}`}
+              </span>
+            </div>
           </div>
 
           {loading ? (
@@ -354,18 +446,18 @@ function InvoicesPageContent() {
             </div>
           ) : (
             <>
-              {/* ── Desktop table (sm+) ────────────────────────────────── */}
-              <div className="hidden sm:block overflow-x-auto">
-                <table className="w-full text-sm">
+              {/* ── Desktop table (sm+) — 4 clean columns ── */}
+              <div className="hidden sm:block">
+                <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-100 bg-gray-50/50">
-                      {columns.map(({ col, label, align }) => (
+                      {columns.map(({ col, label }) => (
                         <th
                           key={col}
-                          className={`px-5 py-3 text-${align} text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-900 select-none whitespace-nowrap`}
+                          className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:text-gray-700 select-none whitespace-nowrap"
                           onClick={() => handleSort(col)}
                         >
-                          <span className={`inline-flex items-center gap-1 ${align === "right" ? "flex-row-reverse" : ""}`}>
+                          <span className="inline-flex items-center gap-1">
                             {label}
                             <SortIcon active={sortCol === col} dir={sortDir} />
                           </span>
@@ -379,105 +471,47 @@ function InvoicesPageContent() {
                       const reply = replyMap[invoice.id];
                       return (
                         <tr
-                        key={invoice.id}
-                        className="hover:bg-gray-50/60 transition-colors cursor-pointer"
-                        onClick={() => router.push(`/invoices/${invoice.id}`)}
-                      >
-                          <td className="px-5 py-3.5">
-                            <span className="font-mono text-xs font-medium text-gray-700">
-                              {invoice.invoiceNumber}
-                            </span>
+                          key={invoice.id}
+                          className="hover:bg-gray-50/60 transition-colors cursor-pointer"
+                          onClick={() => router.push(`/invoices/${invoice.id}`)}
+                        >
+                          {/* Customer — name + company + invoice# */}
+                          <td className="px-5 py-4">
+                            <p className="text-sm font-semibold text-gray-900">{invoice.contact?.name ?? "—"}</p>
+                            <p className="text-xs text-gray-400 mt-0.5">{invoice.contact?.company ?? "—"}</p>
+                            <p className="font-mono text-[10px] text-gray-300 mt-0.5">{invoice.invoiceNumber}</p>
                           </td>
-                          <td className="px-5 py-3.5">
-                            <div>
-                              <p className="font-medium text-gray-900 text-xs">{invoice.contact?.name ?? "—"}</p>
-                              <p className="text-xs text-gray-400">{invoice.contact?.company ?? "—"}</p>
-                            </div>
+
+                          {/* Amount — amount + days overdue inline */}
+                          <td className="px-5 py-4">
+                            <p className="text-sm font-bold text-gray-900">{formatCurrency(invoice.amount)}</p>
+                            {invoice.daysPastDue > 0 && (
+                              <p className={`text-xs font-medium mt-0.5 ${agingColor(invoice.daysPastDue)}`}>
+                                {invoice.daysPastDue} days overdue
+                              </p>
+                            )}
                           </td>
-                          <td className="px-5 py-3.5 text-right font-semibold text-gray-900 text-xs">
-                            {formatCurrency(invoice.amount)}
+
+                          {/* Status — one badge */}
+                          <td className="px-5 py-4">
+                            <InvoiceStatusBadge status={invoice.status as never} />
                           </td>
-                          <td className="px-5 py-3.5 text-xs text-gray-500 whitespace-nowrap">
-                            {formatDate(invoice.dueDate)}
-                          </td>
-                          <td className="px-5 py-3.5 text-center">
-                            {invoice.daysPastDue > 0 ? (
-                              <span className={`text-xs font-semibold ${agingColor(invoice.daysPastDue)}`}>
-                                {invoice.daysPastDue}d
-                              </span>
+
+                          {/* Response — reply classification only, dash if none */}
+                          <td className="px-5 py-4">
+                            {reply ? (
+                              <div>
+                                <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${REPLY_COLORS[reply.classification]}`}>
+                                  {REPLY_LABELS[reply.classification]}
+                                </span>
+                                <p className="text-[10px] text-gray-400 mt-0.5">{formatDate(reply.receivedAt)}</p>
+                              </div>
                             ) : (
                               <span className="text-xs text-gray-300">—</span>
                             )}
                           </td>
-                          <td className="px-5 py-3.5">
-                            <InvoiceStatusBadge status={invoice.status as never} />
-                          </td>
 
-                          {/* ── Flow column (CHANGE 3) ── */}
-                          <td className="px-5 py-3.5">
-                            {invoice.assignedFlowId ? (
-                              <div className="flex flex-col items-start gap-1">
-                                <span className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 border border-blue-200 whitespace-nowrap">
-                                  <Zap className="h-2.5 w-2.5" />
-                                  {flowMap[invoice.assignedFlowId] ?? invoice.assignedFlowId}
-                                </span>
-                                {(() => {
-                                  const rowReply = replyMap[invoice.id];
-                                  const actions = scheduledMap[invoice.id] ?? [];
-                                  let key: keyof typeof AUTO_STATUS_CONFIG = "no_actions";
-                                  if (rowReply?.automationPaused) key = "paused";
-                                  else if (actions.some(a => a.status === "blocked")) key = "blocked";
-                                  else if (actions.some(a => a.status === "awaiting_approval")) key = "awaiting_approval";
-                                  else if (actions.some(a => a.status === "pending")) key = "active";
-
-                                  // Only show badge for notable states; active shows next-step text; no_actions/no_flow show nothing extra
-                                  if (key === "paused" || key === "blocked" || key === "awaiting_approval") {
-                                    const cfg = AUTO_STATUS_CONFIG[key];
-                                    return (
-                                      <span className={`inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] font-medium ${cfg.cls}`}>
-                                        {cfg.label}
-                                      </span>
-                                    );
-                                  }
-                                  if (key === "active") {
-                                    const pending = actions.find(a => a.status === "pending");
-                                    if (pending) {
-                                      return (
-                                        <p className="text-[10px] text-gray-400 capitalize">
-                                          Next: {pending.stepType} · {formatDate(pending.scheduledAt)}
-                                        </p>
-                                      );
-                                    }
-                                  }
-                                  // no_actions or no_flow — no extra element
-                                  return null;
-                                })()}
-                              </div>
-                            ) : (
-                              <span className="text-xs text-gray-300">No flow</span>
-                            )}
-                          </td>
-
-                          <td className="px-5 py-3.5">
-                            {reply ? (
-                              <div className="space-y-0.5">
-                                <div className="flex items-center gap-1.5">
-                                  <span className={`inline-flex items-center rounded border px-1.5 py-0.5 text-xs font-medium whitespace-nowrap ${REPLY_COLORS[reply.classification]}`}>
-                                    {REPLY_LABELS[reply.classification]}
-                                  </span>
-                                  {reply.automationPaused && (
-                                    <span title="Automation paused">
-                                      <PauseCircle className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />
-                                    </span>
-                                  )}
-                                </div>
-                                <p className="text-[10px] text-gray-400">{formatDate(reply.receivedAt)}</p>
-                              </div>
-                            ) : (
-                              <span className="text-xs text-gray-300">No reply</span>
-                            )}
-                          </td>
-                          <td className="px-5 py-3.5">
+                          <td className="px-5 py-4 text-right">
                             <Link
                               href={`/invoices/${invoice.id}`}
                               className="text-xs font-medium text-blue-600 hover:text-blue-800 hover:underline whitespace-nowrap"
