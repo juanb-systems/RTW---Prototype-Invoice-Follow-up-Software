@@ -4,7 +4,7 @@ import { Suspense, useEffect, useRef, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { TopBar } from "@/components/layout/TopBar";
 import { ScheduledActionCard } from "@/components/scheduled/ScheduledActionCard";
-import { RefreshCw, Search, X } from "lucide-react";
+import { RefreshCw, Search, X, SlidersHorizontal, ChevronDown, Check } from "lucide-react";
 import { useSearchStore } from "@/lib/search-store";
 import { formatDate } from "@/lib/utils";
 
@@ -30,11 +30,88 @@ type FullAction = {
 
 const statusOrder = ["pending", "awaiting_approval", "sent", "skipped", "blocked"];
 
+// ── Filter dropdown ───────────────────────────────────────────────────────────
+
+const FILTER_OPTIONS = [
+  { value: "all",               label: "All" },
+  { value: "pending",           label: "Upcoming" },
+  { value: "awaiting_approval", label: "Needs Approval" },
+  { value: "sent",              label: "Sent" },
+  { value: "blocked",           label: "Blocked" },
+  { value: "skipped",           label: "Skipped" },
+];
+
+function ActionsFilterDropdown({
+  filter,
+  onFilter,
+  counts,
+}: {
+  filter: string;
+  onFilter: (v: string) => void;
+  counts: Record<string, number>;
+}) {
+  const [open, setOpen] = useState(false);
+  const dropRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (dropRef.current && !dropRef.current.contains(e.target as Node)) setOpen(false);
+    }
+    if (open) document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  const activeOpt = FILTER_OPTIONS.find(o => o.value === filter) ?? FILTER_OPTIONS[0];
+  const isFiltered = filter !== "all";
+
+  return (
+    <div ref={dropRef} className="relative flex-shrink-0">
+      <button
+        onClick={() => setOpen(v => !v)}
+        className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors ${
+          isFiltered
+            ? "border-blue-400 bg-blue-50 text-blue-700"
+            : "border-gray-200 text-gray-600 hover:bg-gray-50"
+        }`}
+      >
+        <SlidersHorizontal className="h-3.5 w-3.5 flex-shrink-0" />
+        <span>{isFiltered ? activeOpt.label : "Filter"}</span>
+        <ChevronDown className={`h-3 w-3 opacity-60 flex-shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-1 w-52 rounded-xl border border-gray-200 bg-white shadow-xl z-50 overflow-hidden">
+          {FILTER_OPTIONS.map(opt => (
+            <button
+              key={opt.value}
+              onClick={() => { onFilter(opt.value); setOpen(false); }}
+              className={`flex w-full items-center justify-between px-3 py-2.5 text-xs font-medium transition-colors ${
+                filter === opt.value
+                  ? "bg-blue-50 text-blue-700"
+                  : "text-gray-700 hover:bg-gray-50"
+              }`}
+            >
+              <span>{opt.label}</span>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                {opt.value !== "all" && (
+                  <span className="text-[10px] text-gray-400">{counts[opt.value] ?? 0}</span>
+                )}
+                {filter === opt.value && <Check className="h-3.5 w-3.5 text-blue-600" />}
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+
 function ScheduledPageContent() {
   const searchParams = useSearchParams();
   const [actions, setActions] = useState<FullAction[]>([]);
   const [loading, setLoading] = useState(true);
-  // Initialise filter from URL param so Dashboard "View all →" links land pre-filtered
   const [filter, setFilter] = useState<string>(searchParams.get("filter") ?? "all");
 
   const { query, setQuery, clear } = useSearchStore();
@@ -48,9 +125,7 @@ function ScheduledPageContent() {
     setLoading(false);
   }, []);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useEffect(() => { load(); }, [load]);
 
   const filtered = actions
     .filter((a) => filter === "all" || a.status === filter)
@@ -74,6 +149,10 @@ function ScheduledPageContent() {
   const pending = actions.filter((a) => a.status === "pending").length;
   const awaiting = actions.filter((a) => a.status === "awaiting_approval").length;
 
+  // Per-status counts for the dropdown
+  const counts: Record<string, number> = {};
+  for (const a of actions) counts[a.status] = (counts[a.status] ?? 0) + 1;
+
   return (
     <div>
       <TopBar
@@ -91,82 +170,66 @@ function ScheduledPageContent() {
           </button>
         }
       />
-      <div className="p-4 sm:p-6 space-y-5">
-        {/* Key reminder */}
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
-          <p className="text-sm text-amber-700">
-            <strong>Safety check before every send.</strong> Before sending an email, SMS, or call, CollectPilot checks the invoice is still unpaid and the contact can receive automated messages. Actions are skipped if the invoice is paid or the contact is excluded.
+      <div className="p-4 sm:p-6 space-y-4">
+
+        {/* Safety notice — compact */}
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5">
+          <p className="text-xs text-amber-700">
+            <strong>Safety check before every send.</strong>{" "}
+            CollectPilot verifies each invoice is still unpaid before sending. Actions are skipped if the invoice is paid or the contact is excluded.
           </p>
         </div>
 
-        {/* Search bar */}
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-          <div className="px-5 py-3 flex items-center gap-4">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
-              <input
-                ref={searchRef}
-                type="text"
-                placeholder="Search action type, invoice, contact, status…"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="w-full rounded-md border border-gray-200 pl-8 pr-8 py-1.5 text-xs focus:border-blue-400 focus:outline-none"
-              />
-              {query && (
-                <button
-                  onClick={() => { clear(); searchRef.current?.focus(); }}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  title="Clear search"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              )}
-            </div>
-            <span className="text-xs text-gray-400 shrink-0 ml-auto">
-              {loading ? "Loading…" : `Showing ${filtered.length} of ${actions.length} actions`}
-            </span>
+        {/* Search + filter — single compact row, full width on mobile */}
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1 min-w-0">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
+            <input
+              ref={searchRef}
+              type="text"
+              placeholder="Search actions…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="w-full rounded-md border border-gray-200 pl-8 pr-8 py-1.5 text-xs focus:border-blue-400 focus:outline-none"
+            />
+            {query && (
+              <button
+                onClick={() => { clear(); searchRef.current?.focus(); }}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                title="Clear search"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
           </div>
+          <ActionsFilterDropdown filter={filter} onFilter={setFilter} counts={counts} />
         </div>
 
-        {/* Filter tabs */}
-        <div className="flex flex-wrap gap-2">
-          {[
-            { value: "all", label: "All" },
-            { value: "pending", label: "Upcoming" },
-            { value: "awaiting_approval", label: "Needs Approval" },
-            { value: "sent", label: "Sent" },
-            { value: "blocked", label: "Blocked" },
-            { value: "skipped", label: "Skipped" },
-          ].map((tab) => (
-            <button
-              key={tab.value}
-              onClick={() => setFilter(tab.value)}
-              className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-                filter === tab.value
-                  ? "bg-blue-600 text-white"
-                  : "border border-gray-200 text-gray-600 hover:bg-gray-50"
-              }`}
-            >
-              {tab.label}
-              {tab.value !== "all" && (
-                <span className="ml-1.5 opacity-70">
-                  ({actions.filter((a) => a.status === tab.value).length})
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
+        {/* Count — below controls, unobtrusive */}
+        {!loading && (
+          <p className="text-xs text-gray-400 -mt-1">
+            {filtered.length === actions.length
+              ? `${actions.length} action${actions.length !== 1 ? "s" : ""}`
+              : `${filtered.length} of ${actions.length} actions`}
+            {filter !== "all" && (
+              <span className="ml-1 text-blue-600 font-medium">
+                · {FILTER_OPTIONS.find(o => o.value === filter)?.label}
+              </span>
+            )}
+          </p>
+        )}
 
+        {/* Cards */}
         {loading ? (
           <div className="grid gap-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-32 rounded-xl bg-gray-100 animate-pulse" />
+              <div key={i} className="h-28 rounded-xl bg-gray-100 animate-pulse" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
           <div className="rounded-xl border border-dashed border-gray-200 py-12 text-center">
             <p className="text-sm text-gray-400">
-              {query ? `No actions match "${query}".` : "No actions matching this filter."}
+              {query ? `No actions match "${query}".` : "No actions in this category."}
             </p>
             {query && (
               <button onClick={clear} className="mt-2 text-xs text-blue-500 hover:underline">
