@@ -39,12 +39,12 @@ function CustomTooltip({ active, payload, label }: any) {
   return null;
 }
 
-export function CollectionsTrendChart({ data }: CollectionsTrendChartProps) {
+export function CollectionsTrendChart({ data, height = 220, compact = false }: CollectionsTrendChartProps & { height?: number; compact?: boolean }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <h3 className="text-sm font-semibold text-gray-900 mb-1">Collections Trend</h3>
-      <p className="text-xs text-gray-400 mb-4">Collected vs target (last 6 months)</p>
-      <ResponsiveContainer width="100%" height={220}>
+    <div className={compact ? "" : "rounded-xl border border-gray-200 bg-white p-5 shadow-sm"}>
+      <h3 className={`font-semibold text-gray-900 mb-0.5 ${compact ? "text-xs" : "text-sm mb-1"}`}>Collections Trend</h3>
+      {!compact && <p className="text-xs text-gray-400 mb-4">Collected vs target (last 6 months)</p>}
+      <ResponsiveContainer width="100%" height={height}>
         <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
           <XAxis

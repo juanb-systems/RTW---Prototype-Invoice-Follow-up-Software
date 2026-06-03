@@ -37,14 +37,14 @@ function CustomTooltip({ active, payload, label }: any) {
   return null;
 }
 
-export function AgingChart({ data }: AgingChartProps) {
+export function AgingChart({ data, height = 220, compact = false }: AgingChartProps & { height?: number; compact?: boolean }) {
   const chartData = data.map((d, i) => ({ ...d, fill: COLORS[i] ?? "#6b7280" }));
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <h3 className="text-sm font-semibold text-gray-900 mb-1">Overdue Aging</h3>
-      <p className="text-xs text-gray-400 mb-4">Invoice amounts by days overdue</p>
-      <ResponsiveContainer width="100%" height={220}>
+    <div className={compact ? "" : "rounded-xl border border-gray-200 bg-white p-5 shadow-sm"}>
+      <h3 className={`font-semibold text-gray-900 mb-0.5 ${compact ? "text-xs" : "text-sm mb-1"}`}>Overdue Aging</h3>
+      {!compact && <p className="text-xs text-gray-400 mb-4">Invoice amounts by days overdue</p>}
+      <ResponsiveContainer width="100%" height={height}>
         <BarChart data={chartData} barSize={32}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
           <XAxis
