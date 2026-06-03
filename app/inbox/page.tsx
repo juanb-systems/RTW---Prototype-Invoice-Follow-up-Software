@@ -243,7 +243,7 @@ function MessageDetail({
   const [replyText, setReplyText]     = useState("");
   const [pausing, setPausing]         = useState(false);
   const [replying, setReplying]       = useState(false);
-  const [showContent, setShowContent] = useState(false);  // collapsed by default per James' request
+  // showContent removed — message/transcript always visible
 
   const isCall      = message.type === "call";
   const isVoicemail = message.callStatus === "voicemail";
@@ -349,25 +349,19 @@ function MessageDetail({
           </div>
         )}
 
-        {/* 4. Message body / transcript — collapsed accordion per James' request */}
+        {/* 4. Message / transcript — always visible, no accordion */}
         <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-          <button
-            onClick={() => setShowContent(v => !v)}
-            className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors text-left border-b border-gray-100"
-          >
-            <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
-              {isCall ? "View call transcript" : "View email content"}
-            </span>
-            <ChevronDown className={`h-3.5 w-3.5 text-gray-400 flex-shrink-0 transition-transform ${showContent ? "rotate-180" : ""}`} />
-          </button>
-          {showContent && (
-            <div className="px-4 py-4 bg-gray-50">
-              {isCall
-                ? <TranscriptView text={message.transcript || message.body} />
-                : <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{message.body}</p>
-              }
-            </div>
-          )}
+          <div className="px-4 py-2.5 border-b border-gray-100 bg-gray-50">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              {isCall ? "Call Transcript" : "Message"}
+            </p>
+          </div>
+          <div className="px-4 py-4">
+            {isCall
+              ? <TranscriptView text={message.transcript || message.body} />
+              : <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{message.body}</p>
+            }
+          </div>
         </div>
 
         {/* 5. Exception warning — only for dispute or needs_review (high-risk).
