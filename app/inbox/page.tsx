@@ -313,7 +313,10 @@ function MessageDetail({
       {/* ── Scrollable content ── */}
       <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-5 space-y-4">
 
-        {/* 1. Subject + sender + date */}
+        {/* 1. AI Overview — answer first, raw content second */}
+        <AIOverview message={message} />
+
+        {/* 2. Subject + sender + date — context after the summary */}
         <div>
           <h2 className="text-base font-semibold text-gray-900 leading-snug mb-1.5">
             {message.subject}
@@ -326,9 +329,6 @@ function MessageDetail({
           </div>
           <p className="text-xs text-gray-400 mt-1">{formatDateTime(message.receivedAt)}</p>
         </div>
-
-        {/* 2. AI Overview — FIRST per James' request: summary before raw content */}
-        <AIOverview message={message} />
 
         {/* 3. Invoice link */}
         {message.invoice && (
