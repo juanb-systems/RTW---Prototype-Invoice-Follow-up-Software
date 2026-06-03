@@ -72,8 +72,8 @@ const CONFIGS: Record<CardKey, {
     viewAllHref: "/inbox?filter=needs_action",
   },
   unreadReplies: {
-    label: "unread reply or call",
-    description: "New customer messages waiting.",
+    label: "new customer replies",
+    description: "New replies or messages from customers.",
     iconBg: "bg-blue-500", border: "border-gray-200", urgentBg: "bg-white",
     Icon: MessageSquare,
     viewAllHref: "/inbox?filter=unread",
@@ -203,19 +203,19 @@ function AttentionCard({
     }`}>
       {/* ── Collapsed header — always visible ── */}
       <button
-        className="w-full flex items-center gap-3 p-3.5 text-left hover:bg-black/5 transition-colors"
+        className="w-full flex items-center gap-2.5 p-3 sm:p-3.5 text-left hover:bg-black/5 transition-colors"
         onClick={onToggle}
         aria-expanded={isOpen}
       >
-        <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${cfg.iconBg}`}>
-          <Icon className="h-4 w-4 text-white" />
+        <div className={`flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-lg ${cfg.iconBg}`}>
+          <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-xl font-bold text-gray-900">{count}</span>
-            <span className="text-sm font-medium text-gray-700">{cfg.label}</span>
+          <div className="flex items-baseline gap-1.5 flex-wrap">
+            <span className="text-base sm:text-xl font-bold text-gray-900">{count}</span>
+            <span className="text-xs sm:text-sm font-medium text-gray-700 leading-snug">{cfg.label}</span>
           </div>
-          <p className="text-xs text-gray-500 mt-0.5 leading-snug">{cfg.description}</p>
+          <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 leading-snug hidden xs:block sm:block">{cfg.description}</p>
         </div>
         <div className="shrink-0 text-gray-400">
           {isOpen
@@ -328,19 +328,19 @@ export function NeedsAttentionSection({
             {overdueItems.length > 0 && (
               <div className="rounded-lg border border-orange-200 bg-orange-50 overflow-hidden">
                 <button
-                  className="w-full flex items-center gap-3 p-3.5 text-left hover:bg-black/5 transition-colors"
+                  className="w-full flex items-center gap-2.5 p-3 sm:p-3.5 text-left hover:bg-black/5 transition-colors"
                   onClick={() => toggle("overdue_combined")}
                   aria-expanded={openKey === "overdue_combined"}
                 >
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-orange-400">
-                    <Clock className="h-4 w-4 text-white" />
+                  <div className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-lg bg-orange-400">
+                    <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-xl font-bold text-gray-900">{overdueItems.length}</span>
-                      <span className="text-sm font-medium text-gray-700">overdue 30+ days</span>
+                    <div className="flex items-baseline gap-1.5 flex-wrap">
+                      <span className="text-base sm:text-xl font-bold text-gray-900">{overdueItems.length}</span>
+                      <span className="text-xs sm:text-sm font-medium text-gray-700">overdue 30+ days</span>
                     </div>
-                    <p className="text-xs text-gray-500 mt-0.5 leading-snug">
+                    <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 leading-snug hidden xs:block sm:block">
                       {details.overdue60plus.length > 0
                         ? `${details.overdue60plus.length} high risk (60+ days) · ${details.overdue30to60.length} need follow-up`
                         : "May need a personal call or escalation."}
@@ -383,14 +383,14 @@ export function NeedsAttentionSection({
       {details.promisesToPay.length > 0 && (
         <Link
           href="/inbox?filter=promise_to_pay"
-          className="flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-4 py-3 hover:bg-green-100 transition-colors"
+          className="flex items-center gap-2.5 rounded-xl border border-green-200 bg-green-50 px-3.5 py-2.5 hover:bg-green-100 transition-colors"
         >
-          <ThumbsUp className="h-5 w-5 text-green-600 flex-shrink-0" />
+          <ThumbsUp className="h-4 w-4 text-green-600 flex-shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-green-800">
               {details.promisesToPay.length} customer{details.promisesToPay.length !== 1 ? "s" : ""} promised to pay
             </p>
-            <p className="text-xs text-green-600 mt-0.5">Monitor and follow up when the payment date arrives.</p>
+            <p className="text-[10px] sm:text-xs text-green-600 mt-0.5 hidden sm:block">Monitor and follow up when the payment date arrives.</p>
           </div>
           <span className="text-xs font-medium text-green-600 whitespace-nowrap shrink-0">View →</span>
         </Link>
