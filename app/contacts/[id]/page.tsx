@@ -19,10 +19,12 @@ export default async function ContactDetailPage({
   const contact = getContactWithInvoices(id);
   if (!contact) notFound();
 
+  // Disputed invoices are tracked separately as disputes, not as overdue balances.
+  // Excluding them keeps this count consistent with the contacts list "Overdue Balance" column.
   const overdueInvoices = contact.invoices.filter(
-    (i) => i.status === "overdue" || i.status === "partial" || i.status === "disputed"
+    (i) => i.status === "overdue" || i.status === "partial"
   );
-  const totalOwed = overdueInvoices.reduce((s, i) => s + i.amount, 0);
+  const overdueBalance = overdueInvoices.reduce((s, i) => s + i.amount, 0);
 
   return (
     <div>
@@ -113,8 +115,8 @@ export default async function ContactDetailPage({
                 <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 leading-tight">Overdue</p>
               </div>
               <div className="rounded-lg border border-gray-200 bg-white p-2.5 sm:p-3 text-center overflow-hidden">
-                <p className="text-xs sm:text-base font-bold text-red-600 leading-tight break-all">{formatCurrency(totalOwed)}</p>
-                <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 leading-tight">Total Owed</p>
+                <p className="text-xs sm:text-base font-bold text-red-600 leading-tight break-all">{formatCurrency(overdueBalance)}</p>
+                <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 leading-tight">Overdue Balance</p>
               </div>
             </div>
 

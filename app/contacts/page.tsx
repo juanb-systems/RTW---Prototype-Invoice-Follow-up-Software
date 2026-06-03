@@ -404,7 +404,7 @@ export default function ContactsPage() {
     { col: "email",        label: "Email",      align: "left" },
     { col: "phone",        label: "Phone",      align: "left" },
     { col: "invoices",     label: "Invoices",   align: "center" },
-    { col: "totalOwed",    label: "Total Owed", align: "right" },
+    { col: "totalOwed",    label: "Overdue Balance", align: "right" },
     { col: "overdueCount", label: "Overdue",    align: "center" },
     { col: "status",       label: "Status",     align: "left" },
   ];

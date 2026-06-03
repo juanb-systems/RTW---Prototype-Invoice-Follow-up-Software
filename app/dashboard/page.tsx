@@ -44,8 +44,8 @@ export default function DashboardPage() {
               <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 sm:mt-1 leading-tight">days overdue</p>
             </div>
             <div className="rounded-2xl border border-gray-100 bg-white shadow-sm p-3 sm:p-6">
-              <p className="text-[9px] sm:text-xs font-semibold text-gray-400 uppercase tracking-widest leading-tight">Actions</p>
-              <p className="text-xl sm:text-3xl font-bold text-gray-900 mt-1 sm:mt-1.5 tabular-nums">{kpis.pendingActions}</p>
+              <p className="text-[9px] sm:text-xs font-semibold text-gray-400 uppercase tracking-widest leading-tight">Approvals</p>
+              <p className="text-xl sm:text-3xl font-bold text-gray-900 mt-1 sm:mt-1.5 tabular-nums">{kpis.awaitingApproval}</p>
               <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 sm:mt-1 leading-tight">need approval</p>
             </div>
             <div className="rounded-2xl border border-gray-100 bg-white shadow-sm p-3 sm:p-6">

@@ -2,6 +2,55 @@
 
 ---
 
+## v2.76.0 — Data Consistency and Clarity Audit (03 Jun 2026)
+
+**Date:** 03 Jun 2026
+**package.json version:** 2.76.0
+
+### Fixed
+
+**1. Dashboard "Approvals" KPI — count was misleading (`app/dashboard/page.tsx`, `lib/server-data.ts`)**
+
+The "Actions" KPI card showed `pending + awaiting_approval` (4+2=6) with the subtitle "need approval". Only 2 items actually required human approval. The other 4 were simply upcoming scheduled actions.
+
+- KPI label renamed from "Actions" → "Approvals"
+- Count changed from `pendingActions` (pending+awaiting) → `awaitingApproval` (awaiting_approval only)
+- `getDashboardData()` now returns separate `pendingActions` and `awaitingApproval` counts
+- Dashboard now shows exactly how many items are waiting for a human decision
+
+**2. Dashboard unread replies and promises-to-pay included call records (`lib/server-data.ts`)**
+
+`getAttentionDetails()` was computing `unreadReplies` and `promisesToPay` from all inbox messages including `type: "call"` records. The Inbox page excludes calls entirely. This caused the dashboard to show higher counts (5 unread, 3 promises) than the Inbox (3 unread, 2 promises), making the dashboard counts untrustworthy.
+
+- `unreadReplies`: added `&& m.type !== "call"` filter
+- `promisesToPay`: added `&& m.type !== "call"` filter
+- Dashboard and NeedsAttentionSection counts now match Inbox
+
+**3. Overdue filter inconsistency across contact/invoice detail vs contacts list and dashboard (`app/contacts/[id]/page.tsx`, `app/invoices/[id]/page.tsx`)**
+
+Contact detail page and invoice detail contact card both included `status === "disputed"` invoices in their overdue counts and totals. The contacts list API (`getContactsWithStats`) and dashboard "Total Overdue" KPI both exclude disputed. This caused different totals for the same contact depending on which page you were viewing.
+
+For example, James Fletcher (C007) with one disputed invoice (INV017, $11,600):
+- Contacts list showed: 3 overdue, $27,250
+- Contact detail showed: 4 overdue (incl. disputed), $38,850
+
+Disputed invoices are tracked separately as disputes (their own alert category). Including them in "overdue" counts creates confusion since they are paused from all automation anyway.
+
+- Both files updated to filter `overdue + partial` only (no disputed)
+- All pages now agree on overdue counts and totals for the same contact
+
+**4. "Total Owed" label renamed to "Overdue Balance" (`app/contacts/page.tsx`, `app/contacts/[id]/page.tsx`)**
+
+The label "Total Owed" implied the total of all invoices for the customer. In reality, it only summed overdue (and partial) invoices. "Overdue Balance" is accurate and consistent with "Customer Overdue Balance" used on the Invoice Detail contact card.
+
+**5. CALL001 transcript corrected (`data/inbox-messages.json`)**
+
+The AI call transcript for INV-2026-013 (David Kim, $31,000, 102 days overdue) contained incorrect values in the transcript text:
+- Amount: "$8,400.00" → "$31,000.00"
+- Days overdue: "95 days" → "102 days"
+
+---
+
 ## v2.75.0 — Financial Label Clarity Audit (03 Jun 2026)
 
 **Date:** 03 Jun 2026

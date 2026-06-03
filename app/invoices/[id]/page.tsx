@@ -105,8 +105,11 @@ export default async function InvoiceDetailPage({
 
   // Contact total overdue across all their invoices
   const contactWithInvoices = invoice.contact ? getContactWithInvoices(invoice.contact.id) : null;
+  // Match the same definition as contacts list and contact detail — overdue + partial only.
+  // Disputed invoices are tracked separately as disputes; including them here would make
+  // "Customer Overdue Balance" inconsistent with the dashboard "Total Overdue" KPI.
   const contactOverdueInvoices = contactWithInvoices?.invoices.filter(
-    (i) => i.status === "overdue" || i.status === "partial" || i.status === "disputed"
+    (i) => i.status === "overdue" || i.status === "partial"
   ) ?? [];
   const contactTotalOverdue = contactOverdueInvoices.reduce((s, i) => s + i.amount, 0);
 

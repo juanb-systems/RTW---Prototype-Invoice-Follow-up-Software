@@ -194,12 +194,14 @@ export function getAttentionDetails(): AttentionDetails {
     pausedAutomations: db.inboxMessages
       .filter((m) => m.automationPaused)
       .map(toMsgItem),
+    // Inbox is email-only — calls are surfaced in Actions, not Inbox.
+    // Counts here must match what Inbox actually shows so dashboard totals are trustworthy.
     unreadReplies: db.inboxMessages
-      .filter((m) => !m.isRead)
+      .filter((m) => !m.isRead && m.type !== "call")
       .sort((a, b) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime())
       .map(toMsgItem),
     promisesToPay: db.inboxMessages
-      .filter((m) => m.classification === "promise_to_pay")
+      .filter((m) => m.classification === "promise_to_pay" && m.type !== "call")
       .map(toMsgItem),
   };
 }
@@ -219,7 +221,10 @@ export function getDashboardData() {
         )
       : 0;
   const pendingActions = db.scheduledActions.filter(
-    (a) => a.status === "pending" || a.status === "awaiting_approval"
+    (a) => a.status === "pending"
+  ).length;
+  const awaitingApproval = db.scheduledActions.filter(
+    (a) => a.status === "awaiting_approval"
   ).length;
 
   const agingBuckets = [
@@ -276,7 +281,7 @@ export function getDashboardData() {
   };
 
   return {
-    kpis: { totalOverdue: overdueInvoices.length, totalOverdueAmount, avgDaysPastDue, pendingActions },
+    kpis: { totalOverdue: overdueInvoices.length, totalOverdueAmount, avgDaysPastDue, pendingActions, awaitingApproval },
     agingBuckets,
     collectionsTrend,
     recentActivity,

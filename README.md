@@ -1,4 +1,4 @@
-# CollectPilot — AI Receivables Assistant · v2.75
+# CollectPilot — AI Receivables Assistant · v2.76
 
 A Next.js 15 prototype for an AI-powered B2B receivables follow-up platform. Demonstrates automated invoice collection workflows with "Fresh Xero Check" safety gates before every customer contact.
 
@@ -115,6 +115,7 @@ No environment variables are required for the current prototype. All data is see
 
 | Version | Date | Summary |
 |---------|------|---------|
+| v2.76.0 | 03 Jun 2026 | Data consistency and clarity audit — fix 7 label/count issues: (1) Dashboard "Approvals" KPI now shows awaiting-approval count only (was pending+awaiting, misleading "need approval" label); (2) dashboard/NeedsAttention unread replies and promises-to-pay now exclude call records (counts now match Inbox); (3) contact detail and invoice detail overdue filters aligned to exclude disputed invoices, consistent with contacts list and dashboard Total Overdue; (4) "Total Owed" label renamed "Overdue Balance" everywhere (contacts list column, contact detail stat card) since it only sums overdue invoices; (5) CALL001 transcript corrected from wrong amount $8,400 → $31,000 and wrong days 95 → 102 |
 | v2.75.0 | 03 Jun 2026 | Clarify financial label scope — Contact card on Invoice Detail renamed "Total Overdue" → "Customer Overdue Balance" with "Across N overdue invoices"; card only shown when contact has 2+ overdue invoices (avoids confusing duplicate amount when only 1 overdue invoice exists) |
 | v2.74.0 | 03 Jun 2026 | Invoice Detail — Line Items collapsed by default showing count+total in header; Contact card shows Total Overdue across all contact invoices; CollapsibleSection gains headerRight prop |
 | v2.73.0 | 03 Jun 2026 | Remove duplicate chart labels in Dashboard Performance Summary — "Overdue Aging" and "Collections Trend" p-labels removed from dashboard page (charts already render their own titles) |
