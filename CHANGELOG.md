@@ -2,6 +2,43 @@
 
 ---
 
+## v2.68.0 — Remove Redundant Inbox Detail Summaries (03 Jun 2026)
+
+**Date:** 03 Jun 2026
+**package.json version:** 2.68.0
+
+### Fixed
+
+**Inbox `MessageDetail` — removed duplicate summary sections (`app/inbox/page.tsx`):**
+
+The detail panel was showing the same information in three separate boxes for normal outcomes:
+1. AI Overview: "Customer promised to pay... automation on hold... monitor payment"
+2. Green status banner: "Customer promised to pay — automation on hold for 7 days."
+3. Blue Recommended box: "Monitor payment. If unpaid after the promised date..."
+
+All three said essentially the same thing.
+
+**What was removed:**
+- `statusItems` array and green/amber status banner — completely removed
+- `recommendedAction` string and blue "Recommended" box — completely removed
+- `isUrgent` variable — no longer needed
+
+**What replaced them:**
+- Single `exceptionWarning` — only rendered for genuinely high-risk exceptions:
+  - `dispute`: "Dispute raised — review this invoice before sending more reminders. Automation is paused."
+  - `needs_review`: "This call needs human review. Automation is paused until you decide on the next step."
+
+**For all normal outcomes** (promise to pay, payment query, out of office, paused automation): the AI Overview is the only summary panel. No separate banners.
+
+**Result:** For a `promise_to_pay` message, the detail panel now shows:
+1. Subject + sender + date
+2. AI Overview (covers what happened + why + next step)
+3. Invoice link
+4. Email content accordion
+5. Action buttons (no duplicate summary boxes)
+
+---
+
 ## v2.66.0 — Visual Redesign: Hero Summary Cards & Invoice Row Polish (02 Jun 2026)
 
 **Date:** 02 Jun 2026

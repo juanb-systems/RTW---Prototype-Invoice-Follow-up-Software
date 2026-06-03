@@ -277,27 +277,14 @@ function MessageDetail({
     setReplying(false);
   }
 
-  // Combined status — one box, not multiple stacked
-  const statusItems: { text: string; variant: "error" | "success" | "warning" }[] = [];
-  if (message.classification === "dispute")
-    statusItems.push({ text: "Dispute detected — automation paused. This invoice needs human review.", variant: "error" });
-  if (isCall && message.callStatus === "needs_review")
-    statusItems.push({ text: "This AI call needs human review — the outcome is unclear.", variant: "error" });
-  if (message.classification === "promise_to_pay")
-    statusItems.push({ text: "Customer promised to pay — automation on hold for 7 days.", variant: "success" });
-  if (message.automationPaused && message.classification !== "dispute" && message.classification !== "promise_to_pay")
-    statusItems.push({ text: "Automation paused due to customer reply.", variant: "warning" });
-
-  const isUrgent = statusItems.some(s => s.variant === "error");
-
-  // Recommended action — one clear sentence
-  const recommendedAction = (() => {
-    if (message.classification === "dispute")           return "Contact the customer directly before resuming any automated follow-up.";
-    if (message.classification === "promise_to_pay")    return "Monitor payment. If unpaid after the promised date, resume the follow-up automation.";
-    if (message.callStatus === "needs_review")          return "Review this transcript and decide whether to follow up, escalate, or pause automation.";
-    if (message.classification === "payment_query")     return "Reply to the customer's question before any further automated messages go out.";
-    if (message.classification === "out_of_office")     return "No action needed. Automation will hold until the out-of-office period ends.";
-    if (message.callStatus === "voicemail")             return "Voicemail was left. Follow up manually if there is no callback within 2 business days.";
+  // Exception warning — ONLY for genuinely high-risk exceptions that the AI Overview alone
+  // may not convey urgently enough. Normal outcomes (promise, OOO, query) are fully covered
+  // by AI Overview — no separate banner needed.
+  const exceptionWarning = (() => {
+    if (message.classification === "dispute")
+      return { text: "Dispute raised — review this invoice before sending more reminders. Automation is paused.", urgent: true };
+    if (isCall && message.callStatus === "needs_review")
+      return { text: "This call needs human review. Automation is paused until you decide on the next step.", urgent: true };
     return null;
   })();
 
@@ -383,37 +370,15 @@ function MessageDetail({
           )}
         </div>
 
-        {/* 5. Status alert — only if critical */}
-        {statusItems.length > 0 && (
+        {/* 5. Exception warning — only for dispute or needs_review (high-risk).
+               Normal outcomes (promise, OOO, payment query) are covered by AI Overview alone. */}
+        {exceptionWarning && (
           <div className={`rounded-lg border px-4 py-3 ${
-            isUrgent ? "border-red-200 bg-red-50" : statusItems[0].variant === "success" ? "border-green-200 bg-green-50" : "border-amber-200 bg-amber-50"
+            exceptionWarning.urgent ? "border-red-200 bg-red-50" : "border-amber-200 bg-amber-50"
           }`}>
-            {statusItems.length === 1 ? (
-              <p className={`text-sm font-medium ${isUrgent ? "text-red-700" : statusItems[0].variant === "success" ? "text-green-700" : "text-amber-700"}`}>
-                {statusItems[0].text}
-              </p>
-            ) : (
-              <ul className="space-y-1">
-                {statusItems.map((item, i) => (
-                  <li key={i} className={`text-sm ${item.variant === "error" ? "text-red-700" : item.variant === "success" ? "text-green-700" : "text-amber-700"}`}>
-                    · {item.text}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
-
-        {/* 6. Recommended action */}
-        {recommendedAction && (
-          <div className="flex items-start gap-3 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3">
-            <div className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-blue-100">
-              <span className="text-xs font-bold text-blue-600">→</span>
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-0.5">Recommended</p>
-              <p className="text-sm text-blue-800">{recommendedAction}</p>
-            </div>
+            <p className={`text-sm font-medium ${exceptionWarning.urgent ? "text-red-700" : "text-amber-700"}`}>
+              {exceptionWarning.text}
+            </p>
           </div>
         )}
 
