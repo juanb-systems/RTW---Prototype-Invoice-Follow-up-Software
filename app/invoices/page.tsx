@@ -472,19 +472,19 @@ function InvoicesPageContent() {
                       return (
                         <tr
                           key={invoice.id}
-                          className="hover:bg-gray-50/60 transition-colors cursor-pointer"
+                          className={`hover:bg-gray-50/60 transition-colors cursor-pointer ${invoice.status === "disputed" ? "border-l-2 border-red-400" : ""}`}
                           onClick={() => router.push(`/invoices/${invoice.id}`)}
                         >
                           {/* Customer — name + company + invoice# */}
-                          <td className="px-5 py-4">
-                            <p className="text-sm font-semibold text-gray-900">{invoice.contact?.name ?? "—"}</p>
+                          <td className="px-5 py-5">
+                            <p className="text-base font-semibold text-gray-900">{invoice.contact?.name ?? "—"}</p>
                             <p className="text-xs text-gray-400 mt-0.5">{invoice.contact?.company ?? "—"}</p>
                             <p className="font-mono text-[10px] text-gray-300 mt-0.5">{invoice.invoiceNumber}</p>
                           </td>
 
                           {/* Amount — amount + days overdue inline */}
-                          <td className="px-5 py-4">
-                            <p className="text-sm font-bold text-gray-900">{formatCurrency(invoice.amount)}</p>
+                          <td className="px-5 py-5">
+                            <p className="text-base font-bold text-gray-900">{formatCurrency(invoice.amount)}</p>
                             {invoice.daysPastDue > 0 && (
                               <p className={`text-xs font-medium mt-0.5 ${agingColor(invoice.daysPastDue)}`}>
                                 {invoice.daysPastDue} days overdue
@@ -493,12 +493,12 @@ function InvoicesPageContent() {
                           </td>
 
                           {/* Status — one badge */}
-                          <td className="px-5 py-4">
+                          <td className="px-5 py-5">
                             <InvoiceStatusBadge status={invoice.status as never} />
                           </td>
 
                           {/* Response — reply classification only, dash if none */}
-                          <td className="px-5 py-4">
+                          <td className="px-5 py-5">
                             {reply ? (
                               <div>
                                 <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${REPLY_COLORS[reply.classification]}`}>
@@ -507,11 +507,11 @@ function InvoicesPageContent() {
                                 <p className="text-[10px] text-gray-400 mt-0.5">{formatDate(reply.receivedAt)}</p>
                               </div>
                             ) : (
-                              <span className="text-xs text-gray-300">—</span>
+                              <span className="text-xs text-gray-300 italic">No reply yet</span>
                             )}
                           </td>
 
-                          <td className="px-5 py-4 text-right">
+                          <td className="px-5 py-5 text-right">
                             <Link
                               href={`/invoices/${invoice.id}`}
                               className="text-xs font-medium text-blue-600 hover:text-blue-800 hover:underline whitespace-nowrap"

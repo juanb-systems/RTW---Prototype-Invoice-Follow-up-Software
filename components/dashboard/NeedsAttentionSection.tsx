@@ -293,7 +293,7 @@ export function NeedsAttentionSection({
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-sm font-semibold text-gray-900">Needs Attention</h2>
-            <p className="text-xs text-gray-400 mt-0.5">Act on these before anything else today.</p>
+            <p className="text-xs text-gray-400 mt-0.5">Act on these to keep your cash flow moving.</p>
           </div>
           {/* Show category count, not item total — much less alarming */}
           {alertCategories > 0 && (

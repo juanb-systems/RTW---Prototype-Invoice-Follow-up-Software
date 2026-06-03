@@ -2,6 +2,23 @@
 
 ---
 
+## v2.66.0 — Visual Redesign: Hero Summary Cards & Invoice Row Polish (02 Jun 2026)
+
+**Date:** 02 Jun 2026
+**package.json version:** 2.66.0
+
+### Changed
+
+**Dashboard — KPI row replaced with large hero summary cards:**
+
+The four small KPI metric cards have been replaced with large, visually prominent hero summary cards. Each hero card covers a single key metric (Total Overdue, Avg Days Overdue, Actions Pending, Critical Alerts) with a larger value display, supporting context text, and clearer visual hierarchy. The hero layout makes the most important numbers immediately scannable at a glance without requiring users to parse small dense cards.
+
+**Invoice rows — improved hierarchy and spacing:**
+
+Invoice list rows have been polished with better typographic hierarchy — primary information (customer name, invoice number, amount) is more prominent, secondary information (dates, automation status) is visually de-emphasised. Row padding and spacing tightened for a cleaner, less cluttered list.
+
+---
+
 ## v2.64.0 — Invoices Filter Simplification (02 Jun 2026)
 
 **Date:** 02 Jun 2026

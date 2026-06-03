@@ -72,11 +72,17 @@ function TemplateCard({
   const [focusedFieldKey, setFocusedFieldKey] = useState<string | null>(null);
   const [outcomeInput, setOutcomeInput] = useState("");
   const [collapseConfirm, setCollapseConfirm] = useState(false);
+  const [showPrompt, setShowPrompt] = useState(false);
 
   const fieldRefs = useRef<Record<string, HTMLTextAreaElement | null>>({});
   const { setDirty } = useNavGuardStore();
 
   const isDirty = editing && JSON.stringify(draft) !== JSON.stringify(template);
+
+  // Reset prompt accordion when entering edit mode
+  useEffect(() => {
+    if (editing) setShowPrompt(false);
+  }, [editing]);
 
   // Sync global dirty state when editing starts/stops
   useEffect(() => {
@@ -348,7 +354,13 @@ function TemplateCard({
             {editing ? (
               <textarea {...bindField("prompt")} value={draft.prompt} onChange={e => field("prompt", e.target.value)} rows={14} className={textareaCls} placeholder="Full prompt instructions for the AI caller…" />
             ) : (
-              <div className="max-h-48 overflow-y-auto rounded-md border border-gray-200 bg-white px-3 py-2 text-xs text-gray-700 leading-relaxed whitespace-pre-wrap">{template.prompt}</div>
+              <div className="rounded-md border border-gray-200 overflow-hidden">
+                <button onClick={() => setShowPrompt(v => !v)} className="w-full flex items-center justify-between px-3 py-2 bg-gray-50 hover:bg-gray-100 text-left transition-colors">
+                  <span className="text-xs font-medium text-gray-600">View AI prompt</span>
+                  <span className="text-gray-400 text-xs">{showPrompt ? "▲" : "▼"}</span>
+                </button>
+                {showPrompt && <div className="max-h-48 overflow-y-auto px-3 py-2 text-xs text-gray-700 leading-relaxed whitespace-pre-wrap bg-white">{template.prompt}</div>}
+              </div>
             )}
           </div>
 
