@@ -2,6 +2,24 @@
 
 ---
 
+## v2.75.0 — Financial Label Clarity Audit (03 Jun 2026)
+
+**Date:** 03 Jun 2026
+**package.json version:** 2.75.0
+
+### Fixed
+
+**Invoice Detail — Contact card customer balance label (`app/invoices/[id]/page.tsx`):**
+
+When a contact had multiple overdue invoices, the Contact card showed "Total Overdue: $42,000" alongside the current invoice amount of $31,000 — making it look like a data inconsistency rather than helpful context.
+
+**Changes:**
+- Label renamed from "Total Overdue" → **"Customer Overdue Balance"** — clearly scoped to the customer, not this invoice
+- Sub-label changed from "N overdue invoices" → **"Across N overdue invoices"** — always shown (since block is only rendered when N > 1)
+- Condition changed from `contactTotalOverdue > 0` → `contactOverdueInvoices.length > 1` — customer balance is only surfaced when the contact has multiple overdue invoices. When only 1 overdue invoice exists (the current one), the customer total equals the invoice amount, making a separate display redundant and misleading.
+
+---
+
 ## v2.68.0 — Remove Redundant Inbox Detail Summaries (03 Jun 2026)
 
 **Date:** 03 Jun 2026

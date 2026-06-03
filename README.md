@@ -1,4 +1,4 @@
-# CollectPilot — AI Receivables Assistant · v2.74
+# CollectPilot — AI Receivables Assistant · v2.75
 
 A Next.js 15 prototype for an AI-powered B2B receivables follow-up platform. Demonstrates automated invoice collection workflows with "Fresh Xero Check" safety gates before every customer contact.
 
@@ -115,6 +115,7 @@ No environment variables are required for the current prototype. All data is see
 
 | Version | Date | Summary |
 |---------|------|---------|
+| v2.75.0 | 03 Jun 2026 | Clarify financial label scope — Contact card on Invoice Detail renamed "Total Overdue" → "Customer Overdue Balance" with "Across N overdue invoices"; card only shown when contact has 2+ overdue invoices (avoids confusing duplicate amount when only 1 overdue invoice exists) |
 | v2.74.0 | 03 Jun 2026 | Invoice Detail — Line Items collapsed by default showing count+total in header; Contact card shows Total Overdue across all contact invoices; CollapsibleSection gains headerRight prop |
 | v2.73.0 | 03 Jun 2026 | Remove duplicate chart labels in Dashboard Performance Summary — "Overdue Aging" and "Collections Trend" p-labels removed from dashboard page (charts already render their own titles) |
 | v2.72.0 | 03 Jun 2026 | Dashboard two-column layout — Needs Attention in left 2/3 column, Performance Summary + Recent Activity in right 1/3 sidebar (open by default on desktop); charts use compact height (160px) in sidebar; mobile stacks all sections vertically with charts collapsible |

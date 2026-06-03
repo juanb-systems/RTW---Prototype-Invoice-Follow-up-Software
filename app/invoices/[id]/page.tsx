@@ -402,14 +402,18 @@ export default async function InvoiceDetailPage({
                     <Phone className="h-3.5 w-3.5 text-gray-400" />
                     {invoice.contact.phone}
                   </div>
-                  {/* Contact total overdue across all their invoices */}
-                  {contactTotalOverdue > 0 && (
+                  {/* Customer overdue balance — only show when contact has multiple overdue invoices.
+                      If only 1 overdue invoice exists it equals the current invoice amount, so showing
+                      a separate "customer total" would look like a mismatch rather than extra context. */}
+                  {contactOverdueInvoices.length > 1 && (
                     <div className="mt-2 pt-2 border-t border-gray-100">
-                      <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Total Overdue</p>
+                      <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
+                        Customer Overdue Balance
+                      </p>
                       <p className="text-sm font-bold text-red-600 tabular-nums">{formatCurrency(contactTotalOverdue)}</p>
-                      {contactOverdueInvoices.length > 1 && (
-                        <p className="text-xs text-gray-400 mt-0.5">{contactOverdueInvoices.length} overdue invoices</p>
-                      )}
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        Across {contactOverdueInvoices.length} overdue invoices
+                      </p>
                     </div>
                   )}
                   {invoice.contact.status !== "active" && (
