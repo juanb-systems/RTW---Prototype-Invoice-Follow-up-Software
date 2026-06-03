@@ -2,6 +2,17 @@
 
 ---
 
+## v2.64.0 — Invoices Filter Simplification (02 Jun 2026)
+
+**Date:** 02 Jun 2026
+**package.json version:** 2.64.0
+
+### Changed
+
+Replaced the 3 separate filter dropdowns on the Invoices page (Status, Automation, Response) with a single unified **Filter** dropdown. All filter logic is preserved — the combined dropdown exposes the same status, automation, and response filter values as before, reducing visual clutter and making the filter controls easier to use on both desktop and mobile.
+
+---
+
 ## v2.50.0 — Fix AI Call Transcript Speaker Labels (02 Jun 2026)
 
 **Date:** 02 Jun 2026
