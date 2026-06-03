@@ -11,7 +11,9 @@ import {
   getScheduledActionsWithDetails,
   getAutomationFlows,
   getLatestInboxMessageForInvoice,
+  getContactWithInvoices,
 } from "@/lib/server-data";
+import { CollapsibleSection } from "@/components/invoices/CollapsibleSection";
 import { AlertTriangle, Calendar, Building2, Mail, Phone, GitBranch, ShieldX, MessageSquare, PauseCircle, ExternalLink, Zap, CheckCircle2, Clock, Info } from "lucide-react";
 import type { AutomationFlow, MessageClassification, InboxMessage } from "@/lib/types";
 
@@ -100,6 +102,13 @@ export default async function InvoiceDetailPage({
   const allActions = getScheduledActionsWithDetails();
   const flows = getAutomationFlows();
   const latestMessage = getLatestInboxMessageForInvoice(id);
+
+  // Contact total overdue across all their invoices
+  const contactWithInvoices = invoice.contact ? getContactWithInvoices(invoice.contact.id) : null;
+  const contactOverdueInvoices = contactWithInvoices?.invoices.filter(
+    (i) => i.status === "overdue" || i.status === "partial" || i.status === "disputed"
+  ) ?? [];
+  const contactTotalOverdue = contactOverdueInvoices.reduce((s, i) => s + i.amount, 0);
 
   const pendingActions = allActions.filter(
     (a) => a.invoiceId === id && (a.status === "pending" || a.status === "awaiting_approval")
@@ -283,16 +292,14 @@ export default async function InvoiceDetailPage({
               )}
             </div>
 
-            {/* Line items — always visible, no expand/collapse */}
+            {/* Line items — collapsed by default, shows count + total in header */}
             {invoice.lineItems.length > 0 && (
-              <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-                {/* Header — title + count badge, no chevron */}
-                <div className="flex items-center gap-2 px-5 py-4 border-b border-gray-100">
-                  <h3 className="text-sm font-semibold text-gray-900">Line Items</h3>
-                  <span className="inline-flex items-center rounded-full bg-gray-100 px-1.5 py-0.5 text-xs font-medium text-gray-500">
-                    {invoice.lineItems.length}
-                  </span>
-                </div>
+              <CollapsibleSection
+                title="Line Items"
+                badge={invoice.lineItems.length}
+                headerRight={formatCurrency(invoice.amount)}
+                defaultOpen={false}
+              >
 
                 {/* ── Desktop table (sm+) ── */}
                 <div className="hidden sm:block px-5 py-4">
@@ -348,7 +355,7 @@ export default async function InvoiceDetailPage({
                     <span className="text-sm font-bold text-gray-900">{formatCurrency(invoice.amount)}</span>
                   </div>
                 </div>
-              </div>
+              </CollapsibleSection>
             )}
 
             {/* Activity Timeline — always visible, no expand/collapse */}
@@ -395,6 +402,16 @@ export default async function InvoiceDetailPage({
                     <Phone className="h-3.5 w-3.5 text-gray-400" />
                     {invoice.contact.phone}
                   </div>
+                  {/* Contact total overdue across all their invoices */}
+                  {contactTotalOverdue > 0 && (
+                    <div className="mt-2 pt-2 border-t border-gray-100">
+                      <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Total Overdue</p>
+                      <p className="text-sm font-bold text-red-600 tabular-nums">{formatCurrency(contactTotalOverdue)}</p>
+                      {contactOverdueInvoices.length > 1 && (
+                        <p className="text-xs text-gray-400 mt-0.5">{contactOverdueInvoices.length} overdue invoices</p>
+                      )}
+                    </div>
+                  )}
                   {invoice.contact.status !== "active" && (
                     <div className="mt-2 flex items-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-2.5 py-1.5">
                       <ShieldX className="h-3.5 w-3.5 text-red-500" />
