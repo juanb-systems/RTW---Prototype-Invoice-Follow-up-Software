@@ -2,6 +2,42 @@
 
 ---
 
+## v2.78.0 — Fix customer receivables sorting (03 Jun 2026)
+
+**Date:** 03 Jun 2026
+**package.json version:** 2.78.0
+
+### Fixed
+
+**Customer-grouped Invoices page — sorting was non-functional (`app/invoices/page.tsx`)**
+
+After the v2.77.0 re-architecture, the Invoices page column headers (Customer, Overdue Total, Invoices, Oldest, Response) were purely decorative — no click handlers, no sort state, no sort icons. The list was always in a fixed order regardless of what the headers implied.
+
+**Root cause:** The column headers were rendered as static `<div>` elements with no interactivity. Sort state (`sortCol`, `sortDir`) was never added when the page was rewritten.
+
+**Fix:**
+- Added `sortCol: SortCol` and `sortDir: SortDir` state with default `oldest / desc` (most overdue customer first)
+- Added `sortAccounts()` pure function that sorts customer account groups at the account level using grouped values (`totalOverdueBalance`, `overdueCount`, `maxDaysPastDue`, reply classification priority) — never operates on individual invoice records
+- Changed all column headers from static `<div>` to `<button>` with `onClick={() => handleSort(col)}`
+- Added `SortIcon` component showing `ChevronsUpDown` (inactive), `ChevronUp` / `ChevronDown` (active); active column header turns blue
+- Clicking the active column toggles direction; clicking a new column resets to the natural default direction for that column (Customer → asc, all others → desc)
+- Aligned data cell widths in `CustomerRow` to match header column widths so values line up under their headers
+
+**Sort rules implemented:**
+- **Customer** — alphabetical by name, secondary by company; default asc
+- **Overdue Total** — numeric by `totalOverdueBalance`; default desc (highest first)
+- **Invoices** — numeric by `overdueCount`, tie-break by `totalOverdueBalance` desc; default desc
+- **Oldest** — numeric by `maxDaysPastDue` (most overdue invoice age); default desc (102d before 82d)
+- **Response** — priority order: Dispute (0) → Promise to Pay (1) → Out of Office (2) → Payment Query (3) → Reply Received (4) → No Reply (5); tie-break by `maxDaysPastDue` desc; default desc (disputes surface first)
+
+**Default sort:** `oldest desc` — most overdue customer appears at the top of the list.
+
+**Pipeline:** filter → search → sort (all three operate on the same customer-account objects, never on raw invoices). Expanded invoice sub-rows always stay attached to their parent customer row since rows are keyed by `contactId`.
+
+---
+
+## v2.77.0 — Re-architect follow-ups around customer invoice groups (03 Jun 2026)
+
 ## v2.77.0 — Re-architect follow-ups around customer invoice groups (03 Jun 2026)
 
 **Date:** 03 Jun 2026
