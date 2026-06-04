@@ -157,17 +157,17 @@ function CustomerRow({ account }: { account: CustomerAccount }) {
           DESKTOP row (sm+)
       ══════════════════════════════════════════ */}
       <div
-        className="hidden sm:flex items-start gap-3 px-5 py-4 hover:bg-gray-50/60 transition-colors cursor-pointer"
-        onClick={() => router.push(`/contacts/${account.contactId}`)}
+        role="button"
+        tabIndex={0}
+        aria-expanded={expanded}
+        className="hidden sm:flex items-start gap-3 px-5 py-4 hover:bg-gray-50/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-inset"
+        onClick={() => setExpanded(p => !p)}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setExpanded(p => !p); } }}
       >
-        {/* Expand toggle */}
-        <button
-          className="flex-shrink-0 mt-0.5 flex h-6 w-6 items-center justify-center rounded text-gray-300 hover:text-gray-500 hover:bg-gray-100 transition-colors"
-          onClick={(e) => { e.stopPropagation(); setExpanded(p => !p); }}
-          title={expanded ? "Collapse invoices" : "Expand invoices"}
-        >
+        {/* Expand indicator — visual only; row click handles expand */}
+        <div className="flex-shrink-0 mt-0.5 flex h-6 w-6 items-center justify-center text-gray-400">
           {expanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-        </button>
+        </div>
 
         {/* Customer + company — flex-1 matches header */}
         <div className="flex-1 min-w-0">

@@ -2,6 +2,31 @@
 
 ---
 
+## v2.80.0 — Fix desktop customer receivables card clicks (04 Jun 2026)
+
+**Date:** 04 Jun 2026
+**package.json version:** 2.80.0
+
+### Fixed
+
+**Desktop Invoices page — customer row click navigated away instead of expanding (`app/invoices/page.tsx`)**
+
+**Root cause:** The desktop customer row `onClick` handler called `router.push('/contacts/...')`, navigating to the contact detail page instead of expanding the invoice list. The chevron was a separate `<button>` with `e.stopPropagation()` that did expand correctly, but the tiny target made it practically invisible as an interaction affordance.
+
+**Fix:**
+- Desktop row `onClick` now calls `setExpanded(p => !p)` — clicking anywhere on the row expands/collapses.
+- Chevron converted from a `<button>` to a visual-only `<div>` indicator (ChevronRight / ChevronUp); the row's click handler already handles the action.
+- `role="button"`, `tabIndex={0}`, `aria-expanded={expanded}` added to the desktop row for accessibility.
+- `onKeyDown` handler added: Enter and Space toggle expand/collapse (prevents default scroll on Space).
+- `focus-visible:ring-2` added for visible keyboard focus indicator.
+- "View account →" link retains `e.stopPropagation()` so it navigates to the contact without triggering expand/collapse.
+- Desktop expanded invoice rows retain their own `onClick` navigating to invoice detail — these do not bubble to the parent row (they are separate DOM subtrees rendered after the row).
+- Mobile behavior unchanged: tapping the card still expands/collapses as before.
+
+---
+
+## v2.79.0 — Fix mobile customer receivables layout (04 Jun 2026)
+
 ## v2.79.0 — Fix mobile customer receivables layout (04 Jun 2026)
 
 **Date:** 04 Jun 2026
