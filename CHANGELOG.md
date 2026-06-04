@@ -2,6 +2,53 @@
 
 ---
 
+## v2.82.0 — Redesign and simplify Receivables page UI (04 Jun 2026)
+
+**Date:** 04 Jun 2026
+**package.json version:** 2.82.0
+
+### Changed
+
+**Receivables page — full UI redesign (`app/invoices/page.tsx`)**
+
+Rewrote the Receivables page layout to be cleaner, more readable, and strongly customer-first on both desktop and mobile.
+
+**Desktop:**
+- Restored minimal column headers: Customer / Overdue / Invoices / Oldest / Response — easy to scan without feeling like a spreadsheet
+- Each column has a fixed width that aligns between header and row data
+- Customer column shows name + company as two stacked lines (not inline with building icon)
+- Entire row is clickable (expand/collapse) — the chevron is purely visual, not a separate button
+- Expanded section unchanged: Reminder Logic panel + invoice table + footer
+
+**Mobile — completely new layout:**
+- Card header: name (bold) + company (subtle) on the left; response badge + chevron on the right — nothing collides
+- Balance: `text-2xl font-bold` in aging colour — the most prominent number on the card
+- Clean summary line: "3 overdue invoices · oldest **102 days**" — no invoice numbers, no "·" surrounded by monospace fragments
+- Tap the whole card to expand/collapse (no separate tiny chevron button)
+- **Expanded: stacked invoice mini-cards** (not a table):
+  - Invoice # (monospace, small)
+  - Amount (large bold) + days overdue (aging colour) — on one line, `justify-between`
+  - Due date + status badge — on a separate line, no overlap
+  - Entire card tappable → navigates to invoice detail
+  - No "View →" text link per card (link clutter removed)
+- Footer in expanded: "View reply →" (left) + "Open account →" (right)
+
+**Mobile toolbar — 3-row layout:**
+- Row 1: Full-width search input with larger touch target (`py-2.5`)
+- Row 2: Filter dropdown + Sort dropdown, each `flex-1` (equal width, fill the row)
+- Row 3: Account count + "Reset filter" link (subtle, below controls)
+- Both dropdowns show **short labels** on mobile (e.g. "Oldest" not "Most overdue first", "Promises" not "Promise to Pay") to fit the compact buttons
+
+**Shared improvements:**
+- `compact` prop on `FilterDropdown` and `SortDropdown` switches to short labels on mobile
+- `flex-1` + `w-full` on compact dropdown buttons ensures they stretch to fill their container
+- `useDropdown` hook extracted to reduce boilerplate
+- Short + full labels defined in `FILTER_OPTIONS` and `SORT_OPTIONS` option arrays
+
+---
+
+## v2.81.0 — Reframe invoices into customer receivables (04 Jun 2026)
+
 ## v2.81.0 — Reframe invoices into customer receivables (04 Jun 2026)
 
 **Date:** 04 Jun 2026
