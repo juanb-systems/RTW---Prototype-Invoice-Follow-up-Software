@@ -19,7 +19,7 @@ export default function DashboardPage() {
       <TopBar
         title="Dashboard"
         subtitle="Overview of your receivables"
-        description="See who owes, what needs attention, and what is scheduled."
+        description="What needs your attention today and how your receivables are tracking."
         actions={<DemoScenarioButton />}
       />
       <div className="p-4 sm:p-6 space-y-5 sm:space-y-6">
@@ -77,7 +77,11 @@ export default function DashboardPage() {
 
           {/* LEFT: Needs Attention */}
           <div className="lg:col-span-2">
-            <NeedsAttentionSection details={attentionDetails} />
+            <NeedsAttentionSection
+              details={attentionDetails}
+              monitoringCount={kpis.customersWithOverdue}
+              scheduledCount={kpis.pendingActions}
+            />
           </div>
 
           {/* RIGHT: Supporting insights */}

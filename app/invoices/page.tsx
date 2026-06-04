@@ -291,37 +291,37 @@ function CustomerCard({ account }: { account: CustomerAccount }) {
           {account.mostOverdueInvoice && (
             <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
               <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-2.5">
-                Reminder Logic
+                Next reminder
               </p>
-              <div className="grid grid-cols-[96px_1fr] gap-y-1.5 text-xs">
-                <span className="text-blue-400 font-medium">Triggered by</span>
+              <div className="grid grid-cols-[120px_1fr] gap-y-1.5 text-xs">
+                <span className="text-blue-400 font-medium">Based on</span>
                 <span className="flex items-baseline gap-2 text-blue-900">
                   <span className="font-mono font-semibold">{account.mostOverdueInvoice.invoiceNumber}</span>
-                  <span className={`font-bold ${agingColor(account.maxDaysPastDue)}`}>{account.maxDaysPastDue} days overdue</span>
+                  <span className={`font-bold ${agingColor(account.maxDaysPastDue)}`}>— {account.maxDaysPastDue} days overdue</span>
                 </span>
-                <span className="text-blue-400 font-medium">Includes</span>
+                <span className="text-blue-400 font-medium">Will mention</span>
                 <span className="text-blue-900">
-                  {account.overdueCount} invoice{account.overdueCount !== 1 ? "s" : ""}
+                  All {account.overdueCount} overdue invoice{account.overdueCount !== 1 ? "s" : ""}
                   {" · "}
                   <span className="font-semibold">{formatCurrency(account.totalOverdueBalance)}</span> total
                 </span>
                 {account.mostOverdueInvoice.assignedFlowName && (
                   <>
-                    <span className="text-blue-400 font-medium">Flow</span>
+                    <span className="text-blue-400 font-medium">Automation</span>
                     <span className="text-blue-900">{account.mostOverdueInvoice.assignedFlowName}</span>
                   </>
                 )}
-                <span className="text-blue-400 font-medium">Next action</span>
+                <span className="text-blue-400 font-medium">Next step</span>
                 {stepLabel && StepIcon ? (
                   <span className="flex items-center gap-1.5 text-blue-900">
                     <StepIcon className="h-3 w-3 text-blue-400" />
-                    <span className="font-medium">{stepLabel} reminder</span>
+                    <span className="font-medium">{stepLabel}</span>
                     {account.nextScheduledAt && (
                       <span className="text-blue-500">· {formatDate(account.nextScheduledAt)}</span>
                     )}
                     {account.nextActionStatus === "awaiting_approval" && (
                       <span className="rounded bg-purple-100 px-1.5 py-0.5 text-[10px] font-medium text-purple-700">
-                        Needs approval
+                        Waiting for your approval
                       </span>
                     )}
                     <Link href="/scheduled" className="ml-1 text-blue-600 hover:underline font-medium" onClick={(e) => e.stopPropagation()}>
@@ -330,7 +330,7 @@ function CustomerCard({ account }: { account: CustomerAccount }) {
                   </span>
                 ) : (
                   <span className="text-blue-400 italic">
-                    {!account.mostOverdueInvoice.assignedFlowId ? "No automation assigned" : "No actions scheduled"}
+                    {!account.mostOverdueInvoice.assignedFlowId ? "No reminders set up yet" : "No reminders scheduled"}
                   </span>
                 )}
               </div>
@@ -557,7 +557,7 @@ function ReceivablesPageContent() {
       <TopBar
         title="Receivables"
         subtitle={`${customersWithOverdue} customers overdue · ${accounts.length} total`}
-        description="Customers grouped by overdue balance. Reminders are based on the oldest unpaid invoice and include all overdue invoices."
+        description="See which customers owe money and what reminders are coming up. Click a customer to see details."
       />
       <div className="p-3 sm:p-6">
         <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">

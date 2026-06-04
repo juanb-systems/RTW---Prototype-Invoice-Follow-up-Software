@@ -4,14 +4,10 @@ import { useState, useRef, useEffect } from "react";
 import {
   LayoutDashboard,
   FileText,
-  Users,
-  Zap,
-  Calendar,
   Inbox,
+  Bell,
   Settings,
   TrendingUp,
-  Phone,
-  Rocket,
   User,
   Monitor,
   LogOut,
@@ -19,43 +15,17 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { NavItem } from "./NavItem";
-import type { LucideIcon } from "lucide-react";
 
-// ── Nav groups ────────────────────────────────────────────────────────────────
+// ── Daily Work items (the only items in the main nav) ─────────────────────────
+// Setup items (Automations, Templates, Customer Directory, Onboarding) have been
+// moved into Settings to reduce nav clutter for SME daily workflow.
 
 const dailyWorkItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/invoices",  icon: FileText,         label: "Receivables" },
   { href: "/inbox",     icon: Inbox,            label: "Inbox" },
-  { href: "/scheduled", icon: Calendar,         label: "Actions" },
+  { href: "/scheduled", icon: Bell,             label: "Reminders" },
 ];
-
-const setupItems = [
-  { href: "/automations",    icon: Zap,    label: "Automations" },
-  { href: "/call-templates", icon: Phone,  label: "Templates" },
-  { href: "/contacts",       icon: Users,  label: "Customer Directory" },
-  { href: "/onboarding",     icon: Rocket, label: "Onboarding" },
-];
-
-// ── NavSection ────────────────────────────────────────────────────────────────
-
-type NavItemDef = { href: string; icon: LucideIcon; label: string };
-
-function NavSection({ label, items }: { label: string; items: NavItemDef[] }) {
-  return (
-    <div>
-      {/* M3 Navigation Drawer section label */}
-      <p className="px-3 pt-5 pb-1 text-[11px] font-semibold text-gray-400 uppercase tracking-widest">
-        {label}
-      </p>
-      <div className="space-y-0.5">
-        {items.map((item) => (
-          <NavItem key={item.href} {...item} />
-        ))}
-      </div>
-    </div>
-  );
-}
 
 // ── ProfileMenu ───────────────────────────────────────────────────────────────
 
@@ -120,9 +90,6 @@ export function Sidebar() {
   }, [profileOpen]);
 
   return (
-    // M3 Navigation Drawer — light surface, subtle border
-    // h-full so the sidebar fills its container on both desktop (flex child) and mobile (absolute inset-y-0)
-    // rather than using h-screen (100vh) which can exceed the visible viewport on mobile browsers
     <aside className="relative flex h-full w-64 flex-col bg-white border-r border-gray-200 z-10">
 
       {/* Logo / brand */}
@@ -136,11 +103,11 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-0">
-        <NavSection label="Daily Work" items={dailyWorkItems} />
-        <div className="mx-3 my-3 border-t border-gray-100" />
-        <NavSection label="Setup" items={setupItems} />
+      {/* Navigation — 4 daily work items only */}
+      <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-0.5">
+        {dailyWorkItems.map((item) => (
+          <NavItem key={item.href} {...item} />
+        ))}
       </nav>
 
       {/* Bottom: Settings + profile */}
@@ -159,7 +126,7 @@ export function Sidebar() {
             className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 cursor-pointer hover:bg-gray-100 transition-colors group"
             aria-label="Account menu"
           >
-            <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0 flex-shrink-0">
+            <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
               <span className="text-xs font-bold text-white">JC</span>
             </div>
             <div className="flex-1 min-w-0 text-left">

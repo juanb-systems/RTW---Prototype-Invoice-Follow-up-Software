@@ -33,9 +33,9 @@ const statusOrder = ["pending", "awaiting_approval", "sent", "skipped", "blocked
 // ── Filter dropdown ───────────────────────────────────────────────────────────
 
 const FILTER_OPTIONS = [
-  { value: "all",               label: "All" },
+  { value: "all",               label: "All reminders" },
   { value: "pending",           label: "Upcoming" },
-  { value: "awaiting_approval", label: "Needs Approval" },
+  { value: "awaiting_approval", label: "Waiting for approval" },
   { value: "sent",              label: "Sent" },
   { value: "blocked",           label: "Blocked" },
   { value: "skipped",           label: "Skipped" },
@@ -75,7 +75,7 @@ function ActionsFilterDropdown({
         }`}
       >
         <SlidersHorizontal className="h-4 w-4 flex-shrink-0" />
-        <span>{isFiltered ? activeOpt.label : "Filter"}</span>
+        <span>{isFiltered ? activeOpt.label : "Filter reminders"}</span>
         <ChevronDown className={`h-3.5 w-3.5 opacity-60 flex-shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
 
@@ -156,9 +156,13 @@ function ScheduledPageContent() {
   return (
     <div>
       <TopBar
-        title="Actions"
-        subtitle={pending > 0 || awaiting > 0 ? `${pending} upcoming · ${awaiting} need approval` : "All caught up"}
-        description="Review what CollectPilot has sent, what is scheduled next, and what needs approval."
+        title="Reminders"
+        subtitle={
+          awaiting > 0 ? `${awaiting} waiting for your approval` :
+          pending > 0   ? `${pending} scheduled this week` :
+          "All up to date"
+        }
+        description="See what reminders have been sent, what's coming up, and what needs your approval."
         actions={
           <button
             onClick={load}
@@ -175,8 +179,8 @@ function ScheduledPageContent() {
         {/* Safety notice — M3 tonal container */}
         <div className="rounded-2xl bg-amber-50 border border-amber-200 px-4 py-3">
           <p className="text-xs text-amber-800">
-            <strong>Safety check before every send.</strong>{" "}
-            CollectPilot verifies each invoice is still unpaid before sending. Actions are skipped automatically if the invoice is paid or the contact is excluded.
+            <strong>Automatic safety check.</strong>{" "}
+            CollectPilot checks each invoice is still unpaid before every reminder goes out. If the customer has already paid, the reminder is skipped automatically.
           </p>
         </div>
 
@@ -187,7 +191,7 @@ function ScheduledPageContent() {
             <input
               ref={searchRef}
               type="text"
-              placeholder="Search actions…"
+              placeholder="Search reminders…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="w-full rounded-xl border border-gray-200 pl-9 pr-9 py-2 text-sm focus:border-blue-400 focus:outline-none"
@@ -209,8 +213,8 @@ function ScheduledPageContent() {
         {!loading && (
           <p className="text-xs text-gray-400">
             {filtered.length === actions.length
-              ? `${actions.length} action${actions.length !== 1 ? "s" : ""}`
-              : `${filtered.length} of ${actions.length} actions`}
+              ? `${actions.length} reminder${actions.length !== 1 ? "s" : ""}`
+              : `${filtered.length} of ${actions.length} reminders`}
             {filter !== "all" && (
               <span className="ml-1 text-blue-600 font-medium">
                 · {FILTER_OPTIONS.find(o => o.value === filter)?.label}
@@ -229,7 +233,7 @@ function ScheduledPageContent() {
         ) : filtered.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-gray-200 py-12 text-center">
             <p className="text-sm text-gray-400">
-              {query ? `No actions match "${query}".` : "No actions in this category."}
+              {query ? `No reminders match "${query}".` : "No reminders in this category."}
             </p>
             {query && (
               <button onClick={clear} className="mt-2 text-xs text-blue-500 hover:underline">

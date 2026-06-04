@@ -6,8 +6,9 @@ import { TopBar } from "@/components/layout/TopBar";
 import { usePreferencesStore } from "@/lib/preferences-store";
 import {
   Shield, RefreshCw, AlertTriangle, CheckCircle2, X, Plus, Info,
-  Sun, Moon, Monitor, Bell, Volume2, Mail, Building2, User,
+  Sun, Moon, Monitor, Bell, Volume2, Mail, Building2, User, Zap, Phone, Users, Rocket, ChevronRight,
 } from "lucide-react";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 // ── Server-side settings type ─────────────────────────────────────────────────
@@ -333,7 +334,37 @@ export default function SettingsPage() {
           ))}
         </Section>
 
-        {/* 5. Account / Demo */}
+        {/* 5. Configuration — links to setup/admin sections removed from sidebar */}
+        <Section
+          title="Configuration"
+          description="Set up your follow-up flows, call scripts, and customer contacts."
+        >
+          <div className="space-y-1">
+            {[
+              { href: "/automations",    icon: Zap,    label: "Follow-up Flows", description: "Build and manage your automated reminder sequences" },
+              { href: "/call-templates", icon: Phone,  label: "Call Scripts",    description: "Manage AI call templates and outcomes" },
+              { href: "/contacts",       icon: Users,  label: "Customer Directory", description: "View and manage all customer contacts" },
+              { href: "/onboarding",     icon: Rocket, label: "Setup Wizard",    description: "Re-run the initial setup if needed" },
+            ].map(({ href, icon: Icon, label, description }) => (
+              <Link
+                key={href}
+                href={href}
+                className="flex items-center gap-3 rounded-xl px-3 py-3 hover:bg-gray-50 transition-colors group"
+              >
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gray-100 flex-shrink-0 group-hover:bg-blue-50 transition-colors">
+                  <Icon className="h-4 w-4 text-gray-500 group-hover:text-blue-600 transition-colors" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-800 group-hover:text-gray-900">{label}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{description}</p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-gray-300 group-hover:text-gray-500 flex-shrink-0 transition-colors" />
+              </Link>
+            ))}
+          </div>
+        </Section>
+
+        {/* 6. Account / Demo */}
         <Section
           title="Account"
           description="Account details and demo mode status."

@@ -2,6 +2,73 @@
 
 ---
 
+## v2.93.0 — Simplify SME workflow: navigation, Reminders rename, plain-English Dashboard (04 Jun 2026)
+
+**Date:** 04 Jun 2026
+**package.json version:** 2.93.0
+
+### Changed — 5 UX audit quick-win implementations
+
+**1. Sidebar simplified to 4 daily items (`components/layout/Sidebar.tsx`)**
+Removed Automations, Templates, Customer Directory, and Onboarding from the main sidebar navigation. These setup/admin sections are now accessible through Settings → Configuration. Daily sidebar now shows only: Dashboard · Receivables · Inbox · **Reminders**. Removed the "Setup" NavSection entirely. Icon for Reminders changed from Calendar to Bell.
+
+**2. "Actions" renamed to "Reminders" throughout (`app/scheduled/page.tsx`, `components/scheduled/ScheduledActionCard.tsx`)**
+- TopBar title: "Actions" → "Reminders"
+- TopBar subtitle: now shows "X waiting for your approval" / "X scheduled this week" / "All up to date"
+- TopBar description: plain English rewrite
+- Safety notice: "Safety check before every send" → "Automatic safety check" with plain-English explanation
+- Filter option: "Needs Approval" → "Waiting for approval"
+- Filter dropdown label: "Filter reminders"
+- Status chip on card: "Needs Approval" → "Waiting for approval"
+- Action buttons: "Approve & Send" → "Approve & send", "Send Now" → "Send now"
+- Count text: "X actions" → "X reminders"
+- Empty state: "No actions in this category" → "No reminders in this category"
+
+**3. Settings — Configuration section added (`app/settings/page.tsx`)**
+New "Configuration" section with icon-link cards for: Follow-up Flows (→/automations), Call Scripts (→/call-templates), Customer Directory (→/contacts), Setup Wizard (→/onboarding). These pages still exist and work — they're just not in the main sidebar anymore.
+
+**4. Dashboard — flat priority list replaces accordion cards (`components/dashboard/NeedsAttentionSection.tsx`)**
+Completely rewrote NeedsAttentionSection. Replaced expandable accordion cards with a flat priority list where each item has an inline action button. No expanding required.
+
+New priority row format:
+```
+[icon]  A customer disputed an invoice        [Review →]
+        Reminders are paused. Review before sending anything.
+```
+
+Priority categories in plain English:
+- Disputes → "A customer disputed an invoice" → "Review" → /invoices?filter=disputed
+- Blocked → "X reminders were blocked" → "View blocked" → /scheduled?filter=blocked
+- 60+ days → "X accounts are 60+ days overdue" → "View accounts" → /invoices?filter=overdue
+- Approval → "X reminders need your approval" → "Approve" → /scheduled?filter=awaiting_approval
+- Paused → "X follow-ups are paused" → "View replies" → /inbox?filter=needs_action
+- Unread → "X new customer replies" → "Read" → /inbox?filter=unread
+- 30–60 days → "X accounts overdue 30–60 days" → "View accounts" → /invoices?filter=overdue
+
+Added **"CollectPilot is working" empty state** when nothing needs attention:
+```
+✓ All clear — nothing urgent right now
+CollectPilot is monitoring 8 overdue customers. 3 reminders scheduled this week.
+```
+
+Dashboard now accepts `monitoringCount` (customersWithOverdue) and `scheduledCount` (pendingActions) props for the working status text.
+
+**5. Receivables — plain-English Reminder Logic panel (`app/invoices/page.tsx`)**
+Renamed the expanded customer detail panel:
+- "Reminder Logic" → "Next reminder"
+- "Triggered by" → "Based on" (oldest invoice drives the stage)
+- "Includes" → "Will mention" (all overdue invoices)
+- "Flow" → "Automation"
+- "Next action" → "Next step"
+- "Needs approval" → "Waiting for your approval"
+- "No automation assigned" → "No reminders set up yet"
+- "No actions scheduled" → "No reminders scheduled"
+- TopBar description updated to plain English
+
+---
+
+## v2.92.0 — Improve back navigation visibility (04 Jun 2026)
+
 ## v2.92.0 — Improve back navigation visibility (04 Jun 2026)
 
 **Date:** 04 Jun 2026
