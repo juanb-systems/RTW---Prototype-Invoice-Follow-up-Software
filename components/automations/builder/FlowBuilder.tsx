@@ -36,31 +36,49 @@ const INSERTABLE = [
 // ── Merge tags ────────────────────────────────────────────────────────────────
 
 const MERGE_TAGS = [
-  { tag: "{{contact_name}}",     label: "Contact Name" },
-  { tag: "{{invoice_number}}",   label: "Invoice #" },
-  { tag: "{{invoice_amount}}",   label: "Amount" },
-  { tag: "{{due_date}}",         label: "Due Date" },
-  { tag: "{{days_overdue}}",     label: "Days Overdue" },
-  { tag: "{{company_name}}",     label: "Company" },
-  { tag: "{{customer_company}}", label: "Customer Co." },
-  { tag: "{{payment_link}}",     label: "Pay Link" },
-  { tag: "{{contact_email}}",    label: "Contact Email" },
-  { tag: "{{accounts_email}}",   label: "Accounts Email" },
+  // Contact
+  { tag: "{{contact_name}}",             label: "Contact Name" },
+  { tag: "{{company_name}}",             label: "Your Company" },
+  { tag: "{{customer_company}}",         label: "Customer Co." },
+  { tag: "{{contact_email}}",            label: "Contact Email" },
+  { tag: "{{accounts_email}}",           label: "Accounts Email" },
+  { tag: "{{payment_link}}",             label: "Pay Link" },
+  // Customer account (multi-invoice)
+  { tag: "{{total_overdue_balance}}",    label: "Total Overdue" },
+  { tag: "{{overdue_invoice_count}}",    label: "Invoice Count" },
+  { tag: "{{max_days_overdue}}",         label: "Max Days Overdue" },
+  { tag: "{{most_overdue_invoice_number}}", label: "Oldest Invoice #" },
+  { tag: "{{invoice_list}}",             label: "Invoice List" },
+  { tag: "{{invoice_summary_table}}",    label: "Invoice Table" },
+  // Single invoice
+  { tag: "{{invoice_number}}",           label: "Invoice #" },
+  { tag: "{{invoice_amount}}",           label: "Amount" },
+  { tag: "{{due_date}}",                 label: "Due Date" },
+  { tag: "{{days_overdue}}",             label: "Days Overdue" },
 ];
 
 // ── Email preview helpers ─────────────────────────────────────────────────────
 
 const PREVIEW_SAMPLE: Record<string, string> = {
+  // Contact
   contact_name:     "James Fletcher",
+  company_name:     "Refresh The Web",
+  customer_company: "Fletcher IT Solutions",
+  contact_email:    "james.fletcher@fletcherit.com.au",
+  accounts_email:   "accounts@refreshtheweb.com.au",
+  payment_link:     "https://pay.collectpilot.demo/inv-001",
+  // Customer account (multi-invoice)
+  total_overdue_balance:         "$14,600.00",
+  overdue_invoice_count:         "2",
+  max_days_overdue:              "15",
+  most_overdue_invoice_number:   "INV-2026-001",
+  invoice_list:                  "• INV-2026-001 — $12,500.00 — 15 days overdue\n• INV-2026-003 — $2,100.00 — 5 days overdue",
+  invoice_summary_table:         "INV-2026-001 | $12,500.00 | 15d\nINV-2026-003 | $2,100.00 | 5d",
+  // Single invoice
   invoice_number:   "INV-2026-001",
   invoice_amount:   "$12,500.00",
   due_date:         "18 May 2026",
   days_overdue:     "15",
-  company_name:     "Refresh The Web",
-  customer_company: "Fletcher IT Solutions",
-  payment_link:     "https://pay.collectpilot.demo/inv-001",
-  contact_email:    "james.fletcher@fletcherit.com.au",
-  accounts_email:   "accounts@refreshtheweb.com.au",
   // legacy keys
   contactName:    "James Fletcher",
   invoiceNumber:  "INV-2026-001",

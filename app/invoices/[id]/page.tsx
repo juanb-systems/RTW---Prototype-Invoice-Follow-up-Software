@@ -409,14 +409,39 @@ export default async function InvoiceDetailPage({
                       If only 1 overdue invoice exists it equals the current invoice amount, so showing
                       a separate "customer total" would look like a mismatch rather than extra context. */}
                   {contactOverdueInvoices.length > 1 && (
-                    <div className="mt-2 pt-2 border-t border-gray-100">
-                      <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
-                        Customer Overdue Balance
-                      </p>
-                      <p className="text-sm font-bold text-red-600 tabular-nums">{formatCurrency(contactTotalOverdue)}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        Across {contactOverdueInvoices.length} overdue invoices
-                      </p>
+                    <div className="mt-2 pt-2 border-t border-gray-100 space-y-2">
+                      <div>
+                        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
+                          Customer Overdue Balance
+                        </p>
+                        <p className="text-sm font-bold text-red-600 tabular-nums">{formatCurrency(contactTotalOverdue)}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          Across {contactOverdueInvoices.length} overdue invoices
+                        </p>
+                      </div>
+                      {/* Other overdue invoices for the same customer */}
+                      <div>
+                        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
+                          Other Overdue Invoices
+                        </p>
+                        <div className="space-y-1">
+                          {contactOverdueInvoices
+                            .filter(i => i.id !== id)
+                            .sort((a, b) => b.daysPastDue - a.daysPastDue)
+                            .map(i => (
+                              <Link
+                                key={i.id}
+                                href={`/invoices/${i.id}`}
+                                className="flex items-center justify-between gap-2 rounded border border-gray-100 bg-gray-50 px-2 py-1 text-xs hover:border-blue-200 hover:bg-blue-50 transition-colors"
+                              >
+                                <span className="font-mono font-medium text-gray-700">{i.invoiceNumber}</span>
+                                <span className="text-gray-500">{formatCurrency(i.amount)}</span>
+                                <span className={`font-medium ${agingColor(i.daysPastDue)}`}>{i.daysPastDue}d</span>
+                              </Link>
+                            ))
+                          }
+                        </div>
+                      </div>
                     </div>
                   )}
                   {invoice.contact.status !== "active" && (

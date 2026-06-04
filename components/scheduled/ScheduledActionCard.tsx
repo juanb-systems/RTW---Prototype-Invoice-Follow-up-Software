@@ -17,13 +17,28 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-import { formatDateTime, formatCurrency } from "@/lib/utils";
+import { formatDateTime, formatCurrency, agingColor } from "@/lib/utils";
 import type { ScheduledAction, Invoice, Contact, AutomationFlow, LookupOutcome } from "@/lib/types";
+
+type CustomerAccountContext = {
+  overdueCount: number;
+  totalOverdueBalance: number;
+  maxDaysPastDue: number;
+  mostOverdueInvoiceNumber: string | null;
+  overdueInvoices: {
+    id: string;
+    invoiceNumber: string;
+    amount: number;
+    daysPastDue: number;
+    status: string;
+  }[];
+};
 
 type FullAction = ScheduledAction & {
   invoice?: Invoice;
   contact?: Contact;
   flow?: AutomationFlow;
+  customerAccount?: CustomerAccountContext | null;
 };
 
 const stepTypeConfig = {
@@ -110,34 +125,55 @@ export function ScheduledActionCard({ action, onRefresh }: { action: FullAction;
             </span>
           </div>
 
-          {/* Contact · Invoice · Automation */}
+          {/* Contact · Company */}
           <div className="text-xs text-gray-500 space-y-0.5 mb-2">
-            {(action.contact || action.invoice) && (
-              <p className="flex flex-wrap items-center gap-1">
-                {action.contact && (
-                  <Link
-                    href={`/contacts/${action.contactId}`}
-                    className="font-medium text-gray-800 hover:underline"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {action.contact.name}
-                  </Link>
-                )}
-                {action.invoice && (
-                  <>
-                    {action.contact && <span className="text-gray-300">·</span>}
-                    <Link
-                      href={`/invoices/${action.invoiceId}`}
-                      className="font-medium text-blue-600 hover:underline"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {action.invoice.invoiceNumber}
-                    </Link>
-                    <span className="text-gray-700">{formatCurrency(action.invoice.amount)}</span>
-                  </>
+            {action.contact && (
+              <p className="flex flex-wrap items-center gap-1.5">
+                <Link
+                  href={`/contacts/${action.contactId}`}
+                  className="font-medium text-gray-800 hover:underline"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {action.contact.name}
+                </Link>
+                {action.contact.company && (
+                  <span className="text-gray-400">· {action.contact.company}</span>
                 )}
               </p>
             )}
+
+            {/* Customer account summary — overdue balance + invoice count */}
+            {action.customerAccount && action.customerAccount.overdueCount > 0 && (
+              <p className="flex flex-wrap items-center gap-1.5 mt-0.5">
+                <span className={`font-semibold ${agingColor(action.customerAccount.maxDaysPastDue)}`}>
+                  {formatCurrency(action.customerAccount.totalOverdueBalance)}
+                </span>
+                <span className="text-gray-400">
+                  overdue across {action.customerAccount.overdueCount} invoice{action.customerAccount.overdueCount !== 1 ? "s" : ""}
+                </span>
+                {action.customerAccount.mostOverdueInvoiceNumber && (
+                  <span className="text-gray-400">
+                    · Oldest: {action.customerAccount.mostOverdueInvoiceNumber} · {action.customerAccount.maxDaysPastDue}d
+                  </span>
+                )}
+              </p>
+            )}
+
+            {/* Primary invoice for this action */}
+            {action.invoice && (
+              <p className="flex flex-wrap items-center gap-1.5">
+                <span className="text-gray-400">This reminder covers:</span>
+                <Link
+                  href={`/invoices/${action.invoiceId}`}
+                  className="font-medium text-blue-600 hover:underline"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {action.invoice.invoiceNumber}
+                </Link>
+                <span className="text-gray-700">{formatCurrency(action.invoice.amount)}</span>
+              </p>
+            )}
+
             {action.flow && (
               <p className="text-gray-400">{action.flow.name}</p>
             )}

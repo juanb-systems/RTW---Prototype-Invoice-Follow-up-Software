@@ -9,7 +9,39 @@ export async function GET() {
   const messages = db.inboxMessages.map((msg) => {
     const invoice = db.invoices.find((i) => i.id === msg.invoiceId);
     const contact = db.contacts.find((c) => c.id === msg.contactId);
-    return { ...msg, invoice, contact };
+
+    // Customer account context — all overdue invoices for this contact
+    const contactInvoices = contact
+      ? db.invoices.filter((i) => i.contactId === contact.id)
+      : [];
+    const overdueInvoices = contactInvoices.filter(
+      (i) => i.status === "overdue" || i.status === "partial"
+    );
+    const totalOverdueBalance = overdueInvoices.reduce((s, i) => s + i.amount, 0);
+    const mostOverdue = overdueInvoices.reduce<(typeof contactInvoices)[0] | null>(
+      (prev, curr) => (!prev || curr.daysPastDue > prev.daysPastDue ? curr : prev),
+      null
+    );
+
+    const customerAccount =
+      contact && overdueInvoices.length > 0
+        ? {
+            overdueCount: overdueInvoices.length,
+            totalOverdueBalance,
+            maxDaysPastDue: mostOverdue?.daysPastDue ?? 0,
+            overdueInvoices: overdueInvoices
+              .sort((a, b) => b.daysPastDue - a.daysPastDue)
+              .map((i) => ({
+                id: i.id,
+                invoiceNumber: i.invoiceNumber,
+                amount: i.amount,
+                daysPastDue: i.daysPastDue,
+                status: i.status,
+              })),
+          }
+        : null;
+
+    return { ...msg, invoice, contact, customerAccount };
   });
   return NextResponse.json(messages);
 }

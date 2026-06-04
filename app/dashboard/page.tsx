@@ -33,15 +33,17 @@ export default function DashboardPage() {
             <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1.5 tabular-nums leading-none">
               {formatCurrency(kpis.totalOverdueAmount)}
             </p>
-            <p className="text-xs text-gray-400 mt-1.5">across {kpis.totalOverdue} invoices</p>
+            <p className="text-xs text-gray-400 mt-1.5">
+              {kpis.customersWithOverdue} customer{kpis.customersWithOverdue !== 1 ? "s" : ""} · {kpis.totalOverdue} invoices
+            </p>
           </div>
 
           {/* 3 compact cards */}
           <div className="grid grid-cols-3 gap-3 sm:contents">
             <div className="rounded-2xl border border-gray-100 bg-white shadow-sm p-3 sm:p-6">
-              <p className="text-[9px] sm:text-xs font-semibold text-gray-400 uppercase tracking-widest leading-tight">Avg Days</p>
-              <p className="text-xl sm:text-3xl font-bold text-gray-900 mt-1 sm:mt-1.5 tabular-nums">{kpis.avgDaysPastDue}</p>
-              <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 sm:mt-1 leading-tight">days overdue</p>
+              <p className="text-[9px] sm:text-xs font-semibold text-gray-400 uppercase tracking-widest leading-tight">Customers</p>
+              <p className="text-xl sm:text-3xl font-bold text-gray-900 mt-1 sm:mt-1.5 tabular-nums">{kpis.customersWithOverdue}</p>
+              <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 sm:mt-1 leading-tight">overdue</p>
             </div>
             <div className="rounded-2xl border border-gray-100 bg-white shadow-sm p-3 sm:p-6">
               <p className="text-[9px] sm:text-xs font-semibold text-gray-400 uppercase tracking-widest leading-tight">Approvals</p>

@@ -206,6 +206,127 @@ export function getAttentionDetails(): AttentionDetails {
   };
 }
 
+// ── Customer account summary (one entry per contact, grouped across all invoices) ─
+
+export type CustomerAccount = {
+  contactId: string;
+  name: string;
+  company: string;
+  email: string;
+  phone: string;
+  contactStatus: string;
+  tags: string[];
+  invoiceCount: number;
+  overdueCount: number;
+  paidCount: number;
+  disputedCount: number;
+  totalOverdueBalance: number;
+  maxDaysPastDue: number;
+  // Most overdue invoice drives the automation stage
+  mostOverdueInvoice: {
+    id: string;
+    invoiceNumber: string;
+    amount: number;
+    daysPastDue: number;
+    status: string;
+    assignedFlowId: string | null;
+    assignedFlowName: string | null;
+  } | null;
+  // Latest email reply (calls excluded — they live in Actions)
+  latestMessageClassification: string | null;
+  latestMessageId: string | null;
+  latestMessageReceivedAt: string | null;
+  automationPaused: boolean;
+  pendingActionCount: number;
+  awaitingApprovalCount: number;
+  // Overdue invoices sorted most-overdue-first for the expandable list
+  overdueInvoices: {
+    id: string;
+    invoiceNumber: string;
+    amount: number;
+    dueDate: string;
+    daysPastDue: number;
+    status: string;
+    assignedFlowId: string | null;
+  }[];
+};
+
+export function getCustomerAccounts(): CustomerAccount[] {
+  const db = getDb();
+
+  const accounts = db.contacts.map((contact) => {
+    const allInvoices = db.invoices.filter((i) => i.contactId === contact.id);
+    if (allInvoices.length === 0) return null;
+
+    const overdueInvoices = allInvoices.filter(
+      (i) => i.status === "overdue" || i.status === "partial"
+    );
+    const totalOverdueBalance = overdueInvoices.reduce((s, i) => s + i.amount, 0);
+
+    const mostOverdueInvoice = overdueInvoices.reduce<Invoice | null>(
+      (prev, curr) => (!prev || curr.daysPastDue > prev.daysPastDue ? curr : prev),
+      null
+    );
+
+    const assignedFlow = mostOverdueInvoice?.assignedFlowId
+      ? db.automationFlows.find((f) => f.id === mostOverdueInvoice.assignedFlowId) ?? null
+      : null;
+
+    // Latest email reply only — calls belong in Actions, not Inbox
+    const latestMsg = db.inboxMessages
+      .filter((m) => m.contactId === contact.id && m.type !== "call")
+      .sort((a, b) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime())[0] ?? null;
+
+    const contactActions = db.scheduledActions.filter((a) => a.contactId === contact.id);
+
+    return {
+      contactId: contact.id,
+      name: contact.name,
+      company: contact.company,
+      email: contact.email,
+      phone: contact.phone,
+      contactStatus: contact.status,
+      tags: contact.tags,
+      invoiceCount: allInvoices.length,
+      overdueCount: overdueInvoices.length,
+      paidCount: allInvoices.filter((i) => i.status === "paid").length,
+      disputedCount: allInvoices.filter((i) => i.status === "disputed").length,
+      totalOverdueBalance,
+      maxDaysPastDue: mostOverdueInvoice?.daysPastDue ?? 0,
+      mostOverdueInvoice: mostOverdueInvoice
+        ? {
+            id: mostOverdueInvoice.id,
+            invoiceNumber: mostOverdueInvoice.invoiceNumber,
+            amount: mostOverdueInvoice.amount,
+            daysPastDue: mostOverdueInvoice.daysPastDue,
+            status: mostOverdueInvoice.status,
+            assignedFlowId: mostOverdueInvoice.assignedFlowId,
+            assignedFlowName: assignedFlow?.name ?? null,
+          }
+        : null,
+      latestMessageClassification: latestMsg?.classification ?? null,
+      latestMessageId: latestMsg?.id ?? null,
+      latestMessageReceivedAt: latestMsg?.receivedAt ?? null,
+      automationPaused: latestMsg?.automationPaused ?? false,
+      pendingActionCount: contactActions.filter((a) => a.status === "pending").length,
+      awaitingApprovalCount: contactActions.filter((a) => a.status === "awaiting_approval").length,
+      overdueInvoices: overdueInvoices
+        .sort((a, b) => b.daysPastDue - a.daysPastDue)
+        .map((i) => ({
+          id: i.id,
+          invoiceNumber: i.invoiceNumber,
+          amount: i.amount,
+          dueDate: i.dueDate,
+          daysPastDue: i.daysPastDue,
+          status: i.status,
+          assignedFlowId: i.assignedFlowId,
+        })),
+    };
+  });
+
+  return accounts.filter(Boolean) as CustomerAccount[];
+}
+
 export function getDashboardData() {
   const db = getDb();
 
@@ -226,6 +347,7 @@ export function getDashboardData() {
   const awaitingApproval = db.scheduledActions.filter(
     (a) => a.status === "awaiting_approval"
   ).length;
+  const customersWithOverdue = new Set(overdueInvoices.map((i) => i.contactId)).size;
 
   const agingBuckets = [
     { label: "1–14d", count: 0, amount: 0 },
@@ -281,7 +403,7 @@ export function getDashboardData() {
   };
 
   return {
-    kpis: { totalOverdue: overdueInvoices.length, totalOverdueAmount, avgDaysPastDue, pendingActions, awaitingApproval },
+    kpis: { totalOverdue: overdueInvoices.length, totalOverdueAmount, avgDaysPastDue, pendingActions, awaitingApproval, customersWithOverdue },
     agingBuckets,
     collectionsTrend,
     recentActivity,

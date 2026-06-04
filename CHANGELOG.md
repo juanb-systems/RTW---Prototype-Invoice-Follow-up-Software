@@ -2,6 +2,85 @@
 
 ---
 
+## v2.77.0 — Re-architect follow-ups around customer invoice groups (03 Jun 2026)
+
+**Date:** 03 Jun 2026
+**package.json version:** 2.77.0
+
+### Architecture change
+
+Re-architected the follow-up model from invoice-first to **contact/customer-first**. Invoices are now grouped by customer/contact, and reminder timing and content are driven by the most overdue invoice for each customer rather than triggering separately for each individual invoice.
+
+### Changed
+
+**1. Data model — new `getCustomerAccounts()` function (`lib/server-data.ts`)**
+
+Added `CustomerAccount` type and `getCustomerAccounts()` function that groups all invoices by contact and derives:
+- `totalOverdueBalance` — sum of all overdue + partial invoices for the contact
+- `mostOverdueInvoice` — the invoice with the highest `daysPastDue` (drives automation stage)
+- `maxDaysPastDue` — days overdue of the most overdue invoice
+- `overdueInvoices` — all overdue invoices sorted most-overdue-first for expandable detail
+- `overdueCount`, `paidCount`, `disputedCount` — counts by status
+- `latestMessageClassification`, `automationPaused` — from the latest email reply
+- `pendingActionCount`, `awaitingApprovalCount` — from scheduled actions
+
+Added `/api/customer-accounts` route returning this data.
+
+Added `customersWithOverdue` to `getDashboardData()` KPIs.
+
+**2. Invoices page — customer-grouped receivables view (`app/invoices/page.tsx`)**
+
+Replaced the flat invoice table with a **customer-grouped receivables view**:
+- Each row represents one customer/contact showing: name, company, total overdue balance, overdue invoice count, oldest invoice number, max days overdue, customer reply status, automation status
+- Rows are expandable — click the chevron to see individual overdue invoices with amount, days overdue, due date, and status badge
+- Sorted by most overdue first (by `maxDaysPastDue`)
+- Filters: All / Overdue / Disputed / Promise to Pay / No Automation / Paused
+- "View account →" links to Contact Detail
+
+**3. Actions page — customer-level context in action cards (`components/scheduled/ScheduledActionCard.tsx`, `app/api/scheduled/route.ts`)**
+
+- Enriched scheduled actions API to include `customerAccount` context per action: total overdue balance, overdue invoice count, max days overdue, most overdue invoice number, and overdue invoice list
+- ScheduledActionCard now shows: customer name + company, total overdue balance with aging colour, overdue invoice count, oldest invoice number, and the specific invoice being actioned labelled as "This reminder covers"
+
+**4. Inbox — customer/account context panel (`app/inbox/page.tsx`, `app/api/inbox/route.ts`)**
+
+- Enriched inbox API to include `customerAccount` context per message
+- `MessageDetail` now shows a customer account panel above the invoice link when the contact has overdue invoices: customer name, company, total overdue balance (colour-coded by age), overdue invoice count, and clickable invoice chips for each overdue invoice (shows invoice #, amount, days overdue)
+
+**5. Invoice Detail — other overdue invoices for same customer (`app/invoices/[id]/page.tsx`)**
+
+- Sidebar contact panel already showed "Customer Overdue Balance" when multiple invoices exist
+- Now also lists each other overdue invoice as a clickable chip showing invoice #, amount, and days overdue
+- Labelled "Other Overdue Invoices"
+
+**6. Contact Detail — full account summary view (`app/contacts/[id]/page.tsx`)**
+
+Rewritten as an account summary page:
+- Added 4-stat grid: Total Invoices / Overdue / Overdue Balance / Max Days Overdue (colour-coded)
+- Added "Account Status" panel showing: automation status badge, flow name, latest reply badge, next scheduled action date (links to Actions)
+- "Automation stage driven by" shows the most overdue invoice number and days overdue — makes clear which invoice determines the follow-up stage
+- "View latest reply in Inbox →" link
+- Invoice table unchanged — still shows all invoices with status and drill-down links
+
+**7. Dashboard — customer-level KPI (`app/dashboard/page.tsx`)**
+
+- Total Overdue card subtitle changed from "across X invoices" to "X customers · X invoices"
+- "Avg Days" compact KPI replaced with "Customers" (overdue customer count) — more actionable metric for the daily workflow
+
+**8. Reminder merge tags — multi-invoice support**
+
+Updated merge tag lists in `app/call-templates/page.tsx` and `components/automations/builder/FlowBuilder.tsx` to include customer account merge tags:
+- `{{total_overdue_balance}}` — combined overdue balance across all invoices
+- `{{overdue_invoice_count}}` — number of overdue invoices for the customer
+- `{{max_days_overdue}}` — days overdue of the oldest invoice
+- `{{most_overdue_invoice_number}}` — invoice number that drives the automation stage
+- `{{invoice_list}}` — plain-text list of all overdue invoices
+- `{{invoice_summary_table}}` — tabular version for emails
+
+Preview sample data updated with representative multi-invoice values.
+
+---
+
 ## v2.76.0 — Data Consistency and Clarity Audit (03 Jun 2026)
 
 **Date:** 03 Jun 2026

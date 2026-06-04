@@ -28,8 +28,15 @@ import {
   ChevronDown,
   Check,
 } from "lucide-react";
-import { formatDateTime, formatCurrency } from "@/lib/utils";
+import { formatDateTime, formatCurrency, agingColor } from "@/lib/utils";
 import type { MessageClassification, CallStatus } from "@/lib/types";
+
+type CustomerAccountContext = {
+  overdueCount: number;
+  totalOverdueBalance: number;
+  maxDaysPastDue: number;
+  overdueInvoices: { id: string; invoiceNumber: string; amount: number; daysPastDue: number; status: string }[];
+};
 
 type Message = {
   id: string;
@@ -49,6 +56,7 @@ type Message = {
   callStatus?: CallStatus;
   callOutcome?: string;
   transcript?: string;
+  customerAccount?: CustomerAccountContext | null;
 };
 
 // ── Configs (used for search label lookups) ───────────────────────────────────
@@ -330,7 +338,55 @@ function MessageDetail({
           <p className="text-xs text-gray-400 mt-1">{formatDateTime(message.receivedAt)}</p>
         </div>
 
-        {/* 3. Invoice link */}
+        {/* 3. Customer account context — shown when contact has multiple overdue invoices */}
+        {message.customerAccount && message.customerAccount.overdueCount > 0 && (
+          <div className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
+                  Customer Account
+                </p>
+                <p className="text-sm font-medium text-gray-800">
+                  {message.contact?.name}
+                  {message.contact?.company && (
+                    <span className="font-normal text-gray-500"> · {message.contact.company}</span>
+                  )}
+                </p>
+              </div>
+              <Link
+                href={`/contacts/${message.contactId}`}
+                className="text-xs font-medium text-blue-600 hover:underline whitespace-nowrap flex-shrink-0"
+              >
+                View account →
+              </Link>
+            </div>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <span className={`text-sm font-bold ${agingColor(message.customerAccount.maxDaysPastDue)}`}>
+                {formatCurrency(message.customerAccount.totalOverdueBalance)}
+              </span>
+              <span className="text-xs text-gray-400">
+                overdue across {message.customerAccount.overdueCount} invoice{message.customerAccount.overdueCount !== 1 ? "s" : ""}
+              </span>
+            </div>
+            {message.customerAccount.overdueCount > 1 && (
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {message.customerAccount.overdueInvoices.map(inv => (
+                  <Link
+                    key={inv.id}
+                    href={`/invoices/${inv.id}`}
+                    className="inline-flex items-center gap-1 rounded border border-gray-200 bg-white px-2 py-0.5 text-xs text-gray-600 hover:border-blue-300 hover:text-blue-600 transition-colors"
+                  >
+                    <span className="font-mono font-medium">{inv.invoiceNumber}</span>
+                    <span className="text-gray-400">{formatCurrency(inv.amount)}</span>
+                    <span className={`font-medium ${agingColor(inv.daysPastDue)}`}>{inv.daysPastDue}d</span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 4. Invoice link */}
         {message.invoice && (
           <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
             <div className="flex items-center gap-3 min-w-0">
@@ -349,7 +405,7 @@ function MessageDetail({
           </div>
         )}
 
-        {/* 4. Message / transcript — always visible, no accordion */}
+        {/* 5. Message / transcript — always visible, no accordion */}
         <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
           <div className="px-4 py-2.5 border-b border-gray-100 bg-gray-50">
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
@@ -364,7 +420,7 @@ function MessageDetail({
           </div>
         </div>
 
-        {/* 5. Exception warning — only for dispute or needs_review (high-risk).
+        {/* 6. Exception warning — only for dispute or needs_review (high-risk).
                Normal outcomes (promise, OOO, payment query) are covered by AI Overview alone. */}
         {exceptionWarning && (
           <div className={`rounded-lg border px-4 py-3 ${

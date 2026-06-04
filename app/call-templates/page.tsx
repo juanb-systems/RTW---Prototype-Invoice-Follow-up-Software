@@ -18,9 +18,15 @@ const statusConfig: Record<CallTemplateStatus, { label: string; cls: string; Ico
 };
 
 const MERGE_TAGS = [
-  "{{company_name}}", "{{contact_name}}", "{{customer_company}}",
-  "{{invoice_number}}", "{{invoice_amount}}", "{{due_date}}",
-  "{{days_overdue}}", "{{payment_link}}", "{{contact_email}}", "{{accounts_email}}",
+  // Contact
+  "{{contact_name}}", "{{company_name}}", "{{customer_company}}",
+  "{{contact_email}}", "{{accounts_email}}", "{{payment_link}}",
+  // Customer account (multi-invoice)
+  "{{total_overdue_balance}}", "{{overdue_invoice_count}}",
+  "{{max_days_overdue}}", "{{most_overdue_invoice_number}}",
+  "{{invoice_list}}", "{{invoice_summary_table}}",
+  // Single invoice fallback
+  "{{invoice_number}}", "{{invoice_amount}}", "{{due_date}}", "{{days_overdue}}",
 ];
 
 const inputCls = "w-full rounded-md border border-gray-200 px-3 py-2 text-xs text-gray-700 focus:border-blue-400 focus:outline-none bg-white";

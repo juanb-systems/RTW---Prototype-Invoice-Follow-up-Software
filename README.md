@@ -1,4 +1,4 @@
-# CollectPilot — AI Receivables Assistant · v2.76
+# CollectPilot — AI Receivables Assistant · v2.77
 
 A Next.js 15 prototype for an AI-powered B2B receivables follow-up platform. Demonstrates automated invoice collection workflows with "Fresh Xero Check" safety gates before every customer contact.
 
@@ -13,7 +13,7 @@ A Next.js 15 prototype for an AI-powered B2B receivables follow-up platform. Dem
 | Section | What it shows |
 |---------|---------------|
 | **Dashboard** | KPIs (total outstanding, overdue, collection rate), **Needs Attention** section (disputes, blocked actions, awaiting approval, paused automations, unread replies, promises to pay), aging breakdown chart, collections trend, recent activity feed |
-| **Invoices** | Searchable + sortable table with Status / Flow / Reply filters; Flow column shows automation status badge (Active/Paused/Blocked/Needs Approval) and next scheduled action date; Reply column shows reply type and received date; invoice detail adds a **Status Overview** panel showing all key indicators and a recommended next step |
+| **Invoices** | Customer-grouped receivables view — each row represents one customer account showing total overdue balance, overdue invoice count, oldest invoice, and customer reply status; expand any row to see individual invoices; filter by overdue / disputed / promise / automation; invoice detail shows other overdue invoices for the same customer in the sidebar |
 | **Contacts** | Searchable + sortable table (all columns sortable including Phone); contact detail with exclusion controls and invoice history |
 | **Automation Builder** | Functional vertical-list builder; add/insert/delete blocks; inline config per block — Email (recipient, subject, body with clickable merge tags, sender, reply-to, live preview), SMS (recipient, body with clickable merge tags), Delay (amount + unit: minutes/hours/days/weeks), Call (template dropdown, timing: immediate/after delay/specific time, notes, merge tags); locked ☑ "Check still unpaid in Xero" on every Email/SMS/Call block; flows persist across refresh via Zustand + localStorage |
 | **Scheduled Actions** | Run Lookup & Fire (executes full Fresh Xero Check engine), manual approve/skip per action |
