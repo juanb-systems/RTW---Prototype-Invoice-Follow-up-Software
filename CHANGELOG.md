@@ -2,6 +2,44 @@
 
 ---
 
+## v2.79.0 — Fix mobile customer receivables layout (04 Jun 2026)
+
+**Date:** 04 Jun 2026
+**package.json version:** 2.79.0
+
+### Fixed
+
+**Mobile Invoices page — cramped layout, overlapping badges, cluttered invoice rows (`app/invoices/page.tsx`)**
+
+After the v2.77.0 re-architecture the desktop grouped table worked well, but the mobile layout was broken: invoice info was squeezed into single horizontal rows causing badges to overlap amounts, and every expanded invoice had a redundant "View →" link that cluttered the UI. The mobile experience still felt invoice-first rather than customer-first.
+
+**Root cause:** The mobile card section was a minimal port of the old invoice-row design. The expanded invoice list used the same single-row `flex items-center gap-3` layout on both mobile and desktop, which overflowed at narrow widths. Desktop and mobile had no separate expanded invoice renderers.
+
+**Fix — Mobile customer card redesign:**
+- Primary tap action on mobile is now **expand/collapse** (not navigate). Tapping the card body toggles the invoice list. "View account →" link is a separate action at the bottom of the card.
+- Card header shows: name, company, optional dispute badge, optional response badge, `ChevronDown` that rotates 180° when expanded.
+- Overdue summary shows: large bold balance (colour-coded by age), invoice count + oldest days overdue on a separate line — no horizontal cramming.
+- Bottom strip shows hint text ("Tap to see 3 invoices" / "Tap to collapse") on the left and "View account →" on the right.
+
+**Fix — Mobile expanded invoice mini-cards:**
+- Each overdue invoice is now a full-width stacked card (`rounded-xl border bg-white px-4 py-3`).
+- Card layout: invoice # (monospace, top line) → amount + days overdue (large, own line) → due date (subtle, own line) → status badge (own line, never overlapping).
+- The entire mini-card is tappable and navigates to the invoice detail page.
+- **"View →" link removed** from each expanded invoice item on mobile. Navigation is via tapping the card.
+- Desktop expanded rows keep the existing compact horizontal layout with "View →" links.
+
+**Fix — Mobile toolbar:**
+- Hidden title "Receivables by Customer" on mobile (redundant with TopBar).
+- Search input is full-width on mobile with shorter placeholder "Search customers…" (was "Search customer, company, invoice #…" — too long for 360px).
+- Filter dropdown opens to the right edge (`right-0`) to avoid off-screen overflow.
+- Count and reset filter shown below the search/filter row as a subtle `11px` line — not crowding the controls.
+
+**Desktop unchanged:** Sortable column headers, table-style row layout, expand/collapse chevron, "View →" per invoice row all work as before.
+
+---
+
+## v2.78.0 — Fix customer receivables sorting (03 Jun 2026)
+
 ## v2.78.0 — Fix customer receivables sorting (03 Jun 2026)
 
 **Date:** 03 Jun 2026
