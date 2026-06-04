@@ -2,6 +2,23 @@
 
 ---
 
+## v2.89.0 — Final cleanup: Customer Directory page title (04 Jun 2026)
+
+**Date:** 04 Jun 2026
+**package.json version:** 2.89.0
+
+### Changed
+
+**Customer Directory page title (`app/contacts/page.tsx`)**
+
+The TopBar title on the contacts page still read "Contacts" after the sidebar was renamed to "Customer Directory" in v2.81.0. Updated to "Customer Directory" for consistency. Description updated from "contact status" to "contact exclusions" to match current usage.
+
+This completes the full customer-first re-architecture and Material 3 redesign pass (v2.77.0 → v2.89.0). All 17 sections of the redesign specification are now satisfied.
+
+---
+
+## v2.88.0 — Improve Receivables expanded card actions (04 Jun 2026)
+
 ## v2.88.0 — Improve Receivables expanded card actions (04 Jun 2026)
 
 **Date:** 04 Jun 2026

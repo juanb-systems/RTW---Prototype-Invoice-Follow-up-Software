@@ -418,9 +418,9 @@ export default function ContactsPage() {
         />
       )}
       <TopBar
-        title="Contacts"
-        subtitle={`${contacts.length} total · ${excluded} excluded · ${onHold} on hold`}
-        description="Manage customer contacts, automation exclusions, and contact status."
+        title="Customer Directory"
+        subtitle={`${contacts.length} contacts · ${excluded} excluded · ${onHold} on hold`}
+        description="Manage customer contacts, automation status, and contact exclusions."
         actions={
           <button
             onClick={() => setShowAdd(true)}
