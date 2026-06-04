@@ -273,8 +273,8 @@ export function TopBar({ title, subtitle, description, actions }: TopBarProps) {
 
       {/* Title */}
       <div className="min-w-0 flex-1">
-        <h1 className="text-base font-semibold text-gray-900 truncate">{title}</h1>
-        {subtitle && <p className="text-xs text-gray-500 truncate hidden sm:block">{subtitle}</p>}
+        <h1 className="text-xl font-semibold text-gray-900 truncate tracking-tight">{title}</h1>
+        {subtitle && <p className="text-xs text-gray-500 truncate hidden sm:block mt-0.5">{subtitle}</p>}
       </div>
 
       {/* Right controls */}
@@ -429,8 +429,8 @@ export function TopBar({ title, subtitle, description, actions }: TopBarProps) {
       </div>
     </header>
     {description && (
-      <div className="border-b border-gray-100 bg-white px-4 md:px-6 py-2">
-        <p className="text-xs text-gray-400 leading-relaxed">{description}</p>
+      <div className="border-b border-gray-100 bg-gray-50 px-4 md:px-6 py-2">
+        <p className="text-xs text-gray-500 leading-relaxed">{description}</p>
       </div>
     )}
     </>

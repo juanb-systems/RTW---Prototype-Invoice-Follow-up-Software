@@ -27,13 +27,13 @@ export default function DashboardPage() {
         {/* ── KPI cards ────────────────────────────────────────────────── */}
         <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-4 sm:gap-4">
 
-          {/* Hero card: Total Overdue */}
-          <div className="rounded-2xl border border-gray-200 bg-white shadow-sm p-5 sm:p-6">
-            <p className="text-xs font-medium text-gray-500">Total Overdue</p>
-            <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-2 tabular-nums leading-none">
+          {/* Hero card: Total Overdue — M3 primary container */}
+          <div className="rounded-2xl bg-blue-600 p-5 sm:p-6 shadow-md">
+            <p className="text-xs font-semibold text-blue-200 uppercase tracking-widest">Total Overdue</p>
+            <p className="text-2xl sm:text-3xl font-bold text-white mt-2 tabular-nums leading-none">
               {formatCurrency(kpis.totalOverdueAmount)}
             </p>
-            <p className="text-xs text-gray-400 mt-2 leading-snug">
+            <p className="text-sm text-blue-200 mt-2 leading-snug">
               {kpis.customersWithOverdue} customer{kpis.customersWithOverdue !== 1 ? "s" : ""} · {kpis.totalOverdue} invoice{kpis.totalOverdue !== 1 ? "s" : ""}
             </p>
           </div>
