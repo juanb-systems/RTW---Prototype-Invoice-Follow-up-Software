@@ -121,7 +121,9 @@ export function Sidebar() {
 
   return (
     // M3 Navigation Drawer — light surface, subtle border
-    <aside className="relative flex h-screen w-64 flex-col bg-white border-r border-gray-200 z-10">
+    // h-full so the sidebar fills its container on both desktop (flex child) and mobile (absolute inset-y-0)
+    // rather than using h-screen (100vh) which can exceed the visible viewport on mobile browsers
+    <aside className="relative flex h-full w-64 flex-col bg-white border-r border-gray-200 z-10">
 
       {/* Logo / brand */}
       <div className="flex items-center gap-3 px-4 py-5 border-b border-gray-100">

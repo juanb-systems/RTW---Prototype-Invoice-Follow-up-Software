@@ -2,6 +2,37 @@
 
 ---
 
+## v2.86.0 — Fix mobile drawer Settings and profile navigation (04 Jun 2026)
+
+**Date:** 04 Jun 2026
+**package.json version:** 2.86.0
+
+### Fixed
+
+**Mobile sidebar drawer missing Settings and profile section (`components/layout/Sidebar.tsx`, `components/layout/AppShell.tsx`)**
+
+On mobile, the sidebar drawer showed all nav items (Dashboard, Receivables, Inbox, Actions, Automations, Templates, Customer Directory, Onboarding) but the bottom section — Settings and the profile/account card — was not visible.
+
+**Root cause:** The `<Sidebar>` component used `h-screen` (`height: 100vh`). On mobile browsers, `100vh` is calculated against the full viewport including the browser's address bar / URL bar chrome. This means the sidebar was taller than the actual visible area, and the bottom section (Settings + Profile) was pushed below the visible fold.
+
+**Fix — two targeted changes:**
+
+`Sidebar.tsx`: `h-screen` → `h-full`
+The sidebar now fills its container rather than hardcoding `100vh`. This is correct because:
+- Desktop: the sidebar is a flex child of `flex h-screen` app shell, which stretches it to full screen height via `align-items: stretch`. `h-full` = full screen. ✓
+- Mobile: the sidebar is inside an `absolute inset-y-0` container (full height of the fixed overlay). `h-full` = full overlay height = full visible screen. ✓
+
+`AppShell.tsx` mobile drawer: `absolute left-0 top-0 h-full w-64` → `absolute inset-y-0 left-0 w-64`
+Using `inset-y-0` (`top: 0; bottom: 0`) instead of `top-0 h-full` ensures the drawer spans the full height of the fixed overlay using CSS constraints rather than computed height, making it immune to mobile browser chrome edge cases.
+
+The sidebar's flex structure (flex-1 scrollable nav + flex-shrink-0 bottom section) means Settings and Profile are always pinned to the bottom as long as the container has the correct height.
+
+**No structural changes:** Desktop sidebar, profile popup behavior, active nav states, and drawer open/close all remain unchanged.
+
+---
+
+## v2.85.0 — Refine Receivables mobile card typography (04 Jun 2026)
+
 ## v2.85.0 — Refine Receivables mobile card typography (04 Jun 2026)
 
 **Date:** 04 Jun 2026

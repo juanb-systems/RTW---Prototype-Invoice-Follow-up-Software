@@ -28,7 +28,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             onClick={close}
             aria-hidden="true"
           />
-          <div className="absolute left-0 top-0 h-full w-64 shadow-2xl z-10">
+          {/* inset-y-0 = top:0 + bottom:0 — immune to 100vh mobile browser chrome issues */}
+          <div className="absolute inset-y-0 left-0 w-64 shadow-2xl z-10">
             <Sidebar />
           </div>
         </div>
