@@ -18,6 +18,18 @@ export interface AppNotification {
   isRead: boolean;
 }
 
+// ── Deep-link routing rules ────────────────────────────────────────────────────
+//
+// Each notification links to the most specific available destination:
+//   - Invoice-specific → /invoices/[invoiceId]          (invoice detail)
+//   - Needs approval   → /scheduled?filter=awaiting_approval
+//   - Blocked actions  → /scheduled?filter=blocked
+//   - Overdue group    → /invoices?filter=overdue        (Receivables filtered)
+//   - Specific reply   → /inbox?message=[messageId]     (opens thread)
+//   - Reply type       → /inbox?filter=[classification] (pre-filtered inbox)
+//   - Call outcomes    → /scheduled                     (calls surface in Actions)
+//   - Paused autos     → /inbox?filter=needs_action
+
 export const NOTIFICATIONS: AppNotification[] = [
   {
     id: "n1",
@@ -25,7 +37,7 @@ export const NOTIFICATIONS: AppNotification[] = [
     detail: "Pinnacle Systems raised a billing dispute. Automation is paused pending resolution.",
     timeLabel: "2 min ago",
     dotColor: "bg-red-500",
-    href: "/invoices",
+    href: "/invoices/INV017",
     category: "dispute",
     isRead: false,
   },
@@ -35,7 +47,7 @@ export const NOTIFICATIONS: AppNotification[] = [
     detail: "Manual approval mode is active. Actions are queued and waiting.",
     timeLabel: "14 min ago",
     dotColor: "bg-purple-500",
-    href: "/scheduled",
+    href: "/scheduled?filter=awaiting_approval",
     category: "approval",
     isRead: false,
   },
@@ -45,7 +57,7 @@ export const NOTIFICATIONS: AppNotification[] = [
     detail: "These invoices may require escalation or a personal call.",
     timeLabel: "1 hr ago",
     dotColor: "bg-orange-400",
-    href: "/invoices",
+    href: "/invoices?filter=overdue",
     category: "overdue",
     isRead: false,
   },
@@ -55,7 +67,7 @@ export const NOTIFICATIONS: AppNotification[] = [
     detail: "Customer confirmed payment by end of week. Automation paused for 7 days.",
     timeLabel: "3 hrs ago",
     dotColor: "bg-teal-500",
-    href: "/inbox",
+    href: "/inbox?filter=promise_to_pay",
     category: "reply",
     isRead: true,
   },
@@ -65,7 +77,7 @@ export const NOTIFICATIONS: AppNotification[] = [
     detail: "No answer. Voicemail left per call template. No classification recorded.",
     timeLabel: "5 hrs ago",
     dotColor: "bg-green-500",
-    href: "/inbox",
+    href: "/scheduled",
     category: "call",
     isRead: true,
   },
@@ -75,7 +87,7 @@ export const NOTIFICATIONS: AppNotification[] = [
     detail: "Customer replied with a payment query. Automation held pending manual review.",
     timeLabel: "6 hrs ago",
     dotColor: "bg-amber-500",
-    href: "/inbox",
+    href: "/inbox?message=MSG005",
     category: "automation",
     isRead: true,
   },
@@ -85,7 +97,7 @@ export const NOTIFICATIONS: AppNotification[] = [
     detail: "Invoice amount disputed. All follow-up automations have been blocked.",
     timeLabel: "Yesterday",
     dotColor: "bg-red-500",
-    href: "/invoices",
+    href: "/invoices/INV022",
     category: "dispute",
     isRead: true,
   },
@@ -95,7 +107,7 @@ export const NOTIFICATIONS: AppNotification[] = [
     detail: "Scheduled email to Coastal Freight is queued for manual approval before sending.",
     timeLabel: "Yesterday",
     dotColor: "bg-purple-500",
-    href: "/scheduled",
+    href: "/scheduled?filter=awaiting_approval",
     category: "approval",
     isRead: true,
   },
@@ -105,7 +117,7 @@ export const NOTIFICATIONS: AppNotification[] = [
     detail: "Call classification is uncertain. Manual review of the transcript is recommended.",
     timeLabel: "2 days ago",
     dotColor: "bg-green-500",
-    href: "/inbox",
+    href: "/scheduled",
     category: "call",
     isRead: true,
   },
@@ -115,7 +127,7 @@ export const NOTIFICATIONS: AppNotification[] = [
     detail: "These invoices have crossed the 30-day threshold and may need escalation.",
     timeLabel: "2 days ago",
     dotColor: "bg-orange-400",
-    href: "/invoices",
+    href: "/invoices?filter=overdue",
     category: "overdue",
     isRead: true,
   },
@@ -125,7 +137,7 @@ export const NOTIFICATIONS: AppNotification[] = [
     detail: "Fresh lookup returned a 'block' outcome — contact is excluded from automations.",
     timeLabel: "3 days ago",
     dotColor: "bg-gray-500",
-    href: "/scheduled",
+    href: "/scheduled?filter=blocked",
     category: "system",
     isRead: true,
   },
@@ -135,7 +147,7 @@ export const NOTIFICATIONS: AppNotification[] = [
     detail: "Auto-reply detected. Automation paused for 5 business days.",
     timeLabel: "3 days ago",
     dotColor: "bg-teal-500",
-    href: "/inbox",
+    href: "/inbox?filter=needs_action",
     category: "reply",
     isRead: true,
   },
@@ -145,7 +157,7 @@ export const NOTIFICATIONS: AppNotification[] = [
     detail: "All flow steps have been executed. No further automated actions are scheduled.",
     timeLabel: "4 days ago",
     dotColor: "bg-amber-500",
-    href: "/automations",
+    href: "/invoices/INV011",
     category: "automation",
     isRead: true,
   },
@@ -165,7 +177,7 @@ export const NOTIFICATIONS: AppNotification[] = [
     detail: "This invoice has passed the 90-day mark. Consider escalation or write-off.",
     timeLabel: "6 days ago",
     dotColor: "bg-orange-400",
-    href: "/invoices",
+    href: "/invoices/INV003",
     category: "overdue",
     isRead: true,
   },

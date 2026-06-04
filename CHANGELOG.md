@@ -2,6 +2,55 @@
 
 ---
 
+## v2.87.0 — Fix notification deep-link routing (04 Jun 2026)
+
+**Date:** 04 Jun 2026
+**package.json version:** 2.87.0
+
+### Fixed
+
+**All notifications routed to generic pages instead of specific destinations (`lib/notifications-data.ts`)**
+
+Every notification `href` was a generic page — `/invoices`, `/scheduled`, `/inbox` — regardless of what the notification was about. Clicking an invoice-specific dispute notification only opened the Receivables list, not the disputed invoice.
+
+**Fix:** Updated all 15 notification `href` values to deep-link to the most specific available destination. IDs were looked up from the demo data (`data/invoices.json`, `data/inbox-messages.json`, `data/scheduled-actions.json`).
+
+**Routing changes by notification:**
+
+| Notification | Old route | New route |
+|---|---|---|
+| INV-2026-017 active dispute | `/invoices` | `/invoices/INV017` |
+| 2 actions need approval | `/scheduled` | `/scheduled?filter=awaiting_approval` |
+| 3 invoices 60+ days overdue | `/invoices` | `/invoices?filter=overdue` |
+| Promise to pay received | `/inbox` | `/inbox?filter=promise_to_pay` |
+| AI call voicemail left | `/inbox` | `/scheduled` (calls surface in Actions, not Inbox) |
+| Automation paused INV-2026-012 | `/inbox` | `/inbox?message=MSG005` (opens specific reply thread) |
+| Dispute on INV-2026-022 | `/invoices` | `/invoices/INV022` |
+| Email action awaiting approval | `/scheduled` | `/scheduled?filter=awaiting_approval` |
+| Call transcript needs review | `/inbox` | `/scheduled` (call results in Actions) |
+| 5 invoices 30+ days overdue | `/invoices` | `/invoices?filter=overdue` |
+| Xero lookup blocked INV-008 | `/scheduled` | `/scheduled?filter=blocked` |
+| Out-of-office reply | `/inbox` | `/inbox?filter=needs_action` |
+| Flow completed INV-2026-011 | `/automations` | `/invoices/INV011` |
+| Manual approval enabled | `/settings` | `/settings` (already correct) |
+| INV-2026-003 91 days overdue | `/invoices` | `/invoices/INV003` |
+
+**Routing principles applied:**
+- Invoice-specific notifications → `/invoices/[invoiceId]` (invoice detail page)
+- Approval notifications → `/scheduled?filter=awaiting_approval`
+- Blocked actions → `/scheduled?filter=blocked`
+- Overdue group notifications → `/invoices?filter=overdue` (Receivables pre-filtered)
+- Specific reply thread → `/inbox?message=[messageId]`
+- Reply type filter → `/inbox?filter=[classification]`
+- Call outcomes → `/scheduled` (AI calls surface in Actions, not Inbox per app architecture)
+- Paused automations → `/inbox?filter=needs_action`
+
+Both the notification popover in the TopBar and the full `/notifications` page use the same `NOTIFICATIONS` data, so both benefit from these fixes. The notifications page and TopBar popover continue to use `notif.href` directly — no other code changes required.
+
+---
+
+## v2.86.1 — Fix mobile Receivables card left-edge indicator (04 Jun 2026)
+
 ## v2.86.1 — Fix mobile Receivables card left-edge indicator (04 Jun 2026)
 
 **Date:** 04 Jun 2026

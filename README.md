@@ -1,4 +1,4 @@
-# CollectPilot — AI Receivables Assistant · v2.86.1
+# CollectPilot — AI Receivables Assistant · v2.87
 
 A Next.js 15 prototype for an AI-powered B2B receivables follow-up platform. Demonstrates automated invoice collection workflows with "Fresh Xero Check" safety gates before every customer contact.
 
