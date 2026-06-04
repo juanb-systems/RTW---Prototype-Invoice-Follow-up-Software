@@ -2,6 +2,55 @@
 
 ---
 
+## v2.81.0 — Reframe invoices into customer receivables (04 Jun 2026)
+
+**Date:** 04 Jun 2026
+**package.json version:** 2.81.0
+
+### Changed
+
+**Navigation — "Invoices" renamed to "Receivables", "Contacts" renamed to "Customer Directory" (`components/layout/Sidebar.tsx`)**
+
+The sidebar Daily Work section now shows "Receivables" (previously "Invoices") to reflect that the page groups invoices by customer/account, not lists individual invoices. The Setup section item "Contacts" is renamed to "Customer Directory" to reduce confusion with Receivables — both showed customer information but served different scopes.
+
+**Receivables page — complete redesign as customer account cards (`app/invoices/page.tsx`)**
+
+Replaced the spreadsheet table (Customer / Overdue Total / Invoices / Oldest / Response column headers) with customer account cards. Each card shows customer-first information without column headers:
+- Customer name · Company (with dispute badge inline)
+- Response badge (right side)
+- Overdue balance (large, colour-coded by age) + invoice count + oldest invoice number and days overdue
+- Click anywhere on the card to expand/collapse
+
+**Expanded section now shows Reminder Logic prominently:**
+- "Triggered by" — invoice number + days overdue (the most overdue invoice that drives the automation stage)
+- "Includes" — count of overdue invoices + total balance (all invoices included in the next reminder)
+- "Flow" — assigned automation flow name
+- "Next action" — step type (Email/SMS/AI Call), scheduled date, and approval status with link to Actions
+- Invoice list below: compact rows showing invoice #, amount, days overdue, due date, status badge; "Open →" appears on hover
+- Footer: latest customer reply badge + "View reply" link; "Open customer account →" link
+
+**Sort dropdown replaces column headers:** "Most overdue first" (default) / "Highest balance first" / "Most invoices first" / "A → Z" / "By response status" — no toggle direction, natural directions per sort key.
+
+**URL param filter support:** links from Dashboard Needs Attention now land pre-filtered — supports both `?filter=overdue` (new) and `?status=overdue` (legacy).
+
+**Dashboard Needs Attention — customer-first language and unique customer counts (`components/dashboard/NeedsAttentionSection.tsx`)**
+
+- "dispute(s) raised" → "customer dispute(s)"
+- "overdue 60+ days" → "account(s) overdue 60+ days"
+- "overdue 30–60 days" → "account(s) overdue 30–60 days"
+- Merged overdue card now shows unique customer count (not raw invoice count) — customers with multiple overdue invoices counted once
+- "X overdue 30+ days" → "X customers overdue 30+ days"
+- "View all" links updated to use `?filter=overdue` / `?filter=disputed` to land on Receivables page pre-filtered
+
+**Data model — additional fields (`lib/server-data.ts`)**
+
+- `AttentionInvItem`: added `contactId` field (enables customer deduplication in NeedsAttentionSection)
+- `AttentionMsgItem`: added `contactId` field (for future grouping)
+- `CustomerAccount`: added `nextScheduledAt`, `nextStepType`, `nextActionStatus` fields (powers the Reminder Logic section in expanded Receivables cards)
+- `getCustomerAccounts()` now computes the earliest pending/awaiting-approval action per customer and includes it in the account record
+
+---
+
 ## v2.80.0 — Fix desktop customer receivables card clicks (04 Jun 2026)
 
 **Date:** 04 Jun 2026

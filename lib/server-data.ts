@@ -93,6 +93,7 @@ export function getLatestInboxMessageForInvoice(invoiceId: string): InboxMessage
 
 export type AttentionInvItem = {
   id: string;
+  contactId: string;
   invoiceNumber: string;
   amount: number;
   daysPastDue: number;
@@ -113,6 +114,7 @@ export type AttentionActionItem = {
 
 export type AttentionMsgItem = {
   id: string;
+  contactId: string;
   invoiceId: string;
   invoiceNumber: string;
   subject: string;
@@ -141,6 +143,7 @@ export function getAttentionDetails(): AttentionDetails {
     const contact = db.contacts.find((c) => c.id === inv.contactId);
     return {
       id: inv.id,
+      contactId: inv.contactId,
       invoiceNumber: inv.invoiceNumber,
       amount: inv.amount,
       daysPastDue: inv.daysPastDue,
@@ -169,6 +172,7 @@ export function getAttentionDetails(): AttentionDetails {
     const contact = db.contacts.find((c) => c.id === m.contactId);
     return {
       id: m.id,
+      contactId: m.contactId,
       invoiceId: m.invoiceId,
       invoiceNumber: inv?.invoiceNumber ?? "—",
       subject: m.subject,
@@ -239,6 +243,10 @@ export type CustomerAccount = {
   automationPaused: boolean;
   pendingActionCount: number;
   awaitingApprovalCount: number;
+  // Next scheduled action for this customer (drives reminder logic display)
+  nextScheduledAt: string | null;
+  nextStepType: string | null;
+  nextActionStatus: string | null;
   // Overdue invoices sorted most-overdue-first for the expandable list
   overdueInvoices: {
     id: string;
@@ -278,6 +286,9 @@ export function getCustomerAccounts(): CustomerAccount[] {
       .sort((a, b) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime())[0] ?? null;
 
     const contactActions = db.scheduledActions.filter((a) => a.contactId === contact.id);
+    const nextPending = contactActions
+      .filter((a) => a.status === "pending" || a.status === "awaiting_approval")
+      .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime())[0] ?? null;
 
     return {
       contactId: contact.id,
@@ -310,6 +321,9 @@ export function getCustomerAccounts(): CustomerAccount[] {
       automationPaused: latestMsg?.automationPaused ?? false,
       pendingActionCount: contactActions.filter((a) => a.status === "pending").length,
       awaitingApprovalCount: contactActions.filter((a) => a.status === "awaiting_approval").length,
+      nextScheduledAt: nextPending?.scheduledAt ?? null,
+      nextStepType: nextPending ? String(nextPending.stepType) : null,
+      nextActionStatus: nextPending?.status ?? null,
       overdueInvoices: overdueInvoices
         .sort((a, b) => b.daysPastDue - a.daysPastDue)
         .map((i) => ({

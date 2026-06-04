@@ -27,7 +27,7 @@ import type { LucideIcon } from "lucide-react";
 
 const dailyWorkItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/invoices",  icon: FileText,         label: "Invoices" },
+  { href: "/invoices",  icon: FileText,         label: "Receivables" },
   { href: "/inbox",     icon: Inbox,            label: "Inbox" },
   { href: "/scheduled", icon: Calendar,         label: "Actions" },
 ];
@@ -35,7 +35,7 @@ const dailyWorkItems = [
 const setupItems = [
   { href: "/automations",    icon: Zap,    label: "Automations" },
   { href: "/call-templates", icon: Phone,  label: "Templates" },
-  { href: "/contacts",       icon: Users,  label: "Contacts" },
+  { href: "/contacts",       icon: Users,  label: "Customer Directory" },
   { href: "/onboarding",     icon: Rocket, label: "Onboarding" },
 ];
 

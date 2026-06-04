@@ -30,11 +30,11 @@ const CONFIGS: Record<CardKey, {
   viewAllHref: string;
 }> = {
   disputes: {
-    label: "dispute(s) raised",
-    description: "Automation paused — review before sending more.",
+    label: "customer dispute(s)",
+    description: "Automation paused — review account before sending more reminders.",
     iconBg: "bg-red-500", border: "border-red-200", urgentBg: "bg-red-50",
     Icon: ShieldX, urgent: true,
-    viewAllHref: "/invoices?status=disputed",
+    viewAllHref: "/invoices?filter=disputed",
   },
   blocked: {
     label: "action(s) blocked",
@@ -44,18 +44,18 @@ const CONFIGS: Record<CardKey, {
     viewAllHref: "/scheduled?filter=blocked",
   },
   overdue60plus: {
-    label: "overdue 60+ days",
+    label: "account(s) overdue 60+ days",
     description: "High risk — consider escalation or write-off review.",
     iconBg: "bg-red-500", border: "border-red-200", urgentBg: "bg-red-50",
     Icon: AlertCircle, urgent: true,
-    viewAllHref: "/invoices?status=overdue",
+    viewAllHref: "/invoices?filter=overdue",
   },
   overdue30to60: {
-    label: "overdue 30–60 days",
+    label: "account(s) overdue 30–60 days",
     description: "May need a personal call or escalation.",
     iconBg: "bg-orange-400", border: "border-gray-200", urgentBg: "bg-white",
     Icon: Clock,
-    viewAllHref: "/invoices?status=overdue",
+    viewAllHref: "/invoices?filter=overdue",
   },
   awaitingApproval: {
     label: "action(s) need approval",
@@ -190,12 +190,18 @@ function AttentionCard({
   isOpen: boolean;
   onToggle: () => void;
 }) {
-  const count = items.length;
-  if (count === 0) return null;
+  if (items.length === 0) return null;
   const cfg = CONFIGS[cardKey];
   const { Icon } = cfg;
+
+  // Invoice-type cards show unique customer/account count, not raw invoice count
+  const isInvCard = cardKey === "disputes" || cardKey === "overdue60plus" || cardKey === "overdue30to60";
+  const count = isInvCard
+    ? new Set((items as AttentionInvItem[]).map(i => i.contactId)).size
+    : items.length;
+
   const preview = items.slice(0, MAX_PREVIEW);
-  const hasMore = count > MAX_PREVIEW;
+  const hasMore = items.length > MAX_PREVIEW;
 
   return (
     <div className={`rounded-lg border overflow-hidden transition-all ${
@@ -277,6 +283,9 @@ export function NeedsAttentionSection({
     ...details.overdue30to60,
   ].sort((a, b) => b.daysPastDue - a.daysPastDue);
 
+  // Unique overdue customer count (one customer may have multiple overdue invoices)
+  const overdueCustomerCount = new Set(overdueItems.map(i => i.contactId)).size;
+
   const alertCategories = CARD_ORDER.filter(k => details[k].length > 0).length
     + (overdueItems.length > 0 ? 1 : 0);
 
@@ -337,12 +346,14 @@ export function NeedsAttentionSection({
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-baseline gap-1.5 flex-wrap">
-                      <span className="text-base sm:text-xl font-bold text-gray-900">{overdueItems.length}</span>
-                      <span className="text-xs sm:text-sm font-medium text-gray-700">overdue 30+ days</span>
+                      <span className="text-base sm:text-xl font-bold text-gray-900">{overdueCustomerCount}</span>
+                      <span className="text-xs sm:text-sm font-medium text-gray-700">
+                        customer{overdueCustomerCount !== 1 ? "s" : ""} overdue 30+ days
+                      </span>
                     </div>
                     <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 leading-snug hidden xs:block sm:block">
                       {details.overdue60plus.length > 0
-                        ? `${details.overdue60plus.length} high risk (60+ days) · ${details.overdue30to60.length} need follow-up`
+                        ? `${new Set(details.overdue60plus.map(i => i.contactId)).size} high risk (60+ days) · ${new Set(details.overdue30to60.map(i => i.contactId)).size} need follow-up`
                         : "May need a personal call or escalation."}
                     </p>
                   </div>
@@ -356,8 +367,8 @@ export function NeedsAttentionSection({
                       <InvItemRow key={item.id} item={item} cardKey="overdue60plus" />
                     ))}
                     {overdueItems.length > 3 && (
-                      <Link href="/invoices?status=overdue" className="block text-center text-xs font-medium text-blue-600 hover:underline pt-2" onClick={(e) => e.stopPropagation()}>
-                        View all {overdueItems.length} →
+                      <Link href="/invoices?filter=overdue" className="block text-center text-xs font-medium text-blue-600 hover:underline pt-2" onClick={(e) => e.stopPropagation()}>
+                        View all {overdueCustomerCount} account{overdueCustomerCount !== 1 ? "s" : ""} →
                       </Link>
                     )}
                   </div>
