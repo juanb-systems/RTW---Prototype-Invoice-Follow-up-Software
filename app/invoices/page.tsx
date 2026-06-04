@@ -367,26 +367,23 @@ function CustomerCard({ account }: { account: CustomerAccount }) {
             </div>
           )}
 
-          {/* Footer */}
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            <div>
-              {hasReply && replyLabel && replyColor && account.latestMessageId && (
-                <Link
-                  href={`/inbox?message=${account.latestMessageId}`}
-                  className="inline-flex items-center gap-1.5 text-xs text-gray-500 hover:text-blue-600 transition-colors"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${replyColor}`}>{replyLabel}</span>
-                  <span className="text-blue-600 hover:underline">View reply →</span>
-                </Link>
-              )}
-            </div>
+          {/* Actions — grouped buttons */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {hasReply && replyLabel && replyColor && account.latestMessageId && (
+              <Link
+                href={`/inbox?message=${account.latestMessageId}`}
+                className="inline-flex items-center gap-1.5 rounded-full border border-gray-300 px-3.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+                onClick={(e) => e.stopPropagation()}
+              >
+                View reply
+              </Link>
+            )}
             <Link
               href={`/contacts/${account.contactId}`}
-              className="text-xs font-semibold text-blue-600 hover:text-blue-800 hover:underline"
+              className="inline-flex items-center rounded-full bg-blue-600 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors"
               onClick={(e) => e.stopPropagation()}
             >
-              Open customer account →
+              Open account
             </Link>
           </div>
         </div>
@@ -461,23 +458,23 @@ function CustomerCard({ account }: { account: CustomerAccount }) {
               </div>
             </div>
           ))}
-          {/* Footer */}
-          <div className="flex items-center justify-between pt-2">
-            {hasReply && replyLabel && replyColor && account.latestMessageId ? (
+          {/* Actions — grouped buttons, flex-1 so they share row evenly */}
+          <div className="flex gap-2 pt-2">
+            {hasReply && replyLabel && replyColor && account.latestMessageId && (
               <Link
                 href={`/inbox?message=${account.latestMessageId}`}
-                className="text-xs font-medium text-blue-600 hover:underline"
+                className="flex-1 flex items-center justify-center rounded-full border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700 active:bg-gray-100 transition-colors"
                 onClick={(e) => e.stopPropagation()}
               >
-                View reply →
+                View reply
               </Link>
-            ) : <span />}
+            )}
             <Link
               href={`/contacts/${account.contactId}`}
-              className="text-xs font-semibold text-blue-600 hover:underline"
+              className="flex-1 flex items-center justify-center rounded-full bg-blue-600 px-3 py-2 text-xs font-medium text-white active:bg-blue-700 transition-colors"
               onClick={(e) => e.stopPropagation()}
             >
-              Open account →
+              Open account
             </Link>
           </div>
         </div>

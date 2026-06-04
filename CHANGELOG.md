@@ -2,6 +2,37 @@
 
 ---
 
+## v2.88.0 — Improve Receivables expanded card actions (04 Jun 2026)
+
+**Date:** 04 Jun 2026
+**package.json version:** 2.88.0
+
+### Changed
+
+**Receivables expanded customer card — scattered text links converted to grouped buttons (`app/invoices/page.tsx`)**
+
+The expanded customer card had "View reply →" and "Open customer account →" as plain `justify-between` text links — one on the far left, one on the far right — which looked loose and unfinished.
+
+**Desktop:**
+- Replaced `justify-between flex` with `flex gap-2 flex-wrap` so both buttons sit together
+- "View reply" → `rounded-full border border-gray-300` outlined secondary button
+- "Open account" → `rounded-full bg-blue-600 text-white` filled primary button
+- Button labels shortened: "Open customer account →" → "Open account", "View reply →" → "View reply"
+- "View reply" only renders when there is an actual reply (unchanged conditional logic)
+
+**Mobile:**
+- Replaced `flex justify-between` footer with `flex gap-2` grouped buttons
+- Both buttons use `flex-1` so they share the row width evenly
+- When only "Open account" is shown (no reply), it stretches to fill the full width
+- `active:bg-*` states replace `hover:` for better mobile tap feedback
+- Labels: "View reply" + "Open account"
+
+The action area now reads as a clear "next steps" section at the bottom of the expanded card: customer summary → reminder logic → overdue invoices → [View reply] [Open account].
+
+---
+
+## v2.87.0 — Fix notification deep-link routing (04 Jun 2026)
+
 ## v2.87.0 — Fix notification deep-link routing (04 Jun 2026)
 
 **Date:** 04 Jun 2026
