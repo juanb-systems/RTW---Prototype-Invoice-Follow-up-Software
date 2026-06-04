@@ -2,6 +2,44 @@
 
 ---
 
+## v2.90.0 — Improve expanded detail contrast across app (04 Jun 2026)
+
+**Date:** 04 Jun 2026
+**package.json version:** 2.90.0
+
+### Changed
+
+**Consistent expanded-detail surface styling across all accordion/expand sections**
+
+All expanded/accordion sections now use a consistent `bg-gray-100 border-t border-gray-200` treatment. Previously most used `bg-gray-50/40` (40% opacity, barely visible against the white card background) — expanded sections were almost indistinguishable from the collapsed state.
+
+**Token used:**
+- Expanded container: `bg-gray-100` + `border-t border-gray-200`
+- This creates clear visual separation from the white (`bg-white`) card header and the page background (`bg-gray-50`)
+- For colored urgent cards (red/orange in NeedsAttention): `bg-black/[0.03]` — a neutral 3% dark overlay that works on any tinted background
+
+**Applied to:**
+
+| Component | Before | After |
+|---|---|---|
+| Receivables desktop expanded | `bg-gray-50/40 border-gray-100` | `bg-gray-100 border-gray-200` |
+| Receivables mobile expanded | `bg-gray-50/40 border-gray-100` | `bg-gray-100 border-gray-200` |
+| `CollapsibleSection` (Line Items, Performance, Activity) | `border-gray-100` only | `bg-gray-100 border-gray-200` |
+| `ScheduledActionCard` safety-check details | `bg-gray-50/40 border-gray-50` | `bg-gray-100 border-gray-200` |
+| `NeedsAttentionSection` non-urgent expanded | no bg | `bg-gray-50 border-gray-200` |
+| `NeedsAttentionSection` urgent/colored expanded | no bg | `bg-black/[0.03]` (neutral overlay) |
+| `TemplateCard` expanded view/edit panel | `bg-gray-50/50 border-gray-100` | `bg-gray-100 border-gray-200` |
+
+**Intentionally NOT applied to:**
+- KPI cards on Dashboard (always visible, not expanded)
+- Inbox message content (always visible, not an accordion)
+- Static summaries, page section headers, navigation
+- Inner cards within expanded sections (they stay `bg-white` to pop against the grey container)
+
+---
+
+## v2.89.0 — Final cleanup: Customer Directory page title (04 Jun 2026)
+
 ## v2.89.0 — Final cleanup: Customer Directory page title (04 Jun 2026)
 
 **Date:** 04 Jun 2026

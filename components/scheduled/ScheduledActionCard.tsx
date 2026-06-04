@@ -212,7 +212,7 @@ export function ScheduledActionCard({ action, onRefresh }: { action: FullAction;
 
       {/* ── Expanded safety check details ── */}
       {expanded && hasDetails && (
-        <div className="border-t border-gray-100 bg-gray-50/40 px-5 py-3 space-y-2">
+        <div className="border-t border-gray-200 bg-gray-100 px-5 py-3 space-y-2">
           {action.lookupResult && (
             <div className={`flex items-start gap-2 rounded-xl border px-3 py-2.5 text-xs ${outcomeConfig[action.lookupResult.outcome]?.cls ?? ""}`}>
               {(() => { const L = outcomeConfig[action.lookupResult!.outcome]?.icon ?? RefreshCw; return <L className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />; })()}

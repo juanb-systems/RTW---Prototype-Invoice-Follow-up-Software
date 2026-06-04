@@ -284,7 +284,7 @@ function CustomerCard({ account }: { account: CustomerAccount }) {
 
       {/* Desktop expanded */}
       {expanded && (
-        <div className="hidden sm:block border-t border-gray-100 bg-gray-50/40 px-5 pt-4 pb-5 space-y-4">
+        <div className="hidden sm:block border-t border-gray-200 bg-gray-100 px-5 pt-4 pb-5 space-y-4">
 
           {/* Reminder logic */}
           {account.mostOverdueInvoice && (
@@ -434,7 +434,7 @@ function CustomerCard({ account }: { account: CustomerAccount }) {
 
       {/* Mobile expanded: stacked invoice cards */}
       {expanded && (
-        <div className="sm:hidden border-t border-gray-100 bg-gray-50/40 px-4 pt-3 pb-4 space-y-2">
+        <div className="sm:hidden border-t border-gray-200 bg-gray-100 px-4 pt-3 pb-4 space-y-2">
           <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
             Overdue invoices
           </p>

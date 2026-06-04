@@ -278,7 +278,7 @@ function TemplateCard({
 
       {/* ── Expanded view / edit panel ── */}
       {expanded && (
-        <div className="border-t border-gray-100 bg-gray-50/50 p-4 space-y-4">
+        <div className="border-t border-gray-200 bg-gray-100 p-4 space-y-4">
 
           {/* Merge tag bar */}
           <div className="rounded-md border border-dashed border-gray-200 bg-white px-3 py-2">

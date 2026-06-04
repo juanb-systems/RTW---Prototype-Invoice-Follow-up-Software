@@ -230,7 +230,7 @@ function AttentionCard({
 
       {/* ── Expanded items ── */}
       {isOpen && (
-        <div className="border-t border-gray-100 px-4 pt-1.5 pb-3">
+        <div className={`border-t px-4 pt-1.5 pb-3 ${cfg.urgent ? "border-gray-100 bg-black/[0.03]" : "border-gray-200 bg-gray-50"}`}>
           {(cardKey === "disputes" || cardKey === "overdue60plus" || cardKey === "overdue30to60")
             ? (preview as AttentionInvItem[]).map((item) => (
                 <InvItemRow key={item.id} item={item} cardKey={cardKey} />
@@ -359,7 +359,7 @@ export function NeedsAttentionSection({
                   </div>
                 </button>
                 {openKey === "overdue_combined" && (
-                  <div className="border-t border-orange-100 px-4 pt-1 pb-3">
+                  <div className="border-t border-orange-100 bg-black/[0.03] px-4 pt-1 pb-3">
                     {overdueItems.slice(0, 3).map((item) => (
                       <InvItemRow key={item.id} item={item} cardKey="overdue60plus" />
                     ))}
