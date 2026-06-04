@@ -2,6 +2,34 @@
 
 ---
 
+## v2.91.1 — Clean up expanded alert card styling (04 Jun 2026)
+
+**Date:** 04 Jun 2026
+**package.json version:** 2.91.1
+
+### Fixed
+
+**Dashboard Needs Attention — grey/dark overlay inside colored alert cards (`components/dashboard/NeedsAttentionSection.tsx`)**
+
+The v2.91.0 expanded contrast update added `bg-black/[0.05]` to all expanded accordion content, including inside colored urgent cards (red dispute, orange overdue). On mobile this made the red/orange cards look muddy — a dark grey block inside a colored status card.
+
+**Rule applied:**
+- Colored/urgent status cards (dispute, blocked, overdue, approval, paused, reply): expanded content has NO background change — just a subtle `border-gray-200/60` divider. Content inherits the card's existing red/orange/colored surface cleanly.
+- White/neutral cards (overdue 30–60d, awaiting approval, paused, replies): expanded content keeps `bg-gray-100` — the grey panel is appropriate here since the card background is already white.
+
+**Changes:**
+- `AttentionCard` expanded div: `cfg.urgent ? "border-current/20 bg-black/[0.05]"` → `cfg.urgent ? "border-gray-200/60"` (no background on urgent colored cards)
+- Merged overdue combined card: `border-orange-200 bg-black/[0.05]` → `border-orange-200/60` (border only, no overlay)
+
+**Unchanged:**
+- Receivables expanded customer details: `rounded-xl border border-gray-200 bg-gray-100` inset container — correct and stays
+- ScheduledActionCard safety-check details: `bg-gray-100` inset container — correct and stays
+- CollapsibleSection expanded wrapper: `bg-gray-100` — correct and stays
+
+---
+
+## v2.91.0 — Increase expanded accordion contrast (04 Jun 2026)
+
 ## v2.91.0 — Increase expanded accordion contrast (04 Jun 2026)
 
 **Date:** 04 Jun 2026
