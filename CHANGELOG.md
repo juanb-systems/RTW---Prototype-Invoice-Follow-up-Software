@@ -2,6 +2,37 @@
 
 ---
 
+## v2.84.0 — Merge Preferences into Settings (04 Jun 2026)
+
+**Date:** 04 Jun 2026
+**package.json version:** 2.84.0
+
+### Changed
+
+**Preferences merged into Settings (`app/settings/page.tsx`, `app/preferences/page.tsx`, `components/layout/Sidebar.tsx`)**
+
+The app previously had two separate pages — Settings (server-side config) and Preferences (client-side appearance/notifications) — accessed via different routes and visible separately in the profile menu. This created unnecessary navigation complexity.
+
+All configuration is now in one Settings page with five clean sections:
+
+1. **Company & Sender** — company name, default sender name, default sender email (previously in Settings)
+2. **Automation Rules** — manual approval mode, safety check toggle, blocked keywords (previously in Settings)
+3. **Appearance** — light/system/dark theme selector using `next-themes` (moved from Preferences)
+4. **Notifications** — notification sounds, email digest, compact mode toggles from `usePreferencesStore` (moved from Preferences)
+5. **Account / Demo** — account info and demo mode status (new section)
+
+**`/preferences` route** — replaced with a server-side `redirect("/settings")`. Any bookmarks or direct links to `/preferences` now land on Settings automatically.
+
+**Profile menu** — removed the separate "Preferences" link. "Settings" is the only configuration destination.
+
+**Sidebar** — removed unused `SlidersHorizontal` import.
+
+All existing persistence behavior unchanged: server-side settings saved via `/api/settings` PATCH; appearance and notification preferences saved to `localStorage` via `usePreferencesStore` and `next-themes`.
+
+---
+
+## v2.83.1 — Switch to light M3 sidebar + hero KPI card + larger title (04 Jun 2026)
+
 ## v2.83.0 — Material 3-inspired UI redesign (04 Jun 2026)
 
 **Date:** 04 Jun 2026

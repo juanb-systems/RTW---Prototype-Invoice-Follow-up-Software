@@ -13,7 +13,6 @@ import {
   Phone,
   Rocket,
   User,
-  SlidersHorizontal,
   Monitor,
   LogOut,
   ChevronUp,
@@ -74,15 +73,6 @@ function ProfileMenu({ onClose }: { onClose: () => void }) {
           <span className="text-sm text-gray-400">Account</span>
           <span className="ml-auto text-xs text-gray-300">Coming soon</span>
         </div>
-
-        <Link
-          href="/preferences"
-          onClick={onClose}
-          className="flex w-full items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-        >
-          <SlidersHorizontal className="h-3.5 w-3.5 flex-shrink-0 text-gray-400" />
-          <span>Preferences</span>
-        </Link>
 
         <Link
           href="/settings"
