@@ -2,6 +2,52 @@
 
 ---
 
+## v2.92.0 — Improve back navigation visibility (04 Jun 2026)
+
+**Date:** 04 Jun 2026
+**package.json version:** 2.92.0
+
+### Changed
+
+**Back navigation improved to M3-style outlined buttons across detail views**
+
+Back buttons were previously either missing entirely (invoice detail, customer detail) or rendered as tiny `text-xs text-gray-500` text links with no button styling — easy to miss on mobile.
+
+**Standardised back button style:**
+```
+rounded-full border border-gray-300 bg-white px-3.5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50
+```
+- `rounded-full` — M3 full pill shape
+- `border border-gray-300` — clear visible outline
+- `py-2` — ~40px tap target (mobile-friendly)
+- `text-sm` — readable, not tiny `text-xs`
+- ArrowLeft icon (h-4 w-4)
+
+**Files changed:**
+
+`app/invoices/[id]/page.tsx` — Invoice detail:
+- **Added** back navigation button for the first time
+- Placed in TopBar `actions` prop (top-right of header)
+- Label: "← Receivables"
+- Added `ArrowLeft` to lucide imports
+
+`app/contacts/[id]/page.tsx` — Customer account detail:
+- **Added** back navigation button for the first time
+- Placed in TopBar `actions` prop (top-right of header)
+- Label: "← Customer Directory"
+- Added `ArrowLeft` to lucide imports
+
+`app/inbox/page.tsx` — Inbox message detail:
+- Header back button: `text-xs text-gray-500` text link → full M3 outlined button
+- Footer "Back to inbox" button: `px-3 py-1.5 text-xs` → `px-3.5 py-2 text-sm` (larger tap target)
+
+`components/automations/builder/FlowBuilderPageClient.tsx` — Automation builder:
+- `text-xs text-gray-500 hover:text-gray-700` text link → full M3 outlined button with ArrowLeft h-4 w-4
+
+---
+
+## v2.91.1 — Clean up expanded alert card styling (04 Jun 2026)
+
 ## v2.91.1 — Clean up expanded alert card styling (04 Jun 2026)
 
 **Date:** 04 Jun 2026

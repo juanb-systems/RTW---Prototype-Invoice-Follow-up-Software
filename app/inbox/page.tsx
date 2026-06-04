@@ -303,7 +303,7 @@ function MessageDetail({
       <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-200 flex-shrink-0 bg-white">
         <button
           onClick={onClose}
-          className="flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-800 transition-colors"
+          className="inline-flex items-center gap-1.5 rounded-full border border-gray-300 bg-white px-3.5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
           <span className="hidden sm:inline">Inbox</span>
@@ -492,7 +492,7 @@ function MessageDetail({
         )}
         <button
           onClick={onClose}
-          className="ml-auto flex items-center gap-1.5 rounded-full border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-500 hover:bg-gray-50 transition-colors"
+          className="ml-auto flex items-center gap-1.5 rounded-full border border-gray-300 px-3.5 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
         >
           <ArrowLeft className="h-3 w-3" />
           <span className="hidden sm:inline">Back to inbox</span>

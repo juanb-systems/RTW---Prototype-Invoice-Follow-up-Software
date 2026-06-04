@@ -74,9 +74,9 @@ export function FlowBuilderPageClient({ id }: { id: string }) {
         <div className="flex items-center gap-3">
           <button
             onClick={handleBackClick}
-            className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700"
+            className="inline-flex items-center gap-1.5 rounded-full border border-gray-300 bg-white px-3.5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
           >
-            <ArrowLeft className="h-3.5 w-3.5" />
+            <ArrowLeft className="h-4 w-4" />
             Automations
           </button>
           <span className="text-gray-300">/</span>

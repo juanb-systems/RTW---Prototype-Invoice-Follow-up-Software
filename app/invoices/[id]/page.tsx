@@ -14,7 +14,7 @@ import {
   getContactWithInvoices,
 } from "@/lib/server-data";
 import { CollapsibleSection } from "@/components/invoices/CollapsibleSection";
-import { AlertTriangle, Calendar, Building2, Mail, Phone, GitBranch, ShieldX, MessageSquare, PauseCircle, ExternalLink, Zap, CheckCircle2, Clock, Info } from "lucide-react";
+import { AlertTriangle, Calendar, Building2, Mail, Phone, GitBranch, ShieldX, MessageSquare, PauseCircle, ExternalLink, Zap, CheckCircle2, Clock, Info, ArrowLeft } from "lucide-react";
 import type { AutomationFlow, MessageClassification, InboxMessage } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -155,6 +155,15 @@ export default async function InvoiceDetailPage({
         title={invoice.invoiceNumber}
         subtitle={`${invoice.contact?.company ?? ""} · ${formatCurrency(invoice.amount)}`}
         description="Review invoice status, customer activity, automation progress, and next recommended action."
+        actions={
+          <Link
+            href="/invoices"
+            className="inline-flex items-center gap-1.5 rounded-full border border-gray-300 bg-white px-3.5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Receivables</span>
+          </Link>
+        }
       />
       <div className="p-4 sm:p-6 space-y-6">
 

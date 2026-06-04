@@ -6,7 +6,7 @@ import { ExclusionControls } from "@/components/contacts/ExclusionControls";
 import { InvoiceStatusBadge } from "@/components/invoices/InvoiceStatusBadge";
 import { formatCurrency, formatDate, agingColor } from "@/lib/utils";
 import { getDb } from "@/lib/store";
-import { Mail, Phone, Tag, ShieldX, Zap, PauseCircle, Clock, GitBranch, MessageSquare, Calendar } from "lucide-react";
+import { Mail, Phone, Tag, ShieldX, Zap, PauseCircle, Clock, GitBranch, MessageSquare, Calendar, ArrowLeft } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -84,6 +84,15 @@ export default async function ContactDetailPage({
         title={contact.name}
         subtitle={contact.company}
         description="Account summary — total overdue balance, automation stage, related invoices, and latest reply."
+        actions={
+          <Link
+            href="/contacts"
+            className="inline-flex items-center gap-1.5 rounded-full border border-gray-300 bg-white px-3.5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Customer Directory</span>
+          </Link>
+        }
       />
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
 
