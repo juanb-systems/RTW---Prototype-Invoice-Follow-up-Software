@@ -227,7 +227,7 @@ function CustomerCard({ account }: { account: CustomerAccount }) {
   ) : null;
 
   return (
-    <div className={`border-b border-gray-100 last:border-0 ${isDisputed ? "border-l-2 border-l-red-400" : ""}`}>
+    <div className="border-b border-gray-100 last:border-0">
 
       {/* ════════════════════════════════════════════════════════════════════
           DESKTOP ROW (sm+)

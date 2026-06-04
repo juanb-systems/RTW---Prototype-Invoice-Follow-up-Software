@@ -2,6 +2,25 @@
 
 ---
 
+## v2.86.1 — Fix mobile Receivables card left-edge indicator (04 Jun 2026)
+
+**Date:** 04 Jun 2026
+**package.json version:** 2.86.1
+
+### Fixed
+
+**Receivables customer cards — red left-edge line visible on disputed cards (`app/invoices/page.tsx`)**
+
+Disputed customer cards had a `border-l-2 border-l-red-400` applied to the outer card wrapper `<div>`. On mobile this appeared as a thin red vertical line bleeding down the full left edge of the card — visually broken and inconsistent with the rest of the card design.
+
+The "Dispute" badge (`bg-red-100 text-red-700` chip with AlertTriangle icon) is already shown inside the card as part of `responseBadge`, which communicates the disputed status clearly. The left-edge line was redundant and caused the visual artifact.
+
+**Fix:** Removed the conditional `border-l-2 border-l-red-400` class from the card wrapper. Dispute status is now indicated solely by the badge. Card edges are clean on both mobile and desktop.
+
+---
+
+## v2.86.0 — Fix mobile drawer Settings and profile navigation (04 Jun 2026)
+
 ## v2.86.0 — Fix mobile drawer Settings and profile navigation (04 Jun 2026)
 
 **Date:** 04 Jun 2026
