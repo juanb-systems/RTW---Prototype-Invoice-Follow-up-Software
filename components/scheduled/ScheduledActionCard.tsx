@@ -109,58 +109,54 @@ export function ScheduledActionCard({ action, onRefresh }: { action: FullAction;
 
         <div className="flex-1 min-w-0">
 
-          {/* Row 1: action type + status chip */}
-          <div className="flex items-center gap-2 flex-wrap mb-2">
-            <span className="text-sm font-semibold text-gray-900 capitalize">
-              {stepCfg?.label ?? action.stepType} reminder
-            </span>
-            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusCfg.cls}`}>
+          {/* Row 1: WHO + status chip — the human headline */}
+          <div className="flex items-start justify-between gap-2 mb-1">
+            <p className="text-base font-semibold text-gray-900 leading-snug">
+              {stepCfg?.label ?? action.stepType} to{" "}
+              {action.contact ? (
+                <Link
+                  href={`/contacts/${action.contactId}`}
+                  className="hover:text-blue-600 hover:underline transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {action.contact.name}
+                </Link>
+              ) : "Customer"}
+            </p>
+            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium flex-shrink-0 ${statusCfg.cls}`}>
               {statusCfg.label}
             </span>
           </div>
 
-          {/* Row 2: customer + company */}
-          {action.contact && (
-            <div className="flex items-center gap-1.5 mb-1">
-              <Link
-                href={`/contacts/${action.contactId}`}
-                className="text-sm font-medium text-gray-800 hover:text-blue-600 hover:underline transition-colors"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {action.contact.name}
-              </Link>
-              {action.contact.company && (
-                <span className="text-sm text-gray-400">· {action.contact.company}</span>
-              )}
-            </div>
+          {/* Row 2: company */}
+          {action.contact?.company && (
+            <p className="text-xs text-gray-400 mb-2">{action.contact.company}</p>
           )}
 
-          {/* Row 3: customer account summary */}
+          {/* Row 3: WHEN — prominent date */}
+          <div className="flex items-center gap-1.5 mb-2">
+            <Clock className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
+            <span className="text-sm font-medium text-gray-700">{formatDateTime(action.scheduledAt)}</span>
+          </div>
+
+          {/* Row 4: customer account context — secondary */}
           {action.customerAccount && action.customerAccount.overdueCount > 0 && (
-            <p className="text-xs text-gray-500 mb-1">
+            <p className="text-xs text-gray-500 mb-2">
               <span className={`font-semibold ${agingColor(action.customerAccount.maxDaysPastDue)}`}>
                 {formatCurrency(action.customerAccount.totalOverdueBalance)}
               </span>
-              {" overdue across "}
-              <span className="font-medium text-gray-700">
-                {action.customerAccount.overdueCount} invoice{action.customerAccount.overdueCount !== 1 ? "s" : ""}
-              </span>
+              {" overdue · "}
+              {action.customerAccount.overdueCount} invoice{action.customerAccount.overdueCount !== 1 ? "s" : ""}
               {action.customerAccount.mostOverdueInvoiceNumber && (
-                <span className="text-gray-400"> · oldest {action.customerAccount.maxDaysPastDue}d</span>
+                <> · oldest {action.customerAccount.maxDaysPastDue}d</>
               )}
             </p>
           )}
 
-          {/* Row 4: flow */}
+          {/* Row 5: flow name */}
           {action.flow && (
-            <p className="text-xs text-gray-400 mb-2">{action.flow.name}</p>
+            <p className="text-xs text-gray-400 mb-3">{action.flow.name}</p>
           )}
-
-          {/* Row 5: scheduled time */}
-          <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-3">
-            <Clock className="h-3 w-3 flex-shrink-0" />
-            <span>{formatDateTime(action.scheduledAt)}</span>
-          </div>
 
           {/* Live fire result */}
           {result && (

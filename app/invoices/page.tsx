@@ -293,7 +293,19 @@ function CustomerCard({ account }: { account: CustomerAccount }) {
               <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-2.5">
                 Next reminder
               </p>
-              <div className="grid grid-cols-[120px_1fr] gap-y-1.5 text-xs">
+
+              {/* Mobile: one plain-English sentence */}
+              <p className="sm:hidden text-sm text-blue-900 mb-1">
+                {stepLabel && account.nextScheduledAt
+                  ? <>We'll send a <strong>{stepLabel.toLowerCase()}</strong> to <strong>{account.name}</strong> on <strong>{formatDate(account.nextScheduledAt)}</strong>, mentioning all {account.overdueCount} overdue invoice{account.overdueCount !== 1 ? "s" : ""}.</>
+                  : account.mostOverdueInvoice.assignedFlowName
+                  ? <>Automation active: <strong>{account.mostOverdueInvoice.assignedFlowName}</strong>. No reminder scheduled yet.</>
+                  : <>No reminder set up yet for this customer.</>
+                }
+              </p>
+
+              {/* Desktop: full detail grid */}
+              <div className="hidden sm:grid grid-cols-[120px_1fr] gap-y-1.5 text-xs">
                 <span className="text-blue-400 font-medium">Based on</span>
                 <span className="flex items-baseline gap-2 text-blue-900">
                   <span className="font-mono font-semibold">{account.mostOverdueInvoice.invoiceNumber}</span>

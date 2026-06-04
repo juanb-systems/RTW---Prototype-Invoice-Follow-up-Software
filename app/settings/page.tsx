@@ -189,8 +189,8 @@ export default function SettingsPage() {
                   <Shield className={cn("h-5 w-5", settings.manualApprovalMode ? "text-blue-600" : "text-gray-400")} />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-800">Manual Approval Mode</p>
-                  <p className="text-xs text-gray-500 mt-0.5">Require approval before any automated action is sent.</p>
+                  <p className="text-sm font-medium text-gray-800">Review reminders before sending</p>
+                  <p className="text-xs text-gray-500 mt-0.5">Turn this on to approve each reminder before CollectPilot sends it to a customer.</p>
                 </div>
               </div>
               <Toggle
@@ -202,7 +202,7 @@ export default function SettingsPage() {
             {settings.manualApprovalMode && (
               <div className="rounded-xl border border-blue-200 bg-blue-50 px-3 py-2.5 flex items-start gap-2">
                 <Info className="h-4 w-4 text-blue-500 flex-shrink-0 mt-0.5" />
-                <p className="text-xs text-blue-700">All scheduled actions will require human approval in the Actions page before sending.</p>
+                <p className="text-xs text-blue-700">Every reminder will wait for your approval on the Reminders page before being sent.</p>
               </div>
             )}
 
@@ -215,8 +215,8 @@ export default function SettingsPage() {
                   <RefreshCw className="h-5 w-5 text-amber-600" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-800">Safety check before every send</p>
-                  <p className="text-xs text-gray-500 mt-0.5">Verify invoice status and contact exclusions before each action fires.</p>
+                  <p className="text-sm font-medium text-gray-800">Verify customer account before each reminder</p>
+                  <p className="text-xs text-gray-500 mt-0.5">Check that the invoice is still unpaid and the customer is active before each reminder goes out.</p>
                 </div>
               </div>
               <Toggle
@@ -229,7 +229,7 @@ export default function SettingsPage() {
             {!settings.lookupOnEveryAction && (
               <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4 text-red-500 flex-shrink-0" />
-                <p className="text-xs text-red-700 font-medium">Actions may fire on paid or disputed invoices without safety checks.</p>
+                <p className="text-xs text-red-700 font-medium">Reminders could go to customers who have already paid or disputed. We recommend keeping this on.</p>
               </div>
             )}
 

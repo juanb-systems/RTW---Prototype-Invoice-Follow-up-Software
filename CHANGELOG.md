@@ -2,6 +2,40 @@
 
 ---
 
+## v2.94.0 — UX re-analysis improvements: Reminders lead with who/when, plain-English Settings (04 Jun 2026)
+
+**Date:** 04 Jun 2026
+**package.json version:** 2.94.0
+
+### Changed
+
+**Reminders page — action cards now lead with who and when (`components/scheduled/ScheduledActionCard.tsx`)**
+
+The card headline is now *"Email to David Kim"* — the human outcome — instead of "Email reminder" + separate customer row. Status chip moved to the top-right of the headline row. Scheduled date is now prominent (text-sm font-medium) directly below the name. Customer overdue context becomes secondary small text. Removes the redundant "This reminder covers: INV-XXX" row since the customer context line already covers it.
+
+Before: "Email reminder [chip] → David Kim · Walsh Civil Engineering → $70,200 overdue…"
+After: "Email to David Kim [chip] → Walsh Civil Engineering → Tuesday 10 Jun, 05:00 AM → $70,200 overdue…"
+
+**Settings — two confusing toggles renamed to plain English (`app/settings/page.tsx`)**
+- "Manual Approval Mode" → "Review reminders before sending"
+- Description: "Require approval before any automated action is sent" → "Turn this on to approve each reminder before CollectPilot sends it to a customer"
+- Info banner when on: "All scheduled actions will require human approval" → "Every reminder will wait for your approval on the Reminders page"
+- "Safety check before every send" → "Verify customer account before each reminder"
+- Description: "Verify invoice status and contact exclusions before each action fires" → "Check that the invoice is still unpaid and the customer is active before each reminder goes out"
+- Warning when off: "Actions may fire on paid or disputed invoices" → "Reminders could go to customers who have already paid or disputed. We recommend keeping this on."
+
+**Receivables — mobile shows one-sentence summary instead of grid (`app/invoices/page.tsx`)**
+On mobile (< sm), the "Next reminder" grid (Based on / Will mention / Automation / Next step) is replaced with a single human sentence:
+- With date: *"We'll send an email to David Kim on Tuesday 27 May, mentioning all 3 overdue invoices."*
+- No date: *"Automation active: Standard Follow-up. No reminder scheduled yet."*
+- No automation: *"No reminder set up yet for this customer."*
+
+Desktop still shows the full detail grid (hidden sm:grid).
+
+---
+
+## v2.93.0 — Simplify SME workflow: navigation, Reminders rename, plain-English Dashboard (04 Jun 2026)
+
 ## v2.93.0 — Simplify SME workflow: navigation, Reminders rename, plain-English Dashboard (04 Jun 2026)
 
 **Date:** 04 Jun 2026
