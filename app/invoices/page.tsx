@@ -282,9 +282,10 @@ function CustomerCard({ account }: { account: CustomerAccount }) {
         </div>
       </div>
 
-      {/* Desktop expanded */}
+      {/* Desktop expanded — inset grey container inside the white card */}
       {expanded && (
-        <div className="hidden sm:block border-t border-gray-200 bg-gray-100 px-5 pt-4 pb-5 space-y-4">
+        <div className="hidden sm:block px-5 pb-5 pt-3">
+          <div className="rounded-xl border border-gray-200 bg-gray-100 p-4 space-y-4">
 
           {/* Reminder logic */}
           {account.mostOverdueInvoice && (
@@ -372,7 +373,7 @@ function CustomerCard({ account }: { account: CustomerAccount }) {
             {hasReply && replyLabel && replyColor && account.latestMessageId && (
               <Link
                 href={`/inbox?message=${account.latestMessageId}`}
-                className="inline-flex items-center gap-1.5 rounded-full border border-gray-300 px-3.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-full border border-gray-300 px-3.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-white transition-colors"
                 onClick={(e) => e.stopPropagation()}
               >
                 View reply
@@ -386,6 +387,7 @@ function CustomerCard({ account }: { account: CustomerAccount }) {
               Open account
             </Link>
           </div>
+          </div>{/* end inset container */}
         </div>
       )}
 
@@ -432,9 +434,10 @@ function CustomerCard({ account }: { account: CustomerAccount }) {
         )}
       </div>
 
-      {/* Mobile expanded: stacked invoice cards */}
+      {/* Mobile expanded: stacked invoice cards — inset grey container */}
       {expanded && (
-        <div className="sm:hidden border-t border-gray-200 bg-gray-100 px-4 pt-3 pb-4 space-y-2">
+        <div className="sm:hidden px-4 pb-4 pt-2">
+          <div className="rounded-xl border border-gray-200 bg-gray-100 p-3 space-y-2">
           <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
             Overdue invoices
           </p>
@@ -477,6 +480,7 @@ function CustomerCard({ account }: { account: CustomerAccount }) {
               Open account
             </Link>
           </div>
+          </div>{/* end inset container */}
         </div>
       )}
     </div>

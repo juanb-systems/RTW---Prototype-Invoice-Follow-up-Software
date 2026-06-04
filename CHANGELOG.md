@@ -2,6 +2,55 @@
 
 ---
 
+## v2.91.0 — Increase expanded accordion contrast (04 Jun 2026)
+
+**Date:** 04 Jun 2026
+**package.json version:** 2.91.0
+
+### Fixed
+
+**Expanded accordion sections not visually distinct (v2.90 was still invisible)**
+
+The previous change (v2.90.0) applied `bg-gray-100` to a flat full-width div. The issue was structural: the inner content (blue Reminder Logic panel, white invoice cards) covered most of the background area, so the grey was never visible. The change needed a structural fix, not just a colour change.
+
+**Root cause:** A full-width `border-t bg-gray-100` div looks invisible when its only visible portion is already covered by coloured inner elements.
+
+**Fix — inset container pattern:**
+All expanded sections now use an inset rounded container nested inside the white parent card, with padding gap around it. This creates a clearly distinct grey "panel" that floats inside the card.
+
+```
+Card (bg-white)
+  └─ Outer gap wrapper (inherits white, px/pb for spacing)
+       └─ Inset container: rounded-xl border border-gray-200 bg-gray-100 p-4
+            └─ Inner content (Reminder Logic, invoices, buttons)
+```
+
+**Files changed:**
+
+`app/invoices/page.tsx` — Receivables desktop + mobile:
+- Desktop: `border-t bg-gray-100 px-5 pt-4 pb-5` → outer gap `px-5 pb-5 pt-3` + inner `rounded-xl border border-gray-200 bg-gray-100 p-4`
+- Mobile: same pattern with `p-3` for tighter spacing
+
+`components/scheduled/ScheduledActionCard.tsx`:
+- Safety check details: flat div → outer `px-5 pb-4 pt-2` + inner `rounded-xl border border-gray-200 bg-gray-100 p-3`
+
+`components/invoices/CollapsibleSection.tsx`:
+- Expanded wrapper: `border-t border-gray-200 bg-gray-100` → added `p-3 sm:p-4` padding so the grey background is visible around the children
+
+`components/dashboard/NeedsAttentionSection.tsx`:
+- Non-urgent expanded items: `bg-gray-50` → `bg-gray-100` (same level as other expanded sections)
+- Urgent/colored expanded items: `bg-black/[0.03]` → `bg-black/[0.05]` (slightly stronger on colored backgrounds)
+
+**Visual result:**
+- Collapsed rows: white, clean
+- Expanded section: clearly visible light grey inset container with rounded corners and border
+- Inner content (blue Reminder Logic, white invoice cards, buttons) floats inside the grey container
+- The grey frame around inner content is the visual signal: "this belongs to this customer row"
+
+---
+
+## v2.90.0 — Improve expanded detail contrast across app (04 Jun 2026)
+
 ## v2.90.0 — Improve expanded detail contrast across app (04 Jun 2026)
 
 **Date:** 04 Jun 2026

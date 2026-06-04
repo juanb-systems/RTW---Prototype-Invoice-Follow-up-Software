@@ -210,9 +210,10 @@ export function ScheduledActionCard({ action, onRefresh }: { action: FullAction;
         )}
       </div>
 
-      {/* ── Expanded safety check details ── */}
+      {/* ── Expanded safety check details — inset grey container ── */}
       {expanded && hasDetails && (
-        <div className="border-t border-gray-200 bg-gray-100 px-5 py-3 space-y-2">
+        <div className="px-5 pb-4 pt-2">
+          <div className="rounded-xl border border-gray-200 bg-gray-100 p-3 space-y-2">
           {action.lookupResult && (
             <div className={`flex items-start gap-2 rounded-xl border px-3 py-2.5 text-xs ${outcomeConfig[action.lookupResult.outcome]?.cls ?? ""}`}>
               {(() => { const L = outcomeConfig[action.lookupResult!.outcome]?.icon ?? RefreshCw; return <L className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />; })()}
@@ -226,6 +227,7 @@ export function ScheduledActionCard({ action, onRefresh }: { action: FullAction;
           {action.skipReason && !action.lookupResult && (
             <p className="text-xs text-gray-400 px-1">{action.skipReason}</p>
           )}
+          </div>{/* end inset container */}
         </div>
       )}
     </div>

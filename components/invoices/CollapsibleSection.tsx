@@ -43,7 +43,7 @@ export function CollapsibleSection({
         </div>
       </button>
       {open && (
-        <div className="border-t border-gray-200 bg-gray-100">
+        <div className="p-3 sm:p-4 border-t border-gray-200 bg-gray-100">
           {children}
         </div>
       )}
