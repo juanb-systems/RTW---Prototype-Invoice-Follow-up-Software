@@ -222,7 +222,7 @@ function AIOverview({ message }: { message: Message }) {
   }
 
   return (
-    <div className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3.5">
+    <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-4">
       <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-2.5">AI Overview</p>
       <ul className="space-y-1.5">
         {points.map((pt, i) => (
@@ -406,8 +406,8 @@ function MessageDetail({
         )}
 
         {/* 5. Message / transcript — always visible, no accordion */}
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-          <div className="px-4 py-2.5 border-b border-gray-100 bg-gray-50">
+        <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/60">
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
               {isCall ? "Call Transcript" : "Message"}
             </p>
@@ -447,14 +447,14 @@ function MessageDetail({
               <button
                 onClick={sendReply}
                 disabled={replying || !replyText.trim()}
-                className="flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                className="flex items-center gap-1.5 rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
               >
                 {replying ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Reply className="h-3.5 w-3.5" />}
                 {replying ? "Sending…" : "Send Reply (simulated)"}
               </button>
               <button
                 onClick={() => setShowReply(false)}
-                className="rounded-md border border-gray-200 px-4 py-2 text-sm text-gray-500 hover:bg-gray-50"
+                className="rounded-full border border-gray-300 px-4 py-2 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
               >
                 Cancel
               </button>
@@ -464,19 +464,19 @@ function MessageDetail({
       </div>
 
       {/* ── Action footer ── */}
-      <div className="flex-shrink-0 border-t border-gray-200 bg-white px-4 py-3 flex gap-2 flex-wrap items-center">
+      <div className="flex-shrink-0 border-t border-gray-100 bg-white px-4 py-3 flex gap-2 flex-wrap items-center">
         {!message.automationPaused && (
           <button
             onClick={pauseAutomation}
             disabled={pausing}
-            className="flex items-center gap-1.5 rounded-md border border-orange-200 bg-orange-50 px-3 py-1.5 text-xs font-medium text-orange-700 hover:bg-orange-100 disabled:opacity-50"
+            className="flex items-center gap-1.5 rounded-full bg-orange-50 px-3 py-1.5 text-xs font-medium text-orange-700 hover:bg-orange-100 disabled:opacity-50 transition-colors"
           >
             <PauseCircle className="h-3.5 w-3.5" />
             {pausing ? "Pausing…" : "Pause Automation"}
           </button>
         )}
         {message.automationPaused && (
-          <span className="inline-flex items-center gap-1.5 rounded-md border border-orange-200 bg-orange-50 px-3 py-1.5 text-xs font-medium text-orange-600">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-50 px-3 py-1.5 text-xs font-medium text-orange-600">
             <PauseCircle className="h-3.5 w-3.5" />
             Automation paused
           </span>
@@ -484,7 +484,7 @@ function MessageDetail({
         {!isCall && !showReply && (
           <button
             onClick={() => setShowReply(true)}
-            className="flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100"
+            className="flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100 transition-colors"
           >
             <Reply className="h-3.5 w-3.5" />
             Reply
@@ -492,7 +492,7 @@ function MessageDetail({
         )}
         <button
           onClick={onClose}
-          className="ml-auto flex items-center gap-1.5 rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-500 hover:bg-gray-50"
+          className="ml-auto flex items-center gap-1.5 rounded-full border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-500 hover:bg-gray-50 transition-colors"
         >
           <ArrowLeft className="h-3 w-3" />
           <span className="hidden sm:inline">Back to inbox</span>
@@ -535,10 +535,10 @@ function InboxRow({
   return (
     <div
       id={`msg-${message.id}`}
-      className={`flex items-start gap-2.5 px-4 py-3 cursor-pointer select-none transition-colors ${
+      className={`flex items-start gap-2.5 px-4 py-3.5 cursor-pointer select-none transition-colors ${
         isSelected
-          ? "bg-blue-50 border-l-2 border-l-blue-500"
-          : "hover:bg-gray-50"
+          ? "bg-blue-50/70 border-l-[3px] border-l-blue-500"
+          : "hover:bg-gray-50/70"
       }`}
       onClick={onClick}
     >
@@ -562,7 +562,7 @@ function InboxRow({
           </p>
           <div className="flex items-center gap-1.5 flex-shrink-0">
             {badge && (
-              <span className={`hidden sm:inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium ${badge.cls}`}>
+              <span className={`hidden sm:inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${badge.cls}`}>
                 {badge.label}
               </span>
             )}
@@ -586,7 +586,7 @@ function InboxRow({
 
         {/* Mobile badge */}
         {badge && (
-          <span className={`sm:hidden mt-1 inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium ${badge.cls}`}>
+          <span className={`sm:hidden mt-1.5 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${badge.cls}`}>
             {badge.label}
           </span>
         )}

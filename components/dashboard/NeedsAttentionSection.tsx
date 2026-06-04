@@ -204,36 +204,33 @@ function AttentionCard({
   const hasMore = items.length > MAX_PREVIEW;
 
   return (
-    <div className={`rounded-lg border overflow-hidden transition-all ${
+    <div className={`rounded-2xl border overflow-hidden transition-all ${
       cfg.urgent ? `${cfg.border} ${cfg.urgentBg}` : "border-gray-200 bg-white"
     }`}>
-      {/* ── Collapsed header — always visible ── */}
+      {/* ── Header ── */}
       <button
-        className="w-full flex items-center gap-2.5 p-3 sm:p-3.5 text-left hover:bg-black/5 transition-colors"
+        className="w-full flex items-center gap-3 p-3.5 sm:p-4 text-left hover:bg-black/[0.04] transition-colors"
         onClick={onToggle}
         aria-expanded={isOpen}
       >
-        <div className={`flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-lg ${cfg.iconBg}`}>
-          <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
+        <div className={`flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl ${cfg.iconBg}`}>
+          <Icon className="h-4 w-4 text-white" />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-baseline gap-1.5 flex-wrap">
-            <span className="text-base sm:text-xl font-bold text-gray-900">{count}</span>
-            <span className="text-xs sm:text-sm font-medium text-gray-700 leading-snug">{cfg.label}</span>
+            <span className="text-lg sm:text-xl font-bold text-gray-900 tabular-nums">{count}</span>
+            <span className="text-xs sm:text-sm font-medium text-gray-700">{cfg.label}</span>
           </div>
-          <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 leading-snug hidden xs:block sm:block">{cfg.description}</p>
+          <p className="text-xs text-gray-500 mt-0.5 leading-snug hidden sm:block">{cfg.description}</p>
         </div>
         <div className="shrink-0 text-gray-400">
-          {isOpen
-            ? <ChevronUp className="h-4 w-4" />
-            : <ChevronDown className="h-4 w-4" />
-          }
+          {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
         </div>
       </button>
 
       {/* ── Expanded items ── */}
       {isOpen && (
-        <div className="border-t border-gray-100 px-4 pt-1 pb-3">
+        <div className="border-t border-gray-100 px-4 pt-1.5 pb-3">
           {(cardKey === "disputes" || cardKey === "overdue60plus" || cardKey === "overdue30to60")
             ? (preview as AttentionInvItem[]).map((item) => (
                 <InvItemRow key={item.id} item={item} cardKey={cardKey} />
@@ -249,7 +246,7 @@ function AttentionCard({
           {hasMore && (
             <Link
               href={cfg.viewAllHref}
-              className="block text-center text-xs font-medium text-blue-600 hover:text-blue-700 hover:underline pt-2"
+              className="block text-center text-xs font-medium text-blue-600 hover:underline pt-2.5"
               onClick={(e) => e.stopPropagation()}
             >
               View all {count} →
@@ -298,7 +295,7 @@ export function NeedsAttentionSection({
   return (
     <div className="space-y-3">
       {/* ── Needs Attention box ── */}
-      <div className="rounded-xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm">
+      <div className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-sm font-semibold text-gray-900">Needs Attention</h2>
@@ -335,13 +332,13 @@ export function NeedsAttentionSection({
 
             {/* Merged overdue card */}
             {overdueItems.length > 0 && (
-              <div className="rounded-lg border border-orange-200 bg-orange-50 overflow-hidden">
+              <div className="rounded-2xl border border-orange-200 bg-orange-50 overflow-hidden">
                 <button
-                  className="w-full flex items-center gap-2.5 p-3 sm:p-3.5 text-left hover:bg-black/5 transition-colors"
+                  className="w-full flex items-center gap-3 p-3.5 sm:p-4 text-left hover:bg-black/[0.04] transition-colors"
                   onClick={() => toggle("overdue_combined")}
                   aria-expanded={openKey === "overdue_combined"}
                 >
-                  <div className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-lg bg-orange-400">
+                  <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl bg-orange-400">
                     <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -394,7 +391,7 @@ export function NeedsAttentionSection({
       {details.promisesToPay.length > 0 && (
         <Link
           href="/inbox?filter=promise_to_pay"
-          className="flex items-center gap-2.5 rounded-xl border border-green-200 bg-green-50 px-3.5 py-2.5 hover:bg-green-100 transition-colors"
+          className="flex items-center gap-3 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 hover:bg-green-100 transition-colors"
         >
           <ThumbsUp className="h-4 w-4 text-green-600 flex-shrink-0" />
           <div className="flex-1 min-w-0">

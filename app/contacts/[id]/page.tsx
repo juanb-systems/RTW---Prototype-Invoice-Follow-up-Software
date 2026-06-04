@@ -107,7 +107,7 @@ export default async function ContactDetailPage({
           <div className="md:col-span-2 space-y-4 sm:space-y-5">
 
             {/* Contact summary card */}
-            <div className="rounded-xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm">
+            <div className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 shadow-sm">
               <div className="flex items-start justify-between mb-4">
                 <div className="min-w-0 flex-1 mr-3">
                   <h2 className="text-lg font-bold text-gray-900 leading-tight">{contact.name}</h2>
@@ -255,7 +255,7 @@ export default async function ContactDetailPage({
             )}
 
             {/* Related invoices */}
-            <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+            <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
               <div className="px-4 sm:px-5 py-4 border-b border-gray-100">
                 <h3 className="text-sm font-semibold text-gray-900">Invoices</h3>
               </div>

@@ -240,7 +240,7 @@ export default async function InvoiceDetailPage({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-5">
             {/* Invoice header */}
-            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+            <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <p className="text-xl sm:text-2xl font-bold text-gray-900">{formatCurrency(invoice.amount)}</p>
@@ -362,7 +362,7 @@ export default async function InvoiceDetailPage({
             )}
 
             {/* Activity Timeline — always visible, no expand/collapse */}
-            <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+            <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
               <div className="flex items-center gap-2 px-5 py-4 border-b border-gray-100">
                 <h3 className="text-sm font-semibold text-gray-900">Activity Timeline</h3>
                 {timeline.length > 0 && (

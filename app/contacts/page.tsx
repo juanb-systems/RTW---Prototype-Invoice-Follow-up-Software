@@ -111,7 +111,7 @@ function AddContactModal({
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6 bg-black/50"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="bg-white w-full sm:max-w-lg rounded-t-2xl sm:rounded-xl shadow-2xl flex flex-col max-h-[90vh] sm:max-h-[85vh]">
+      <div className="bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[90vh] sm:max-h-[85vh]">
 
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 flex-shrink-0">
@@ -226,14 +226,14 @@ function AddContactModal({
           <div className="flex gap-2">
             <button
               onClick={onClose}
-              className="rounded-md border border-gray-200 px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+              className="rounded-full border border-gray-300 px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
+              className="flex items-center gap-1.5 rounded-full bg-blue-600 px-4 py-2 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-sm"
             >
               {saving ? "Saving…" : "Save Contact"}
             </button>
@@ -424,7 +424,7 @@ export default function ContactsPage() {
         actions={
           <button
             onClick={() => setShowAdd(true)}
-            className="flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-1.5 rounded-full bg-blue-600 px-3.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white hover:bg-blue-700 transition-colors shadow-sm"
           >
             <UserPlus className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Add Contact</span>
@@ -434,7 +434,7 @@ export default function ContactsPage() {
       />
       <div className="p-4 sm:p-6">
         {excluded > 0 && (
-          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3">
+          <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3.5">
             <p className="text-sm font-medium text-red-700">
               {excluded} contact{excluded > 1 ? "s are" : " is"} excluded from all automations.
               No emails, SMS, or calls will be sent to them.
@@ -442,7 +442,7 @@ export default function ContactsPage() {
           </div>
         )}
 
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+        <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
           {/* Toolbar: search + status filter + count */}
           <div className="px-4 sm:px-5 py-3 border-b border-gray-100 space-y-2">
             {/* Row 1: search + filter */}

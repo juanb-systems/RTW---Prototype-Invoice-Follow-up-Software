@@ -261,12 +261,12 @@ export function TopBar({ title, subtitle, description, actions }: TopBarProps) {
 
   return (
     <>
-    <header className="flex h-14 items-center justify-between border-b border-gray-200 bg-white px-4 md:px-6 gap-3">
+    <header className="flex h-16 items-center justify-between border-b border-gray-200 bg-white px-4 md:px-6 gap-3">
       {/* Mobile hamburger */}
       <button
         onClick={toggleMobileMenu}
         aria-label="Open navigation menu"
-        className="md:hidden flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
+        className="md:hidden flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 transition-colors"
       >
         <Menu className="h-5 w-5" />
       </button>
@@ -308,7 +308,7 @@ export function TopBar({ title, subtitle, description, actions }: TopBarProps) {
               onClick={() => setSearchOpen(true)}
               title="Search everything"
               aria-label="Open global search"
-              className="relative flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
+              className="relative flex h-9 w-9 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 transition-colors"
             >
               <Search className="h-4 w-4" />
             </button>
@@ -316,7 +316,7 @@ export function TopBar({ title, subtitle, description, actions }: TopBarProps) {
 
           {/* Results dropdown */}
           {showDropdown && (
-            <div className="absolute right-0 top-full mt-1.5 w-[calc(100vw-2rem)] sm:w-[26rem] rounded-xl border border-gray-200 bg-white shadow-xl z-50 overflow-hidden">
+            <div className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-[26rem] rounded-2xl border border-gray-200 bg-white shadow-xl z-50 overflow-hidden">
               {!dataLoaded ? (
                 <div className="py-10 text-center text-xs text-gray-400">Searching all sections…</div>
               ) : totalResults === 0 ? (
@@ -370,7 +370,7 @@ export function TopBar({ title, subtitle, description, actions }: TopBarProps) {
             onClick={() => setNotifOpen((v) => !v)}
             title="Notifications"
             aria-label="Notifications"
-            className="relative flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
+            className="relative flex h-9 w-9 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 transition-colors"
           >
             <Bell className="h-4 w-4" />
             {UNREAD_COUNT > 0 && (
@@ -379,7 +379,7 @@ export function TopBar({ title, subtitle, description, actions }: TopBarProps) {
           </button>
 
           {notifOpen && (
-            <div className="absolute right-0 top-full mt-1.5 w-[calc(100vw-2rem)] sm:w-80 rounded-xl border border-gray-200 bg-white shadow-xl z-50 overflow-hidden">
+            <div className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-80 rounded-2xl border border-gray-200 bg-white shadow-xl z-50 overflow-hidden">
               <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                 <p className="text-xs font-semibold text-gray-900">Notifications</p>
                 {UNREAD_COUNT > 0 && (

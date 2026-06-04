@@ -3,19 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
-  Mail,
-  MessageSquare,
-  Phone,
-  RefreshCw,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  SkipForward,
-  ShieldX,
-  PauseCircle,
-  PlayCircle,
-  ChevronDown,
-  ChevronUp,
+  Mail, MessageSquare, Phone,
+  RefreshCw, CheckCircle2, XCircle, Clock,
+  SkipForward, ShieldX, PauseCircle, PlayCircle,
+  ChevronDown, ChevronUp,
 } from "lucide-react";
 import { formatDateTime, formatCurrency, agingColor } from "@/lib/utils";
 import type { ScheduledAction, Invoice, Contact, AutomationFlow, LookupOutcome } from "@/lib/types";
@@ -25,13 +16,7 @@ type CustomerAccountContext = {
   totalOverdueBalance: number;
   maxDaysPastDue: number;
   mostOverdueInvoiceNumber: string | null;
-  overdueInvoices: {
-    id: string;
-    invoiceNumber: string;
-    amount: number;
-    daysPastDue: number;
-    status: string;
-  }[];
+  overdueInvoices: { id: string; invoiceNumber: string; amount: number; daysPastDue: number; status: string }[];
 };
 
 type FullAction = ScheduledAction & {
@@ -41,28 +26,36 @@ type FullAction = ScheduledAction & {
   customerAccount?: CustomerAccountContext | null;
 };
 
+// ── Step type config ──────────────────────────────────────────────────────────
+
 const stepTypeConfig = {
-  email: { icon: Mail, color: "text-blue-600", bg: "bg-blue-50", label: "Email" },
-  sms: { icon: MessageSquare, color: "text-purple-600", bg: "bg-purple-50", label: "SMS" },
-  call: { icon: Phone, color: "text-green-600", bg: "bg-green-50", label: "Call" },
+  email: { icon: Mail,          color: "text-blue-600",   bg: "bg-blue-50",   label: "Email" },
+  sms:   { icon: MessageSquare, color: "text-purple-600", bg: "bg-purple-50", label: "SMS" },
+  call:  { icon: Phone,         color: "text-green-600",  bg: "bg-green-50",  label: "Call" },
+} as const;
+
+// ── Status chip (M3 tonal chip) ───────────────────────────────────────────────
+
+const statusConfig: Record<string, { label: string; cls: string }> = {
+  pending:           { label: "Upcoming",       cls: "bg-gray-100 text-gray-600" },
+  sent:              { label: "Sent",           cls: "bg-green-100 text-green-700" },
+  skipped:           { label: "Skipped",        cls: "bg-amber-100 text-amber-700" },
+  blocked:           { label: "Blocked",        cls: "bg-red-100 text-red-700" },
+  approved:          { label: "Approved",       cls: "bg-green-100 text-green-700" },
+  awaiting_approval: { label: "Needs Approval", cls: "bg-blue-100 text-blue-700" },
 };
 
-const outcomeConfig: Record<LookupOutcome, { label: string; color: string; icon: React.ElementType }> = {
-  proceed:           { label: "Safety check passed — cleared to send",   color: "text-green-700 bg-green-50 border-green-200",  icon: CheckCircle2 },
-  skip:              { label: "Skipped — invoice is now paid",           color: "text-yellow-700 bg-yellow-50 border-yellow-200", icon: SkipForward },
-  block:             { label: "Contact excluded from automations",        color: "text-red-700 bg-red-50 border-red-200",       icon: ShieldX },
-  hold:              { label: "Automation paused",                        color: "text-orange-700 bg-orange-50 border-orange-200", icon: PauseCircle },
-  awaiting_approval: { label: "Needs your approval to send",             color: "text-blue-700 bg-blue-50 border-blue-200",    icon: Clock },
+// ── Outcome config (safety check result) ─────────────────────────────────────
+
+const outcomeConfig: Record<LookupOutcome, { label: string; cls: string; icon: React.ElementType }> = {
+  proceed:           { label: "Safety check passed — cleared to send", cls: "bg-green-50 text-green-700 border-green-200",  icon: CheckCircle2 },
+  skip:              { label: "Skipped — invoice is now paid",         cls: "bg-amber-50 text-amber-700 border-amber-200",  icon: SkipForward },
+  block:             { label: "Contact excluded from automations",      cls: "bg-red-50 text-red-700 border-red-200",        icon: ShieldX },
+  hold:              { label: "Automation paused",                      cls: "bg-orange-50 text-orange-700 border-orange-200", icon: PauseCircle },
+  awaiting_approval: { label: "Needs your approval to send",           cls: "bg-blue-50 text-blue-700 border-blue-200",     icon: Clock },
 };
 
-const statusConfig = {
-  pending:           { label: "Upcoming",        className: "bg-gray-100 text-gray-600 border-gray-200" },
-  sent:              { label: "Sent",            className: "bg-green-100 text-green-700 border-green-200" },
-  skipped:           { label: "Skipped",         className: "bg-yellow-100 text-yellow-700 border-yellow-200" },
-  blocked:           { label: "Action blocked",  className: "bg-red-100 text-red-700 border-red-200" },
-  approved:          { label: "Approved",        className: "bg-green-100 text-green-700 border-green-200" },
-  awaiting_approval: { label: "Needs Approval",  className: "bg-blue-100 text-blue-700 border-blue-200" },
-};
+// ── Card ──────────────────────────────────────────────────────────────────────
 
 export function ScheduledActionCard({ action, onRefresh }: { action: FullAction; onRefresh: () => void }) {
   const [firing, setFiring]     = useState(false);
@@ -72,10 +65,10 @@ export function ScheduledActionCard({ action, onRefresh }: { action: FullAction;
 
   const stepCfg   = stepTypeConfig[action.stepType as keyof typeof stepTypeConfig];
   const statusCfg = statusConfig[action.status] ?? statusConfig.pending;
-  const Icon      = stepCfg?.icon ?? Mail;
-
-  // Historical details that can be expanded (lookup result, skip reason)
+  const StepIcon  = stepCfg?.icon ?? Mail;
   const hasDetails = !!(action.lookupResult || action.skipReason);
+  const isPending = action.status === "pending" || action.status === "awaiting_approval";
+  const isNeedsApproval = action.status === "awaiting_approval";
 
   async function handleFire() {
     setFiring(true);
@@ -100,126 +93,103 @@ export function ScheduledActionCard({ action, onRefresh }: { action: FullAction;
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+    <div className={`rounded-2xl border bg-white shadow-sm overflow-hidden ${
+      isNeedsApproval ? "border-blue-200" : action.status === "blocked" ? "border-red-200" : "border-gray-200"
+    }`}>
 
-      {/* ── Main row ── clicking this expands historical details */}
+      {/* ── Main card body ── */}
       <div
-        className={`flex items-start gap-3 p-4 ${
-          hasDetails ? "cursor-pointer hover:bg-gray-50/40 transition-colors" : ""
-        }`}
+        className={`flex items-start gap-4 p-5 ${hasDetails ? "cursor-pointer hover:bg-gray-50/60 transition-colors" : ""}`}
         onClick={hasDetails ? () => setExpanded(p => !p) : undefined}
       >
-        {/* Step type icon */}
-        <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg ${stepCfg?.bg ?? "bg-gray-100"}`}>
-          <Icon className={`h-4 w-4 ${stepCfg?.color ?? "text-gray-500"}`} />
+        {/* Step type icon — M3 rounded-2xl container */}
+        <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl ${stepCfg?.bg ?? "bg-gray-100"}`}>
+          <StepIcon className={`h-5 w-5 ${stepCfg?.color ?? "text-gray-500"}`} />
         </div>
 
         <div className="flex-1 min-w-0">
-          {/* Status + type */}
-          <div className="flex items-center gap-2 flex-wrap mb-1">
+
+          {/* Row 1: action type + status chip */}
+          <div className="flex items-center gap-2 flex-wrap mb-2">
             <span className="text-sm font-semibold text-gray-900 capitalize">
-              {stepCfg?.label ?? action.stepType} Action
+              {stepCfg?.label ?? action.stepType} reminder
             </span>
-            <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${statusCfg.className}`}>
+            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusCfg.cls}`}>
               {statusCfg.label}
             </span>
           </div>
 
-          {/* Contact · Company */}
-          <div className="text-xs text-gray-500 space-y-0.5 mb-2">
-            {action.contact && (
-              <p className="flex flex-wrap items-center gap-1.5">
-                <Link
-                  href={`/contacts/${action.contactId}`}
-                  className="font-medium text-gray-800 hover:underline"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {action.contact.name}
-                </Link>
-                {action.contact.company && (
-                  <span className="text-gray-400">· {action.contact.company}</span>
-                )}
-              </p>
-            )}
-
-            {/* Customer account summary — overdue balance + invoice count */}
-            {action.customerAccount && action.customerAccount.overdueCount > 0 && (
-              <p className="flex flex-wrap items-center gap-1.5 mt-0.5">
-                <span className={`font-semibold ${agingColor(action.customerAccount.maxDaysPastDue)}`}>
-                  {formatCurrency(action.customerAccount.totalOverdueBalance)}
-                </span>
-                <span className="text-gray-400">
-                  overdue across {action.customerAccount.overdueCount} invoice{action.customerAccount.overdueCount !== 1 ? "s" : ""}
-                </span>
-                {action.customerAccount.mostOverdueInvoiceNumber && (
-                  <span className="text-gray-400">
-                    · Oldest: {action.customerAccount.mostOverdueInvoiceNumber} · {action.customerAccount.maxDaysPastDue}d
-                  </span>
-                )}
-              </p>
-            )}
-
-            {/* Primary invoice for this action */}
-            {action.invoice && (
-              <p className="flex flex-wrap items-center gap-1.5">
-                <span className="text-gray-400">This reminder covers:</span>
-                <Link
-                  href={`/invoices/${action.invoiceId}`}
-                  className="font-medium text-blue-600 hover:underline"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {action.invoice.invoiceNumber}
-                </Link>
-                <span className="text-gray-700">{formatCurrency(action.invoice.amount)}</span>
-              </p>
-            )}
-
-            {action.flow && (
-              <p className="text-gray-400">{action.flow.name}</p>
-            )}
-          </div>
-
-          {/* Scheduled time */}
-          <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-2">
-            <Clock className="h-3 w-3" />
-            {formatDateTime(action.scheduledAt)}
-          </div>
-
-          {/* Live result after firing — always visible when present */}
-          {result && (
-            <div className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 mb-2 ${outcomeConfig[result.outcome]?.color ?? ""}`}>
-              {(() => {
-                const ResultIcon = outcomeConfig[result.outcome]?.icon ?? RefreshCw;
-                return <ResultIcon className="h-3.5 w-3.5" />;
-              })()}
-              <p className="text-xs font-medium">{result.reason}</p>
+          {/* Row 2: customer + company */}
+          {action.contact && (
+            <div className="flex items-center gap-1.5 mb-1">
+              <Link
+                href={`/contacts/${action.contactId}`}
+                className="text-sm font-medium text-gray-800 hover:text-blue-600 hover:underline transition-colors"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {action.contact.name}
+              </Link>
+              {action.contact.company && (
+                <span className="text-sm text-gray-400">· {action.contact.company}</span>
+              )}
             </div>
           )}
 
-          {/* Action buttons — stopPropagation so they never trigger card expand */}
-          {(action.status === "pending" || action.status === "awaiting_approval") && (
-            <div className="flex flex-wrap gap-2 mt-2">
+          {/* Row 3: customer account summary */}
+          {action.customerAccount && action.customerAccount.overdueCount > 0 && (
+            <p className="text-xs text-gray-500 mb-1">
+              <span className={`font-semibold ${agingColor(action.customerAccount.maxDaysPastDue)}`}>
+                {formatCurrency(action.customerAccount.totalOverdueBalance)}
+              </span>
+              {" overdue across "}
+              <span className="font-medium text-gray-700">
+                {action.customerAccount.overdueCount} invoice{action.customerAccount.overdueCount !== 1 ? "s" : ""}
+              </span>
+              {action.customerAccount.mostOverdueInvoiceNumber && (
+                <span className="text-gray-400"> · oldest {action.customerAccount.maxDaysPastDue}d</span>
+              )}
+            </p>
+          )}
+
+          {/* Row 4: flow */}
+          {action.flow && (
+            <p className="text-xs text-gray-400 mb-2">{action.flow.name}</p>
+          )}
+
+          {/* Row 5: scheduled time */}
+          <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-3">
+            <Clock className="h-3 w-3 flex-shrink-0" />
+            <span>{formatDateTime(action.scheduledAt)}</span>
+          </div>
+
+          {/* Live fire result */}
+          {result && (
+            <div className={`flex items-center gap-2 rounded-xl border px-3 py-2 mb-3 text-xs font-medium ${outcomeConfig[result.outcome]?.cls ?? ""}`}>
+              {(() => { const R = outcomeConfig[result.outcome]?.icon ?? RefreshCw; return <R className="h-3.5 w-3.5 flex-shrink-0" />; })()}
+              <span>{result.reason}</span>
+            </div>
+          )}
+
+          {/* Action buttons — M3 filled + outlined (rounded-full) */}
+          {isPending && (
+            <div className="flex flex-wrap gap-2">
               <button
                 onClick={(e) => { e.stopPropagation(); handleFire(); }}
                 disabled={firing}
-                className="flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-medium text-white transition-colors disabled:opacity-50 ${
+                  isNeedsApproval ? "bg-blue-600 hover:bg-blue-700" : "bg-blue-600 hover:bg-blue-700"
+                }`}
               >
-                <PlayCircle className="h-3.5 w-3.5" />
                 {firing ? (
-                  <>
-                    <RefreshCw className="h-3 w-3 animate-spin" />
-                    Sending...
-                  </>
-                ) : action.status === "awaiting_approval" ? (
-                  "Approve & Send"
+                  <><RefreshCw className="h-3.5 w-3.5 animate-spin" />Sending…</>
                 ) : (
-                  "Send Now"
+                  <><PlayCircle className="h-3.5 w-3.5" />{isNeedsApproval ? "Approve & Send" : "Send Now"}</>
                 )}
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); handleSkip(); }}
                 disabled={skipping}
-                className="flex items-center gap-1.5 rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-full border border-gray-300 px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
               >
                 <XCircle className="h-3.5 w-3.5" />
                 Skip
@@ -228,40 +198,33 @@ export function ScheduledActionCard({ action, onRefresh }: { action: FullAction;
           )}
         </div>
 
-        {/* Expand/collapse chevron — only when historical details exist */}
+        {/* Expand chevron — only when historical details exist */}
         {hasDetails && (
           <button
-            className="flex-shrink-0 self-start mt-0.5 flex h-6 w-6 items-center justify-center rounded text-gray-300 hover:text-gray-500 hover:bg-gray-100 transition-colors"
+            className="flex-shrink-0 self-start mt-0.5 flex h-7 w-7 items-center justify-center rounded-full text-gray-300 hover:text-gray-500 hover:bg-gray-100 transition-colors"
             onClick={(e) => { e.stopPropagation(); setExpanded(p => !p); }}
-            title={expanded ? "Hide details" : "Show details"}
+            title={expanded ? "Hide safety check details" : "Show safety check details"}
           >
-            {expanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+            {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </button>
         )}
       </div>
 
-      {/* ── Expandable historical details ── */}
+      {/* ── Expanded safety check details ── */}
       {expanded && hasDetails && (
-        <div className="border-t border-gray-50 px-4 pb-4 pt-3 ml-12 space-y-2">
+        <div className="border-t border-gray-100 bg-gray-50/40 px-5 py-3 space-y-2">
           {action.lookupResult && (
-            <div className={`flex items-start gap-1.5 rounded-md border px-2.5 py-1.5 ${outcomeConfig[action.lookupResult.outcome]?.color ?? ""}`}>
-              {(() => {
-                const LookupIcon = outcomeConfig[action.lookupResult!.outcome]?.icon ?? RefreshCw;
-                return <LookupIcon className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />;
-              })()}
+            <div className={`flex items-start gap-2 rounded-xl border px-3 py-2.5 text-xs ${outcomeConfig[action.lookupResult.outcome]?.cls ?? ""}`}>
+              {(() => { const L = outcomeConfig[action.lookupResult!.outcome]?.icon ?? RefreshCw; return <L className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />; })()}
               <div>
-                <p className="text-xs font-semibold">
-                  {outcomeConfig[action.lookupResult.outcome]?.label}
-                </p>
-                <p className="text-xs opacity-75">{action.lookupResult.reason}</p>
-                <p className="text-xs opacity-50 mt-0.5">
-                  Safety check at {formatDateTime(action.lookupResult.performedAt)}
-                </p>
+                <p className="font-semibold">{outcomeConfig[action.lookupResult.outcome]?.label}</p>
+                <p className="opacity-80 mt-0.5">{action.lookupResult.reason}</p>
+                <p className="opacity-50 mt-0.5">Safety check at {formatDateTime(action.lookupResult.performedAt)}</p>
               </div>
             </div>
           )}
           {action.skipReason && !action.lookupResult && (
-            <p className="text-xs text-gray-400">{action.skipReason}</p>
+            <p className="text-xs text-gray-400 px-1">{action.skipReason}</p>
           )}
         </div>
       )}

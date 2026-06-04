@@ -68,24 +68,24 @@ function ActionsFilterDropdown({
     <div ref={dropRef} className="relative flex-shrink-0">
       <button
         onClick={() => setOpen(v => !v)}
-        className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors ${
+        className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-sm font-medium transition-colors ${
           isFiltered
             ? "border-blue-400 bg-blue-50 text-blue-700"
             : "border-gray-200 text-gray-600 hover:bg-gray-50"
         }`}
       >
-        <SlidersHorizontal className="h-3.5 w-3.5 flex-shrink-0" />
+        <SlidersHorizontal className="h-4 w-4 flex-shrink-0" />
         <span>{isFiltered ? activeOpt.label : "Filter"}</span>
-        <ChevronDown className={`h-3 w-3 opacity-60 flex-shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+        <ChevronDown className={`h-3.5 w-3.5 opacity-60 flex-shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 w-52 rounded-xl border border-gray-200 bg-white shadow-xl z-50 overflow-hidden">
+        <div className="absolute right-0 top-full mt-1.5 w-52 rounded-2xl border border-gray-200 bg-white shadow-xl z-50 overflow-hidden">
           {FILTER_OPTIONS.map(opt => (
             <button
               key={opt.value}
               onClick={() => { onFilter(opt.value); setOpen(false); }}
-              className={`flex w-full items-center justify-between px-3 py-2.5 text-xs font-medium transition-colors ${
+              className={`flex w-full items-center justify-between px-4 py-2.5 text-sm font-medium transition-colors ${
                 filter === opt.value
                   ? "bg-blue-50 text-blue-700"
                   : "text-gray-700 hover:bg-gray-50"
@@ -94,7 +94,7 @@ function ActionsFilterDropdown({
               <span>{opt.label}</span>
               <div className="flex items-center gap-2 flex-shrink-0">
                 {opt.value !== "all" && (
-                  <span className="text-[10px] text-gray-400">{counts[opt.value] ?? 0}</span>
+                  <span className="text-xs text-gray-400 tabular-nums">{counts[opt.value] ?? 0}</span>
                 )}
                 {filter === opt.value && <Check className="h-3.5 w-3.5 text-blue-600" />}
               </div>
@@ -163,7 +163,7 @@ function ScheduledPageContent() {
           <button
             onClick={load}
             title="Refresh"
-            className="flex items-center gap-1.5 rounded-md border border-gray-200 px-2 sm:px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
+            className="flex items-center gap-1.5 rounded-full border border-gray-300 px-3 sm:px-4 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors"
           >
             <RefreshCw className="h-3.5 w-3.5 shrink-0" />
             <span className="hidden sm:inline">Refresh</span>
@@ -172,42 +172,42 @@ function ScheduledPageContent() {
       />
       <div className="p-4 sm:p-6 space-y-4">
 
-        {/* Safety notice — compact */}
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5">
-          <p className="text-xs text-amber-700">
+        {/* Safety notice — M3 tonal container */}
+        <div className="rounded-2xl bg-amber-50 border border-amber-200 px-4 py-3">
+          <p className="text-xs text-amber-800">
             <strong>Safety check before every send.</strong>{" "}
-            CollectPilot verifies each invoice is still unpaid before sending. Actions are skipped if the invoice is paid or the contact is excluded.
+            CollectPilot verifies each invoice is still unpaid before sending. Actions are skipped automatically if the invoice is paid or the contact is excluded.
           </p>
         </div>
 
-        {/* Search + filter — single compact row, full width on mobile */}
+        {/* Search + filter */}
         <div className="flex items-center gap-2">
           <div className="relative flex-1 min-w-0">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
             <input
               ref={searchRef}
               type="text"
               placeholder="Search actions…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="w-full rounded-md border border-gray-200 pl-8 pr-8 py-1.5 text-xs focus:border-blue-400 focus:outline-none"
+              className="w-full rounded-xl border border-gray-200 pl-9 pr-9 py-2 text-sm focus:border-blue-400 focus:outline-none"
             />
             {query && (
               <button
                 onClick={() => { clear(); searchRef.current?.focus(); }}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 title="Clear search"
               >
-                <X className="h-3.5 w-3.5" />
+                <X className="h-4 w-4" />
               </button>
             )}
           </div>
           <ActionsFilterDropdown filter={filter} onFilter={setFilter} counts={counts} />
         </div>
 
-        {/* Count — below controls, unobtrusive */}
+        {/* Count */}
         {!loading && (
-          <p className="text-xs text-gray-400 -mt-1">
+          <p className="text-xs text-gray-400">
             {filtered.length === actions.length
               ? `${actions.length} action${actions.length !== 1 ? "s" : ""}`
               : `${filtered.length} of ${actions.length} actions`}
@@ -223,11 +223,11 @@ function ScheduledPageContent() {
         {loading ? (
           <div className="grid gap-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-28 rounded-xl bg-gray-100 animate-pulse" />
+              <div key={i} className="h-28 rounded-2xl bg-gray-100 animate-pulse" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-gray-200 py-12 text-center">
+          <div className="rounded-2xl border border-dashed border-gray-200 py-12 text-center">
             <p className="text-sm text-gray-400">
               {query ? `No actions match "${query}".` : "No actions in this category."}
             </p>

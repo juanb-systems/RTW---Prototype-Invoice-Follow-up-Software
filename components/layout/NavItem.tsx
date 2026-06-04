@@ -15,20 +15,17 @@ interface NavItemProps {
 }
 
 export function NavItem({ href, icon: Icon, label, badge }: NavItemProps) {
-  const pathname    = usePathname();
-  const isActive    = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
+  const pathname        = usePathname();
+  const isActive        = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
   const { isDirty, dirtySource } = useNavGuardStore();
   const closeMobileMenu = useMobileMenuStore((s) => s.close);
 
   function handleClick(e: React.MouseEvent<HTMLAnchorElement>) {
-    // Already on this page — just close the mobile menu, don't re-navigate
     if (isActive) {
       e.preventDefault();
       closeMobileMenu();
       return;
     }
-
-    // Unsaved-changes guard (flow builder / call templates)
     if (isDirty) {
       const msg =
         dirtySource === "flow-builder"
@@ -39,8 +36,6 @@ export function NavItem({ href, icon: Icon, label, badge }: NavItemProps) {
         return;
       }
     }
-
-    // Allow Link to handle the navigation; close mobile drawer
     closeMobileMenu();
   }
 
@@ -49,16 +44,21 @@ export function NavItem({ href, icon: Icon, label, badge }: NavItemProps) {
       href={href}
       onClick={handleClick}
       className={cn(
-        "flex w-full items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors group",
+        // M3 Navigation Drawer item — rounded-2xl pill, generous touch target
+        "flex w-full items-center gap-3 px-3 py-2.5 rounded-2xl text-sm font-medium transition-all duration-150 group",
         isActive
-          ? "bg-zinc-800 text-white"
-          : "text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-100"
+          // Active: M3 secondary container on dark surface (translucent white)
+          ? "bg-white/[0.12] text-white"
+          // Inactive: no background, subtle hover
+          : "text-zinc-400 hover:bg-white/[0.07] hover:text-zinc-100"
       )}
     >
       <Icon
         className={cn(
-          "h-4 w-4 flex-shrink-0",
-          isActive ? "text-white" : "text-zinc-500 group-hover:text-zinc-300"
+          "h-[18px] w-[18px] flex-shrink-0 transition-colors",
+          isActive
+            ? "text-blue-300"   // M3 primary accent on active item
+            : "text-zinc-500 group-hover:text-zinc-300"
         )}
       />
       <span className="flex-1 text-left">{label}</span>

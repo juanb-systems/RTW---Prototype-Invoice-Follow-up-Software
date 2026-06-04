@@ -2,6 +2,85 @@
 
 ---
 
+## v2.83.0 — Material 3-inspired UI redesign (04 Jun 2026)
+
+**Date:** 04 Jun 2026
+**package.json version:** 2.83.0
+
+### Changed — Full UI redesign pass using Material Design 3 principles
+
+**Design system (applied throughout):**
+- Shape: `rounded-2xl` (16px) standardised for all cards and containers — M3 "large" shape scale. Buttons use `rounded-full` for filled/tonal/outlined actions, `rounded-xl` for compact controls.
+- Status chips: Removed decorative `border` from `InvoiceStatusBadge` and `ContactStatusBadge`. Both now use M3-style tonal chips — solid background, no border, `rounded-full`.
+- Elevation: Cards consistently `border border-gray-200 shadow-sm` on white background. Tonal containers use `bg-gray-50/blue-50/amber-50` without shadow.
+- Spacing: More breathing room in card headers (p-5/p-6), section dividers less aggressive.
+
+**Navigation (`components/layout/NavItem.tsx`, `components/layout/Sidebar.tsx`):**
+- Active nav item: replaced `bg-zinc-800 text-white` (nearly invisible on dark sidebar) with `bg-white/[0.12] text-white` — M3 translucent secondary-container on dark surface. Active icon is `text-blue-300` (M3 primary accent).
+- Inactive: `hover:bg-white/[0.07]` — subtle state layer.
+- Nav item shape: `rounded-lg` → `rounded-2xl` (M3 pill shape for nav items).
+- Logo icon: `rounded-lg` → `rounded-xl`, h-8 → h-9.
+- Section divider: slightly more spacing, softer opacity.
+
+**TopBar (`components/layout/TopBar.tsx`):**
+- Height: `h-14` → `h-16` (64px = M3 top app bar).
+- Hamburger / search / notification icon buttons: `rounded-lg h-8 w-8` → `rounded-full h-9 w-9` (M3 icon button).
+- Search results and notification panels: `rounded-xl` → `rounded-2xl`, `mt-1.5` → `mt-2`.
+
+**Dashboard (`app/dashboard/page.tsx`):**
+- KPI cards: `border-gray-100` → `border-gray-200`, `p-4` → `p-5`, cleaner label text (`text-xs font-medium` not all-caps uppercase).
+- Approvals KPI: amber when non-zero; Replies KPI: blue when non-zero — color only when action needed.
+- Two-column layout: `gap-4` → `gap-5/6`, section heading "Performance Summary" simplified to "Performance".
+
+**Needs Attention section (`components/dashboard/NeedsAttentionSection.tsx`):**
+- Alert cards: `rounded-lg` → `rounded-2xl`, icon containers `rounded-lg` → `rounded-xl`.
+- Merged overdue card: same border-radius update.
+- Promises strip: `rounded-xl` → `rounded-2xl`, padding `px-3.5 py-2.5` → `px-4 py-3`.
+- Hover state: `hover:bg-black/5` → `hover:bg-black/[0.04]` (M3 state layer — 4% black).
+
+**ScheduledActionCard (`components/scheduled/ScheduledActionCard.tsx`):**
+- Complete M3 redesign: `rounded-2xl` card, `rounded-2xl` step-type icon container (was `rounded-lg`).
+- Status chips: `rounded-full` with tonal backgrounds (no `border`).
+- "Send Now" / "Approve & Send" buttons: `rounded-full bg-blue-600` (M3 filled button).
+- "Skip" button: `rounded-full border border-gray-300` (M3 outlined button).
+- Expand chevron: `rounded-full` icon button.
+- Safety check result and outcome banners: `rounded-xl border`.
+- Customer account summary line improved — cleaner spacing, aging-colored balance.
+
+**Actions page (`app/scheduled/page.tsx`):**
+- Safety notice: `rounded-lg` → `rounded-2xl`, tonal amber container.
+- Search input: `rounded-md` → `rounded-xl`, icon size `h-3.5` → `h-4`, py `1.5` → `2`.
+- Filter dropdown: `rounded-md` → `rounded-xl` trigger, `rounded-xl` → `rounded-2xl` dropdown panel, font-size `text-xs` → `text-sm`.
+- Refresh button: `rounded-md border` → `rounded-full border border-gray-300`.
+- Loading skeletons and empty state: `rounded-xl` → `rounded-2xl`.
+
+**Inbox page (`app/inbox/page.tsx`):**
+- AI Overview panel: `rounded-lg` → `rounded-2xl`.
+- Message/transcript card: `rounded-xl` → `rounded-2xl`, section header bg `bg-gray-50` → `bg-gray-50/60`.
+- Message list item: selected state `bg-blue-50` + `border-l-2` → `bg-blue-50/70` + `border-l-[3px]`, hover `bg-gray-50` → `bg-gray-50/70`, padding `py-3` → `py-3.5`.
+- Status badges in message rows: `rounded` → `rounded-full`.
+- Footer action buttons: `rounded-md` → `rounded-full`, borders removed from tonal buttons.
+- Reply form buttons: `rounded-md` → `rounded-full`.
+
+**Contacts page (`app/contacts/page.tsx`):**
+- "Add Contact" button: `rounded-md` → `rounded-full bg-blue-600` with `shadow-sm`, font upgrade to `text-sm` on desktop.
+- Excluded contact banner: `rounded-lg` → `rounded-2xl`.
+- Contacts table card: `rounded-xl` → `rounded-2xl`.
+- Modal: `rounded-t-2xl sm:rounded-xl` → `rounded-t-3xl sm:rounded-2xl`.
+- Modal Save/Cancel buttons: `rounded-md` → `rounded-full`.
+
+**Status badges:**
+- `InvoiceStatusBadge`: removed `border` class — now pure tonal chips.
+- `ContactStatusBadge`: removed `border` class — now pure tonal chips.
+
+**Detail pages (targeted pass):**
+- Contact detail (`app/contacts/[id]/page.tsx`): all `rounded-xl` cards → `rounded-2xl`, padding `p-4/5` → `p-5/6`.
+- Invoice detail (`app/invoices/[id]/page.tsx`): main section cards `rounded-xl` → `rounded-2xl`.
+
+---
+
+## v2.82.0 — Redesign and simplify Receivables page UI (04 Jun 2026)
+
 ## v2.82.0 — Redesign and simplify Receivables page UI (04 Jun 2026)
 
 **Date:** 04 Jun 2026
