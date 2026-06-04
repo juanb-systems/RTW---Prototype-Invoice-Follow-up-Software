@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { TopBar } from "@/components/layout/TopBar";
 import { InvoiceStatusBadge } from "@/components/invoices/InvoiceStatusBadge";
-import { formatCurrency, formatDate, agingColor } from "@/lib/utils";
+import { formatCurrency, formatCurrencyWhole, formatDate, agingColor } from "@/lib/utils";
 import { useSearchStore } from "@/lib/search-store";
 import {
   Search, X, SlidersHorizontal, ChevronDown, Check,
@@ -401,36 +401,36 @@ function CustomerCard({ account }: { account: CustomerAccount }) {
         {...toggleProps}
         className="sm:hidden px-4 py-4 cursor-pointer select-none active:bg-gray-50/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-300"
       >
-        {/* Row 1: name + badges + chevron */}
-        <div className="flex items-start gap-2">
-          <div className="flex-1 min-w-0">
+        {/* Row 1: name + chevron */}
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
             <p className="text-base font-semibold text-gray-900 leading-snug">{account.name}</p>
             {account.company && (
               <p className="text-xs text-gray-400 mt-0.5 leading-snug">{account.company}</p>
             )}
           </div>
-          <div className="flex items-center gap-1.5 flex-shrink-0 mt-0.5">
-            {responseBadge}
-            <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform flex-shrink-0 ${expanded ? "rotate-180" : ""}`} />
-          </div>
+          <ChevronDown
+            className={`h-4 w-4 text-gray-400 transition-transform flex-shrink-0 mt-0.5 ${expanded ? "rotate-180" : ""}`}
+          />
         </div>
 
-        {/* Row 2: balance (large) */}
-        {account.overdueCount > 0 && (
-          <div className="mt-3">
-            <p className={`text-2xl font-bold leading-none tabular-nums ${agingColor(account.maxDaysPastDue)}`}>
-              {formatCurrency(account.totalOverdueBalance)}
+        {/* Row 2: response badge — own line, below company */}
+        {responseBadge && <div className="mt-1.5">{responseBadge}</div>}
+
+        {/* Row 3: overdue amount — moderate size, no cents */}
+        {account.overdueCount > 0 ? (
+          <div className="mt-2.5">
+            <p className={`text-xl font-semibold leading-none tabular-nums ${agingColor(account.maxDaysPastDue)}`}>
+              {formatCurrencyWhole(account.totalOverdueBalance)}{" "}
+              <span className="text-base font-medium">overdue</span>
             </p>
-            {/* Row 3: clean summary — no invoice numbers */}
-            <p className="text-sm text-gray-500 mt-1.5 leading-snug">
-              {account.overdueCount} overdue invoice{account.overdueCount !== 1 ? "s" : ""}
-              {account.maxDaysPastDue > 0 && (
-                <> · oldest <span className={`font-semibold ${agingColor(account.maxDaysPastDue)}`}>{account.maxDaysPastDue} days</span></>
-              )}
+            {/* Row 4: invoice count + oldest age */}
+            <p className="text-xs text-gray-500 mt-1 leading-snug">
+              {account.overdueCount} invoice{account.overdueCount !== 1 ? "s" : ""}
+              {account.maxDaysPastDue > 0 && ` · oldest ${account.maxDaysPastDue} days`}
             </p>
           </div>
-        )}
-        {account.overdueCount === 0 && (
+        ) : (
           <p className="text-sm text-gray-400 mt-2">No overdue invoices</p>
         )}
       </div>

@@ -2,6 +2,40 @@
 
 ---
 
+## v2.85.0 — Refine Receivables mobile card typography (04 Jun 2026)
+
+**Date:** 04 Jun 2026
+**package.json version:** 2.85.0
+
+### Fixed
+
+**Mobile Receivables customer cards — overdue amount too large and visually dominant (`app/invoices/page.tsx`, `lib/utils.ts`)**
+
+The overdue balance was rendered at `text-2xl font-bold` (24px) with the full `formatCurrency` value including `.00` cents. With multiple customer cards on screen at once, this made every card feel aggressive and hard to scan.
+
+**Changes:**
+- Balance: `text-2xl font-bold` → `text-xl font-semibold` (24px → 20px). Reduced visual weight while still clearly readable.
+- Format: `formatCurrency` (e.g. `$42,000.00`) → `formatCurrencyWhole` (e.g. `$42,000`). Removes cents in list contexts where exact cents are not meaningful.
+- Label: "overdue" word added inline after the amount on the same line (`$42,000 overdue`) so the figure has clear context without a separate label row.
+- Badge placement: response badge (e.g. "Promise to Pay") moved to its own line below the company name, separated from the name row. Previously it was squeezed inline with the chevron.
+- Chevron: moved to a `justify-between` row with the name/company block, keeping the interaction affordance visible but not competing with the badge.
+- Summary line: `text-sm text-gray-500` → `text-xs text-gray-500` — slightly smaller to stay clearly secondary below the balance.
+
+**New mobile card hierarchy:**
+1. Customer name (`text-base font-semibold text-gray-900`)
+2. Company (`text-xs text-gray-400`)
+3. Response badge (own line, if present)
+4. `$42,000 overdue` (`text-xl font-semibold` in aging color)
+5. `3 invoices · oldest 102 days` (`text-xs text-gray-500`)
+
+**Added `formatCurrencyWhole` to `lib/utils.ts`:** New helper using `minimumFractionDigits: 0, maximumFractionDigits: 0` for whole-dollar formatting in compact list contexts. Existing `formatCurrency` (with `.00`) is unchanged and still used in detail views, tables, and the expanded invoice mini-cards.
+
+**Desktop unchanged:** Desktop table column values remain as before.
+
+---
+
+## v2.84.0 — Merge Preferences into Settings (04 Jun 2026)
+
 ## v2.84.0 — Merge Preferences into Settings (04 Jun 2026)
 
 **Date:** 04 Jun 2026

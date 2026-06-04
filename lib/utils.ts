@@ -13,6 +13,16 @@ export function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
+// Whole-dollar format for compact list contexts — no cents (e.g. $42,000 not $42,000.00)
+export function formatCurrencyWhole(amount: number): string {
+  return new Intl.NumberFormat("en-AU", {
+    style: "currency",
+    currency: "AUD",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
 export function formatDate(dateString: string): string {
   return new Intl.DateTimeFormat("en-AU", {
     day: "numeric",
